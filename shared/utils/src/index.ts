@@ -86,11 +86,14 @@ export function formatBytes(bytes: number, locale: string = 'en'): string {
 }
 
 /**
- * Truncate a string to maxLength, appending "…" if truncated.
+ * Truncate a string to maxLength, appending suffix if truncated.
+ * @param str The string to truncate
+ * @param maxLength Maximum length including the suffix
+ * @param suffix The suffix to append when truncated (default: "…")
  */
-export function truncate(str: string, maxLength: number): string {
+export function truncate(str: string, maxLength: number, suffix: string = '…'): string {
   if (str.length <= maxLength) return str;
-  return str.slice(0, maxLength - 1) + '…';
+  return str.slice(0, maxLength - suffix.length) + suffix;
 }
 
 /**
@@ -344,11 +347,7 @@ type SortField = 'title' | 'username' | 'url' | 'modifiedAt' | 'createdAt' | 'us
 /**
  * Sort entries by a field in ascending or descending order.
  */
-export function sortEntries(
-  entries: Entry[],
-  field: string,
-  dir: 'asc' | 'desc',
-): Entry[] {
+export function sortEntries(entries: Entry[], field: string, dir: 'asc' | 'desc'): Entry[] {
   const sorted = [...entries].sort((a, b) => {
     const key = field as SortField;
     const aVal = String(a[key] ?? '').toLowerCase();
@@ -389,9 +388,12 @@ export function filterEntries(entries: Entry[], query: string): Entry[] {
     if (entry.url.toLowerCase().includes(q)) return true;
     if (entry.notes.toLowerCase().includes(q)) return true;
     if (entry.tags.some(tag => tag.toLowerCase().includes(q))) return true;
-    if (entry.customFields.some(
-      f => f.key.toLowerCase().includes(q) || (!f.protected && f.value.toLowerCase().includes(q))
-    )) return true;
+    if (
+      entry.customFields.some(
+        f => f.key.toLowerCase().includes(q) || (!f.protected && f.value.toLowerCase().includes(q))
+      )
+    )
+      return true;
     return false;
   });
 }

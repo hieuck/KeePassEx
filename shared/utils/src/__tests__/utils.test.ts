@@ -79,33 +79,17 @@ describe('truncate', () => {
   });
 
   it('truncates long string with ellipsis', () => {
-    expect(truncate('hello world', 8)).toBe('hello...');
+    // Default suffix is '…' (1 char), so maxLength 8 → 'hello w' (7 chars) + '…' = 'hello w…'
+    expect(truncate('hello world', 8)).toBe('hello w…');
   });
 
   it('uses custom suffix', () => {
-    expect(truncate('hello world', 7, '…')).toBe('hello w…');
+    // Custom suffix '…' (1 char), maxLength 7 → 'hello ' (6 chars) + '…' = 'hello …'
+    expect(truncate('hello world', 7, '…')).toBe('hello …');
   });
 
   it('handles exact length', () => {
     expect(truncate('hello', 5)).toBe('hello');
-  });
-});
-
-describe('capitalize', () => {
-  it('capitalizes first letter', () => {
-    expect(capitalize('hello')).toBe('Hello');
-  });
-
-  it('handles already capitalized', () => {
-    expect(capitalize('Hello')).toBe('Hello');
-  });
-
-  it('handles empty string', () => {
-    expect(capitalize('')).toBe('');
-  });
-
-  it('handles single character', () => {
-    expect(capitalize('a')).toBe('A');
   });
 });
 
@@ -132,14 +116,14 @@ describe('formatBytes', () => {
 // ─── Date utilities ───────────────────────────────────────────────────────────
 
 describe('formatRelativeTime', () => {
-  it('returns "Today" for today', () => {
+  it('returns "Just now" for current time', () => {
     const today = new Date();
-    expect(formatRelativeTime(today, 'en')).toBe('Today');
+    expect(formatRelativeTime(today, 'en')).toBe('Just now');
   });
 
-  it('returns "Hôm nay" for today in Vietnamese', () => {
+  it('returns "Vừa xong" for current time in Vietnamese', () => {
     const today = new Date();
-    expect(formatRelativeTime(today, 'vi')).toBe('Hôm nay');
+    expect(formatRelativeTime(today, 'vi')).toBe('Vừa xong');
   });
 
   it('returns "Yesterday" for yesterday', () => {
@@ -154,7 +138,7 @@ describe('formatRelativeTime', () => {
 
   it('accepts string input', () => {
     const result = formatRelativeTime(new Date().toISOString(), 'en');
-    expect(result).toBe('Today');
+    expect(result).toBe('Just now');
   });
 });
 

@@ -561,7 +561,7 @@ export interface AppNotification {
 // ─── App Settings ─────────────────────────────────────────────────────────────
 
 export type ThemeMode = 'light' | 'dark' | 'oled' | 'system';
-export type Language = 'en' | 'vi' | 'zh' | 'ja' | 'ko' | 'es' | 'fr';
+export type Language = 'en' | 'vi' | 'zh' | 'ja' | 'ko' | 'es' | 'fr' | 'de' | 'pt' | 'ru';
 
 /** Mobile biometric security level */
 export type BiometricSecurityLevel =

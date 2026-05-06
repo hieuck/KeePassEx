@@ -132,6 +132,9 @@ export const SUPPORTED_LOCALES: Record<string, string> = {
   ko: '한국어',
   es: 'Español',
   fr: 'Français',
+  de: 'Deutsch',
+  pt: 'Português',
+  ru: 'Русский',
 };
 
 // ─── Import formats ───────────────────────────────────────────────────────────
