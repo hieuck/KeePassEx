@@ -44,6 +44,49 @@ enum HardwareKeyAction {
     /// Interactive setup wizard
     Setup,
 }
+
+#[derive(Subcommand)]
+enum ServerAction {
+    /// Check server health and connection
+    Status {
+        /// Server URL
+        #[arg(long, env = "KPX_SERVER_URL")]
+        url: String,
+    },
+    /// Log in to a KeePassEx server and print the access token
+    Login {
+        /// Server URL
+        #[arg(long, env = "KPX_SERVER_URL")]
+        url: String,
+        /// Email address
+        #[arg(long, env = "KPX_SERVER_EMAIL")]
+        email: String,
+        /// Password (prefer env var KPX_SERVER_PASSWORD)
+        #[arg(long, env = "KPX_SERVER_PASSWORD", hide_env_values = true)]
+        password: Option<String>,
+    },
+    /// Register a new account on a KeePassEx server
+    Register {
+        /// Server URL
+        #[arg(long, env = "KPX_SERVER_URL")]
+        url: String,
+        /// Email address
+        #[arg(long)]
+        email: String,
+        /// Password (prefer env var KPX_SERVER_PASSWORD)
+        #[arg(long, env = "KPX_SERVER_PASSWORD", hide_env_values = true)]
+        password: Option<String>,
+    },
+    /// Show vault version history on the server
+    History {
+        /// Server URL
+        #[arg(long, env = "KPX_SERVER_URL")]
+        url: String,
+        /// Access token (or set KPX_SERVER_TOKEN)
+        #[arg(long, env = "KPX_SERVER_TOKEN", hide_env_values = true)]
+        token: String,
+    },
+}
 #[derive(Parser)]
 #[command(
     name = "kpx",
@@ -256,6 +299,13 @@ enum Commands {
         #[arg(short, long, default_value = "50")]
         limit: usize,
     },
+
+    /// Manage KeePassEx self-hosted sync server
+    #[command(alias = "srv")]
+    Server {
+        #[command(subcommand)]
+        action: ServerAction,
+    },
 }
 
 #[tokio::main]
@@ -294,6 +344,24 @@ async fn main() -> anyhow::Result<()> {
             HardwareKeyAction::List => commands::hardware_key::run_list().await,
             HardwareKeyAction::Setup => commands::hardware_key::run_setup(),
             HardwareKeyAction::Test { slot } => commands::hardware_key::run_test(*slot).await,
+        };
+    }
+
+    // Server commands don't need a vault
+    if let Commands::Server { action } = &cli.command {
+        return match action {
+            ServerAction::Status { url } => commands::server::run_status(url).await,
+            ServerAction::Login {
+                url,
+                email,
+                password,
+            } => commands::server::run_login(url, email, password.as_deref()).await,
+            ServerAction::Register {
+                url,
+                email,
+                password,
+            } => commands::server::run_register(url, email, password.as_deref()).await,
+            ServerAction::History { url, token } => commands::server::run_history(url, token).await,
         };
     }
 
@@ -440,5 +508,8 @@ async fn main() -> anyhow::Result<()> {
         }
 
         Commands::Audit { limit } => commands::audit::run(&vault_path_str, limit, &cli.format),
+
+        // Server commands are handled before vault open — unreachable here
+        Commands::Server { .. } => unreachable!("Server commands handled before vault open"),
     }
 }

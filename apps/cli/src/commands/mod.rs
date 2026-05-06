@@ -13,6 +13,7 @@ pub mod import;
 pub mod list;
 pub mod otp;
 pub mod search;
+pub mod server;
 pub mod shard;
 pub mod stats;
 pub mod steg;
