@@ -1,6 +1,6 @@
 # KeePassEx — Product Overview
 
-KeePassEx is a native, cross-platform password manager built around the KDBX 4.x format, ensuring full interoperability with KeePass and KeePassXC. It is licensed under GPL-3.0.
+KeePassEx is a native, cross-platform password manager built around the KDBX 4.x format, ensuring full interoperability with KeePass and KeePassXC. Licensed under GPL-3.0.
 
 ## Core Values
 
@@ -20,37 +20,27 @@ KeePassEx is a native, cross-platform password manager built around the KDBX 4.x
 | CLI                       | Rust (`kpx`)              |
 | TUI                       | Rust (ratatui)            |
 
-## Key Features
+## Feature Scope
+
+All features are implemented. When adding code, assume these exist and work:
 
 - KDBX 4.x read/write, TOTP/HOTP, Passkeys, SSH Agent
 - Breach monitoring (HIBP k-anonymity), Emergency Access
-- Plugin system (WASM sandbox), Import/Export (Bitwarden, LastPass, 1Password, Chrome, Firefox, CSV)
-- Sync via WebDAV or local, iOS/Android AutoFill and Widgets
-- Steganography vault embedding, Shamir secret sharing
-- **Entry Field References** `{REF:F@I:uuid}` — KeePass-compatible cross-entry field linking
-- **Favicon auto-fetch** — automatic site icons (privacy-safe, domain-only)
-- **Multi-vault tabs** — open multiple vaults simultaneously (unique vs all competitors)
-- **Quantum-resistant encryption** — X25519 + CRYSTALS-Kyber-768 hybrid (NIST FIPS 203)
-- **TUI** — full terminal UI with vim keybindings
-- **ZKPV** — zero-knowledge password pre-check without decrypting vault
-- **Smart categorizer** — auto-categorize entries by URL/title
-- **Natural language search** — "find weak passwords in Banking"
-- **Password rotation engine** — category-based rotation schedules
+- Plugin system (WASM sandbox)
+- Import: Bitwarden, LastPass, 1Password, Chrome, Firefox, Dashlane, NordPass, Enpass, RoboForm, CSV
+- Export: KDBX, CSV, JSON, HTML
+- Sync: WebDAV, Google Drive, OneDrive, Dropbox, S3, SFTP, iCloud, Local
+- iOS/Android AutoFill and Widgets
+- Steganography (vault in PNG/JPEG/MP4), Shamir secret sharing (M-of-N)
+- Entry field references `{REF:F@I:uuid}` — KeePass-compatible
+- Favicon auto-fetch — privacy-safe (domain only, never full URL)
+- Multi-vault tabs — multiple vaults open simultaneously
+- Quantum-resistant encryption — X25519 + Kyber-768 hybrid (KDBX header integrated, migration tool)
+- Mobile Secure Enclave (iOS) + StrongBox (Android) — hardware-backed biometric key storage
+- TUI with vim keybindings, ZKPV, smart categorizer, natural language search
+- Password rotation engine, context-aware password advisor
 
-## Competitive Advantages vs KeePass / KeePassXC / Keepassium / KeePass2Android
+## Languages
 
-| Feature                  | KeePass | KeePassXC | Keepassium | KeePass2Android | **KeePassEx** |
-| ------------------------ | ------- | --------- | ---------- | --------------- | ------------- |
-| Multi-vault tabs         | ❌      | ✅        | ❌         | ❌              | ✅            |
-| Favicon auto-fetch       | ❌      | ✅        | ✅         | ❌              | ✅            |
-| Entry field references   | ✅      | ✅        | ✅         | ✅              | ✅            |
-| Quantum-resistant crypto | ❌      | ❌        | ❌         | ❌              | ✅            |
-| Steganography            | ❌      | ❌        | ❌         | ❌              | ✅            |
-| Shamir key sharding      | ❌      | ❌        | ❌         | ❌              | ✅            |
-| TUI (terminal UI)        | ❌      | ❌        | ❌         | ❌              | ✅            |
-| ZKPV                     | ❌      | ❌        | ❌         | ❌              | ✅            |
-| Smart categorizer        | ❌      | ❌        | ❌         | ❌              | ✅            |
-| Natural language search  | ❌      | ❌        | ❌         | ❌              | ✅            |
-| WearOS native            | ❌      | ❌        | ❌         | ❌              | ✅            |
-| watchOS native           | ❌      | ❌        | ✅         | ❌              | ✅            |
-| EN + VI i18n             | ❌      | ❌        | ❌         | ❌              | ✅            |
+7 languages fully implemented with ~400 keys each, all in parity:
+`en` (English), `vi` (Tiếng Việt), `zh` (简体中文), `ja` (日本語), `ko` (한국어), `es` (Español), `fr` (Français)

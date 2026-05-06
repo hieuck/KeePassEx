@@ -64,7 +64,11 @@ steg/           # Steganography
 tests/          # Rust integration tests
 ```
 
-Key top-level modules: `lib.rs`, `types.rs`, `error.rs`, `generator.rs`, `otp.rs`, `breach.rs`, `health.rs`, `passkey.rs`, `ssh.rs`, `emergency_access.rs`, `team.rs`
+Key top-level modules: `lib.rs`, `types.rs`, `error.rs`, `generator.rs`, `otp.rs`, `breach.rs`, `health.rs`, `passkey.rs`, `ssh.rs`, `emergency_access.rs`, `team.rs`, `field_references.rs`, `favicon.rs`
+
+Key kdbx modules: `kdbx/reader.rs`, `kdbx/writer.rs`, `kdbx/pqc_header.rs`
+
+Key vault modules: `vault/operations.rs`, `vault/pqc_migration.rs`, `vault/search.rs`
 
 ## `shared/`
 
@@ -77,11 +81,17 @@ Key top-level modules: `lib.rs`, `types.rs`, `error.rs`, `generator.rs`, `otp.rs
 ## i18n Files
 
 ```
-packages/i18n/src/locales/en.ts   # English strings
-packages/i18n/src/locales/vi.ts   # Vietnamese strings (must mirror en.ts)
+packages/i18n/src/locales/en.ts   # English (primary)
+packages/i18n/src/locales/vi.ts   # Vietnamese
+packages/i18n/src/locales/zh.ts   # Chinese Simplified
+packages/i18n/src/locales/ja.ts   # Japanese
+packages/i18n/src/locales/ko.ts   # Korean
+packages/i18n/src/locales/es.ts   # Spanish
+packages/i18n/src/locales/fr.ts   # French
 ```
 
 Key format: `section.subsection.key` (e.g. `entry.copyPassword`, `vault.open`)
+All 7 files must stay in parity — new keys go in all files.
 
 ## Conventions
 
@@ -90,14 +100,3 @@ Key format: `section.subsection.key` (e.g. `entry.copyPassword`, `vault.open`)
 - **Rust commands** in `src-tauri/src/commands/` mirror the domain structure of `packages/core/src/`
 - **New features** must add i18n keys to both `en.ts` and `vi.ts` before merging
 - **Sensitive data** must use `ProtectedString` in Rust and never be logged
-
-## New Features Added (vs Competitors)
-
-| File                                                      | Feature                                 |
-| --------------------------------------------------------- | --------------------------------------- |
-| `packages/core/src/field_references.rs`                   | Entry field references `{REF:F@I:uuid}` |
-| `packages/core/src/favicon.rs`                            | Favicon auto-fetch (Google/DDG/direct)  |
-| `apps/desktop/src/store/tabs.ts`                          | Multi-vault tabs store                  |
-| `apps/desktop/src/components/VaultTabBar.tsx`             | Multi-vault tab bar UI                  |
-| `apps/desktop/src-tauri/src/commands/field_references.rs` | Tauri commands for field refs           |
-| `apps/desktop/src-tauri/src/commands/favicon.rs`          | Tauri commands for favicon fetch        |

@@ -46,20 +46,25 @@ inclusion: always
 
 ## i18n Rules
 
-- All strings in `packages/i18n/src/locales/en.ts` and `vi.ts`
+- All strings in `packages/i18n/src/locales/en.ts` and `vi.ts` (primary)
+- 7 languages: `en`, `vi`, `zh`, `ja`, `ko`, `es`, `fr` — all must stay in parity
 - Key format: `section.subsection.key` (e.g., `entry.copyPassword`)
-- Both EN and VI must be kept in sync at all times
-- New features MUST add both EN and VI keys before merging
+- New features MUST add keys to ALL 7 language files before merging
+- `SupportedLocale` type in `packages/i18n/src/index.ts` must be updated when adding languages
 
 ## Key Files
 
 - Core engine: `packages/core/src/lib.rs`
 - KDBX format: `packages/core/src/kdbx/`
 - Vault operations: `packages/core/src/vault/`
+- Field references: `packages/core/src/field_references.rs`
+- Favicon fetch: `packages/core/src/favicon.rs`
 - Desktop app: `apps/desktop/src/App.tsx`
+- Desktop stores: `apps/desktop/src/store/` (vault, settings, sync, breach, tabs)
 - Mobile app: `apps/mobile/src/App.tsx`
 - CLI: `apps/cli/src/main.rs`
 - Browser extension: `apps/browser-extension/src/background.ts`
+- Tauri commands: `apps/desktop/src-tauri/src/commands/` (one file per domain)
 
 ## Build Commands
 
@@ -75,38 +80,7 @@ make help         # Show all commands
 
 ## Feature Status
 
-All major features are implemented:
-
-- ✅ KDBX 4.x read/write (Argon2id + ChaCha20-Poly1305)
-- ✅ Desktop app (all pages including Breach, Emergency Access, Plugins)
-- ✅ Mobile app (all screens)
-- ✅ watchOS + WearOS native apps
-- ✅ Browser extension (Chrome + Firefox)
-- ✅ CLI (all commands including breach)
-- ✅ iOS Widget + Android Widget
-- ✅ iOS AutoFill + Android AutoFill
-- ✅ TOTP/HOTP + Passkey + SSH Agent
-- ✅ Breach monitor (HIBP k-anonymity)
-- ✅ Emergency access
-- ✅ Plugin system (WASM sandbox)
-- ✅ Import (Bitwarden, LastPass, Chrome, Firefox, 1Password, CSV)
-- ✅ Export (CSV, JSON)
-- ✅ Sync (WebDAV, local)
-- ✅ 60+ Rust unit tests
-- ✅ TypeScript tests (i18n parity, utils, stores)
-- ✅ CI/CD (GitHub Actions)
-- ✅ **Entry Field References** `{REF:F@I:uuid}` — KeePass-compatible, full circular-ref protection
-- ✅ **Favicon auto-fetch** — Google/DuckDuckGo/direct, privacy-safe (domain only)
-- ✅ **Multi-vault tabs** — open multiple vaults simultaneously (unique vs all competitors)
-- ✅ **Quantum-resistant encryption** — X25519 + CRYSTALS-Kyber-768 hybrid (NIST FIPS 203)
-- ✅ **Steganography** — embed vault in PNG/JPEG/MP4
-- ✅ **Shamir secret sharing** — M-of-N vault key sharding
-- ✅ **TUI** — full terminal UI with vim keybindings
-- ✅ **ZKPV** — zero-knowledge password pre-check
-- ✅ **Smart categorizer** — auto-categorize entries by URL/title
-- ✅ **Natural language search** — "find weak passwords in Banking"
-- ✅ **Password rotation engine** — category-based rotation schedules
-- ✅ **Context-aware password advisor** — per-site strength analysis
+All features are fully implemented. Do not add stubs or TODOs — implement completely or ask first.
 
 ## i18n Usage Pattern
 
