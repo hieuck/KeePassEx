@@ -4,10 +4,18 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
-import { useSettingsStore } from '../store/settings';
+import { useTranslation } from 'react-i18next';
 import { useSyncStore } from '../store/sync';
 
-type SyncProvider = 'local' | 'webdav' | 'icloud' | 'gdrive' | 'onedrive' | 'dropbox' | 's3' | 'sftp';
+type SyncProvider =
+  | 'local'
+  | 'webdav'
+  | 'icloud'
+  | 'gdrive'
+  | 'onedrive'
+  | 'dropbox'
+  | 's3'
+  | 'sftp';
 
 interface SyncStatus {
   configured: boolean;
@@ -26,20 +34,19 @@ interface SyncResult {
   error: string | null;
 }
 
-const PROVIDERS: { value: SyncProvider; labelEn: string; labelVi: string; icon: string; needsAuth: boolean }[] = [
-  { value: 'local',    labelEn: 'Local Folder',   labelVi: 'Thư mục cục bộ', icon: '📁', needsAuth: false },
-  { value: 'webdav',   labelEn: 'WebDAV',          labelVi: 'WebDAV',          icon: '🌐', needsAuth: true  },
-  { value: 'icloud',   labelEn: 'iCloud Drive',    labelVi: 'iCloud Drive',    icon: '☁️', needsAuth: false },
-  { value: 'gdrive',   labelEn: 'Google Drive',    labelVi: 'Google Drive',    icon: '🔵', needsAuth: true  },
-  { value: 'onedrive', labelEn: 'OneDrive',        labelVi: 'OneDrive',        icon: '🔷', needsAuth: true  },
-  { value: 'dropbox',  labelEn: 'Dropbox',         labelVi: 'Dropbox',         icon: '📦', needsAuth: true  },
-  { value: 's3',       labelEn: 'Amazon S3',       labelVi: 'Amazon S3',       icon: '🟠', needsAuth: true  },
-  { value: 'sftp',     labelEn: 'SFTP',            labelVi: 'SFTP',            icon: '🔒', needsAuth: true  },
+const PROVIDERS: { value: SyncProvider; label: string; icon: string; needsAuth: boolean }[] = [
+  { value: 'local', label: 'Local Folder', icon: '📁', needsAuth: false },
+  { value: 'webdav', label: 'WebDAV', icon: '🌐', needsAuth: true },
+  { value: 'icloud', label: 'iCloud Drive', icon: '☁️', needsAuth: false },
+  { value: 'gdrive', label: 'Google Drive', icon: '🔵', needsAuth: true },
+  { value: 'onedrive', label: 'OneDrive', icon: '🔷', needsAuth: true },
+  { value: 'dropbox', label: 'Dropbox', icon: '📦', needsAuth: true },
+  { value: 's3', label: 'Amazon S3', icon: '🟠', needsAuth: true },
+  { value: 'sftp', label: 'SFTP', icon: '🔒', needsAuth: true },
 ];
 
 export function SyncPage() {
-  const { settings } = useSettingsStore();
-  const isVi = settings.language === 'vi';
+  const { t } = useTranslation();
 
   const [provider, setProvider] = useState<SyncProvider>('local');
   const [remotePath, setRemotePath] = useState('');
@@ -58,18 +65,19 @@ export function SyncPage() {
   });
 
   const configureMutation = useMutation({
-    mutationFn: () => invoke('configure_sync', {
-      args: {
-        provider,
-        remote_path: remotePath,
-        auto_sync: autoSync,
-        sync_interval_seconds: interval,
-        conflict_resolution: conflict,
-        username: username || null,
-        password: password || null,
-        server_url: serverUrl || null,
-      },
-    }),
+    mutationFn: () =>
+      invoke('configure_sync', {
+        args: {
+          provider,
+          remote_path: remotePath,
+          auto_sync: autoSync,
+          sync_interval_seconds: interval,
+          conflict_resolution: conflict,
+          username: username || null,
+          password: password || null,
+          server_url: serverUrl || null,
+        },
+      }),
   });
 
   const syncNowMutation = useMutation({
@@ -80,13 +88,14 @@ export function SyncPage() {
     setTestResult(null);
     try {
       const ok = await invoke<boolean>('test_sync_connection', {
-        provider, remote_path: remotePath,
+        provider,
+        remote_path: remotePath,
         username: username || null,
         password: password || null,
       });
-      setTestResult(ok
-        ? (isVi ? '✅ Kết nối thành công!' : '✅ Connection successful!')
-        : (isVi ? '❌ Kết nối thất bại' : '❌ Connection failed'));
+      setTestResult(
+        ok ? `✅ ${t('syncExt.testSuccess')}` : `❌ ${t('syncExt.testFailed', { error: '' })}`
+      );
     } catch (e: unknown) {
       setTestResult(`❌ ${e instanceof Error ? e.message : String(e)}`);
     }
@@ -97,16 +106,14 @@ export function SyncPage() {
   return (
     <div className="sync-page">
       <div className="sync-header">
-        <h2>{isVi ? '🔄 Đồng bộ' : '🔄 Sync'}</h2>
+        <h2>🔄 {t('sync.title')}</h2>
         {status?.configured && (
           <button
             className="btn btn-primary"
             onClick={() => syncNowMutation.mutate()}
             disabled={syncNowMutation.isPending}
           >
-            {syncNowMutation.isPending
-              ? (isVi ? 'Đang đồng bộ...' : 'Syncing...')
-              : (isVi ? '🔄 Đồng bộ ngay' : '🔄 Sync Now')}
+            {syncNowMutation.isPending ? t('sync.syncing') : `🔄 ${t('sync.syncNow')}`}
           </button>
         )}
       </div>
@@ -116,26 +123,33 @@ export function SyncPage() {
         {status && (
           <div className="sync-status-card">
             <div className="sync-status-row">
-              <span className="sync-status-dot" style={{
-                background: status.configured ? 'var(--color-success)' : 'var(--color-text-tertiary)'
-              }} />
+              <span
+                className="sync-status-dot"
+                style={{
+                  background: status.configured
+                    ? 'var(--color-success)'
+                    : 'var(--color-text-tertiary)',
+                }}
+              />
               <span className="sync-status-label">
-                {status.configured
-                  ? (isVi ? `Đã cấu hình: ${status.provider}` : `Configured: ${status.provider}`)
-                  : (isVi ? 'Chưa cấu hình' : 'Not configured')}
+                {status.configured ? `${t('sync.provider')}: ${status.provider}` : t('common.none')}
               </span>
             </div>
             {status.lastSync && (
-              <p className="sync-last">
-                {isVi ? `Đồng bộ lần cuối: ${status.lastSync}` : `Last sync: ${status.lastSync}`}
-              </p>
+              <p className="sync-last">{t('sync.lastSync', { time: status.lastSync })}</p>
             )}
             {syncNowMutation.data && (
-              <p className="sync-result" style={{
-                color: syncNowMutation.data.status === 'success' ? 'var(--color-success)' : 'var(--color-danger)'
-              }}>
+              <p
+                className="sync-result"
+                style={{
+                  color:
+                    syncNowMutation.data.status === 'success'
+                      ? 'var(--color-success)'
+                      : 'var(--color-danger)',
+                }}
+              >
                 {syncNowMutation.data.status === 'success'
-                  ? (isVi ? '✅ Đồng bộ thành công' : '✅ Sync successful')
+                  ? `✅ ${t('sync.syncSuccess')}`
                   : `❌ ${syncNowMutation.data.error}`}
               </p>
             )}
@@ -144,8 +158,8 @@ export function SyncPage() {
 
         {/* Provider selection */}
         <section className="sync-section">
-          <h3 className="sync-section-title">{isVi ? 'Nhà cung cấp' : 'Provider'}</h3>
-          <div className="provider-grid" role="radiogroup" aria-label={isVi ? 'Chọn nhà cung cấp' : 'Select provider'}>
+          <h3 className="sync-section-title">{t('sync.provider')}</h3>
+          <div className="provider-grid" role="radiogroup" aria-label={t('sync.provider')}>
             {PROVIDERS.map(p => (
               <button
                 key={p.value}
@@ -155,7 +169,7 @@ export function SyncPage() {
                 onClick={() => setProvider(p.value)}
               >
                 <span className="provider-icon">{p.icon}</span>
-                <span className="provider-label">{isVi ? p.labelVi : p.labelEn}</span>
+                <span className="provider-label">{p.label}</span>
               </button>
             ))}
           </div>
@@ -163,13 +177,11 @@ export function SyncPage() {
 
         {/* Remote path */}
         <section className="sync-section">
-          <h3 className="sync-section-title">
-            {isVi ? 'Đường dẫn từ xa' : 'Remote Path'}
-          </h3>
+          <h3 className="sync-section-title">{t('sync.remotePath')}</h3>
           {selectedProvider.needsAuth && (
             <div className="sync-form-row">
               <label className="sync-label" htmlFor="server-url">
-                {isVi ? 'URL máy chủ' : 'Server URL'}
+                {t('syncExt.webdavUrl')}
               </label>
               <input
                 id="server-url"
@@ -183,9 +195,7 @@ export function SyncPage() {
           )}
           <div className="sync-form-row">
             <label className="sync-label" htmlFor="remote-path">
-              {provider === 'local'
-                ? (isVi ? 'Đường dẫn thư mục' : 'Folder path')
-                : (isVi ? 'Đường dẫn tệp từ xa' : 'Remote file path')}
+              {provider === 'local' ? t('syncExt.localPath') : t('sync.remotePath')}
             </label>
             <input
               id="remote-path"
@@ -201,7 +211,7 @@ export function SyncPage() {
             <>
               <div className="sync-form-row">
                 <label className="sync-label" htmlFor="sync-user">
-                  {isVi ? 'Tên đăng nhập' : 'Username'}
+                  {t('syncExt.webdavUsername')}
                 </label>
                 <input
                   id="sync-user"
@@ -214,7 +224,7 @@ export function SyncPage() {
               </div>
               <div className="sync-form-row">
                 <label className="sync-label" htmlFor="sync-pass">
-                  {isVi ? 'Mật khẩu' : 'Password'}
+                  {t('syncExt.webdavPassword')}
                 </label>
                 <input
                   id="sync-pass"
@@ -230,13 +240,16 @@ export function SyncPage() {
 
           <div className="sync-actions">
             <button className="btn btn-secondary" onClick={handleTestConnection}>
-              {isVi ? '🔌 Kiểm tra kết nối' : '🔌 Test Connection'}
+              🔌 {t('syncExt.testConnection')}
             </button>
           </div>
           {testResult && (
-            <p className="sync-test-result" style={{
-              color: testResult.startsWith('✅') ? 'var(--color-success)' : 'var(--color-danger)'
-            }}>
+            <p
+              className="sync-test-result"
+              style={{
+                color: testResult.startsWith('✅') ? 'var(--color-success)' : 'var(--color-danger)',
+              }}
+            >
               {testResult}
             </p>
           )}
@@ -244,12 +257,12 @@ export function SyncPage() {
 
         {/* Options */}
         <section className="sync-section">
-          <h3 className="sync-section-title">{isVi ? 'Tùy chọn' : 'Options'}</h3>
+          <h3 className="sync-section-title">{t('settings.advanced')}</h3>
 
           <div className="sync-toggle-row">
             <div>
-              <p className="sync-toggle-label">{isVi ? 'Tự động đồng bộ' : 'Auto sync'}</p>
-              <p className="sync-toggle-desc">{isVi ? 'Đồng bộ định kỳ khi kho đang mở' : 'Periodically sync while vault is open'}</p>
+              <p className="sync-toggle-label">{t('sync.autoSync')}</p>
+              <p className="sync-toggle-desc">{t('sync.syncInterval')}</p>
             </div>
             <button
               role="switch"
@@ -265,7 +278,7 @@ export function SyncPage() {
           {autoSync && (
             <div className="sync-form-row">
               <label className="sync-label" htmlFor="sync-interval">
-                {isVi ? 'Chu kỳ (giây)' : 'Interval (seconds)'}
+                {t('sync.syncInterval')}
               </label>
               <select
                 id="sync-interval"
@@ -273,17 +286,17 @@ export function SyncPage() {
                 value={interval}
                 onChange={e => setInterval(Number(e.target.value))}
               >
-                <option value={60}>1 {isVi ? 'phút' : 'minute'}</option>
-                <option value={300}>5 {isVi ? 'phút' : 'minutes'}</option>
-                <option value={900}>15 {isVi ? 'phút' : 'minutes'}</option>
-                <option value={3600}>1 {isVi ? 'giờ' : 'hour'}</option>
+                <option value={60}>1 min</option>
+                <option value={300}>5 min</option>
+                <option value={900}>15 min</option>
+                <option value={3600}>1 hr</option>
               </select>
             </div>
           )}
 
           <div className="sync-form-row">
             <label className="sync-label" htmlFor="conflict-res">
-              {isVi ? 'Xử lý xung đột' : 'Conflict resolution'}
+              {t('importExport.conflictStrategy')}
             </label>
             <select
               id="conflict-res"
@@ -291,10 +304,10 @@ export function SyncPage() {
               value={conflict}
               onChange={e => setConflict(e.target.value)}
             >
-              <option value="merge">{isVi ? 'Hợp nhất (khuyến nghị)' : 'Merge (recommended)'}</option>
-              <option value="keepLocal">{isVi ? 'Giữ bản cục bộ' : 'Keep local'}</option>
-              <option value="keepRemote">{isVi ? 'Giữ bản từ xa' : 'Keep remote'}</option>
-              <option value="askUser">{isVi ? 'Hỏi tôi' : 'Ask me'}</option>
+              <option value="merge">{t('sync.merge')}</option>
+              <option value="keepLocal">{t('sync.keepLocal')}</option>
+              <option value="keepRemote">{t('sync.keepRemote')}</option>
+              <option value="askUser">{t('common.confirm')}</option>
             </select>
           </div>
         </section>
@@ -305,14 +318,10 @@ export function SyncPage() {
           onClick={() => configureMutation.mutate()}
           disabled={configureMutation.isPending || !remotePath.trim()}
         >
-          {configureMutation.isPending
-            ? (isVi ? 'Đang lưu...' : 'Saving...')
-            : (isVi ? '💾 Lưu cấu hình' : '💾 Save Configuration')}
+          {configureMutation.isPending ? t('common.loading') : `💾 ${t('common.save')}`}
         </button>
         {configureMutation.isSuccess && (
-          <p style={{ color: 'var(--color-success)', fontSize: 13 }}>
-            ✅ {isVi ? 'Đã lưu cấu hình đồng bộ' : 'Sync configuration saved'}
-          </p>
+          <p style={{ color: 'var(--color-success)', fontSize: 13 }}>✅ {t('sync.syncSuccess')}</p>
         )}
       </div>
 

@@ -7,7 +7,7 @@
  *
  * No competitor (KeePass, KeePassXC, Keepassium, KeePass2Android) has this feature.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { invoke } from '@tauri-apps/api/core';
@@ -24,6 +24,14 @@ export function SecurityPage() {
   const [migrating, setMigrating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Load real PQC status from vault header on mount
+  useEffect(() => {
+    if (!meta) return;
+    invoke<boolean>('check_pqc_status')
+      .then(isPqc => setPqcStatus(isPqc ? 'hybrid' : 'classical'))
+      .catch(() => setPqcStatus('classical'));
+  }, [meta]);
 
   const handleEnablePqc = async () => {
     setMigrating(true);

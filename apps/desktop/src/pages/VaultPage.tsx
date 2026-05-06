@@ -6,6 +6,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
+import { useTranslation } from 'react-i18next';
 import { useVaultStore, type EntryDto } from '../store/vault';
 import { useSettingsStore } from '../store/settings';
 import { EntryRow } from '../components/EntryRow';
@@ -21,7 +22,7 @@ export function VaultPage() {
   const { settings } = useSettingsStore();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const isVi = settings.language === 'vi';
+  const { t } = useTranslation();
 
   const [selectedUuids, setSelectedUuids] = useState<Set<string>>(new Set());
   const [sortField, setSortField] = useState<SortField>('title');
@@ -218,11 +219,11 @@ export function VaultPage() {
   };
 
   const FILTERS = [
-    { id: 'all' as FilterType, label: isVi ? 'Tất cả' : 'All' },
-    { id: 'favorites' as FilterType, label: isVi ? 'Yêu thích' : 'Favorites' },
-    { id: 'otp' as FilterType, label: 'OTP' },
-    { id: 'expiring' as FilterType, label: isVi ? 'Sắp hết hạn' : 'Expiring' },
-    { id: 'noPassword' as FilterType, label: isVi ? 'Không có MK' : 'No Password' },
+    { id: 'all' as FilterType, label: t('vaultFilter.all') },
+    { id: 'favorites' as FilterType, label: t('vaultFilter.favorites') },
+    { id: 'otp' as FilterType, label: t('vaultFilter.withOtp') },
+    { id: 'expiring' as FilterType, label: t('vaultFilter.expiring') },
+    { id: 'noPassword' as FilterType, label: t('vaultFilter.noPassword') },
   ];
 
   return (
@@ -236,15 +237,11 @@ export function VaultPage() {
       {/* Toolbar */}
       <div className="vault-toolbar">
         <h2 className="vault-toolbar-title">
-          {searchQuery
-            ? `${isVi ? 'Kết quả' : 'Results'}: "${searchQuery}"`
-            : isVi
-              ? 'Tất cả mục'
-              : 'All Entries'}
+          {searchQuery ? `${t('common.search')}: "${searchQuery}"` : t('group.allEntries')}
         </h2>
         <div className="vault-toolbar-actions">
           {/* Filter chips */}
-          <div className="filter-chips" role="group" aria-label="Filter entries">
+          <div className="filter-chips" role="group" aria-label={t('entry.sortBy')}>
             {FILTERS.map(f => (
               <button
                 key={f.id}
@@ -258,34 +255,34 @@ export function VaultPage() {
           </div>
 
           {/* Sort controls */}
-          <div className="sort-controls" role="group" aria-label="Sort entries">
+          <div className="sort-controls" role="group" aria-label={t('entry.sortBy')}>
             <button
               className={`sort-btn ${sortField === 'title' ? 'active' : ''}`}
               onClick={() => handleSort('title')}
             >
-              {isVi ? 'Tiêu đề' : 'Title'} <SortIcon field="title" />
+              {t('entry.sortByTitle')} <SortIcon field="title" />
             </button>
             <button
               className={`sort-btn ${sortField === 'modified' ? 'active' : ''}`}
               onClick={() => handleSort('modified')}
             >
-              {isVi ? 'Sửa lúc' : 'Modified'} <SortIcon field="modified" />
+              {t('entry.sortByModified')} <SortIcon field="modified" />
             </button>
           </div>
 
           <span className="entry-count" aria-live="polite">
             {filteredEntries.length}
             {filteredEntries.length !== entries.length && `/${entries.length}`}{' '}
-            {isVi ? 'mục' : 'entries'}
-            {selectedUuids.size > 0 && ` · ${selectedUuids.size} ${isVi ? 'đã chọn' : 'selected'}`}
+            {t('vault.statistics_entries', { count: '' }).trim()}
+            {selectedUuids.size > 0 && ` · ${t('bulk.selected', { count: selectedUuids.size })}`}
           </span>
 
           {/* Preview toggle */}
           <button
             className={`icon-btn${showPreview ? ' active' : ''}`}
             onClick={() => setShowPreview(v => !v)}
-            title={isVi ? 'Bật/tắt xem trước' : 'Toggle preview'}
-            aria-label={isVi ? 'Bật/tắt xem trước' : 'Toggle preview pane'}
+            title={t('common.info')}
+            aria-label={t('common.info')}
             aria-pressed={showPreview}
           >
             ⊞
@@ -294,10 +291,10 @@ export function VaultPage() {
           <button
             className="btn btn-primary"
             onClick={() => navigate('/vault/entry/new')}
-            aria-label={isVi ? 'Tạo mục mới (N)' : 'Create new entry (N)'}
+            aria-label={`${t('entry.new')} (N)`}
             title="N"
           >
-            + {isVi ? 'Mục mới' : 'New Entry'}
+            + {t('entry.new')}
           </button>
         </div>
       </div>
@@ -310,29 +307,23 @@ export function VaultPage() {
         <div
           className="entry-list"
           role="list"
-          aria-label={isVi ? 'Danh sách mục' : 'Entry list'}
+          aria-label={t('entry.searchPlaceholder')}
           aria-multiselectable="true"
         >
           {isLoading ? (
             <div className="entry-list-empty">
               <span style={{ fontSize: 32 }}>⏳</span>
-              <p>{isVi ? 'Đang tải...' : 'Loading...'}</p>
+              <p>{t('common.loading')}</p>
             </div>
           ) : sortedEntries.length === 0 ? (
             <div className="entry-list-empty">
               <span style={{ fontSize: 48 }}>🔑</span>
               <p className="empty-state-title">
-                {searchQuery
-                  ? isVi
-                    ? 'Không tìm thấy kết quả'
-                    : 'No results found'
-                  : isVi
-                    ? 'Không có mục nào'
-                    : 'No entries'}
+                {searchQuery ? t('entry.noEntries') : t('entry.noEntries')}
               </p>
               {!searchQuery && (
                 <button className="btn btn-primary" onClick={() => navigate('/vault/entry/new')}>
-                  {isVi ? 'Tạo mục đầu tiên' : 'Create first entry'}
+                  {t('entry.new')}
                 </button>
               )}
             </div>
@@ -387,11 +378,7 @@ export function VaultPage() {
 
         {/* Preview pane */}
         {showPreview && previewUuid && previewEntry && (
-          <div
-            className="preview-pane"
-            role="complementary"
-            aria-label={isVi ? 'Xem trước mục' : 'Entry preview'}
-          >
+          <div className="preview-pane" role="complementary" aria-label={t('common.info')}>
             {/* Preview header */}
             <div className="preview-header">
               <h3 className="preview-title">{previewEntry.title}</h3>
@@ -399,14 +386,14 @@ export function VaultPage() {
                 <button
                   className="btn btn-secondary btn-sm"
                   onClick={() => navigate(`/vault/entry/${previewUuid}`)}
-                  aria-label={isVi ? 'Mở đầy đủ' : 'Open full view'}
+                  aria-label={t('common.ok')}
                 >
-                  {isVi ? 'Mở' : 'Open'}
+                  {t('common.ok')}
                 </button>
                 <button
                   className="icon-btn"
                   onClick={() => setPreviewUuid(null)}
-                  aria-label={isVi ? 'Đóng xem trước' : 'Close preview'}
+                  aria-label={t('common.close')}
                 >
                   ✕
                 </button>
@@ -418,7 +405,7 @@ export function VaultPage() {
               {/* Username */}
               {previewEntry.username && (
                 <PreviewField
-                  label={isVi ? 'Tên đăng nhập' : 'Username'}
+                  label={t('entry.username')}
                   value={previewEntry.username}
                   onCopy={() => copyToClipboard(previewEntry.username, 'username')}
                   copied={copiedField === 'username'}
@@ -427,7 +414,7 @@ export function VaultPage() {
 
               {/* Password */}
               <div className="preview-field">
-                <span className="preview-field-label">{isVi ? 'Mật khẩu' : 'Password'}</span>
+                <span className="preview-field-label">{t('entry.password')}</span>
                 <div className="preview-field-row">
                   <span className="preview-field-value" style={{ fontFamily: 'monospace' }}>
                     {showPreviewPassword ? previewPassword : '••••••••••••'}
@@ -440,7 +427,9 @@ export function VaultPage() {
                           ? () => setShowPreviewPassword(false)
                           : revealPreviewPassword
                       }
-                      aria-label={showPreviewPassword ? 'Hide' : 'Show'}
+                      aria-label={
+                        showPreviewPassword ? t('entry.hidePassword') : t('entry.showPassword')
+                      }
                     >
                       {showPreviewPassword ? '🙈' : '👁'}
                     </button>
@@ -449,7 +438,7 @@ export function VaultPage() {
                       onClick={() =>
                         copyToClipboard(showPreviewPassword ? previewPassword : '', 'password')
                       }
-                      aria-label={isVi ? 'Sao chép mật khẩu' : 'Copy password'}
+                      aria-label={t('entry.copyPassword')}
                     >
                       {copiedField === 'password' ? '✓' : '⎘'}
                     </button>
@@ -460,7 +449,7 @@ export function VaultPage() {
               {/* URL */}
               {previewEntry.url && (
                 <div className="preview-field">
-                  <span className="preview-field-label">URL</span>
+                  <span className="preview-field-label">{t('entry.url')}</span>
                   <div className="preview-field-row">
                     <a
                       href={previewEntry.url}
@@ -473,7 +462,7 @@ export function VaultPage() {
                     <button
                       className={`icon-btn${copiedField === 'url' ? ' copied' : ''}`}
                       onClick={() => copyToClipboard(previewEntry.url, 'url')}
-                      aria-label="Copy URL"
+                      aria-label={t('entry.copyUrl')}
                     >
                       {copiedField === 'url' ? '✓' : '⎘'}
                     </button>
@@ -484,15 +473,15 @@ export function VaultPage() {
               {/* OTP */}
               {previewEntry.hasOtp && previewOtp && (
                 <div className="preview-field">
-                  <span className="preview-field-label">OTP</span>
+                  <span className="preview-field-label">{t('otp.title')}</span>
                   <OtpDisplay
                     otp={previewOtp}
                     onCopy={code => copyToClipboard(code, 'otp')}
                     copied={copiedField === 'otp'}
                     compact
-                    label="OTP"
-                    expiresInLabel={isVi ? 'hết hạn sau' : 'expires in'}
-                    copyLabel={isVi ? 'Sao chép OTP' : 'Copy OTP'}
+                    label={t('otp.title')}
+                    expiresInLabel={t('otp.refreshIn', { seconds: '' }).split('{{')[0].trim()}
+                    copyLabel={t('entry.copyOtp')}
                   />
                 </div>
               )}
@@ -500,7 +489,7 @@ export function VaultPage() {
               {/* Notes */}
               {(previewEntry as typeof previewEntry & { notes?: string }).notes && (
                 <div className="preview-field">
-                  <span className="preview-field-label">{isVi ? 'Ghi chú' : 'Notes'}</span>
+                  <span className="preview-field-label">{t('entry.notes')}</span>
                   <p className="preview-notes">
                     {(previewEntry as typeof previewEntry & { notes?: string }).notes}
                   </p>
@@ -510,7 +499,7 @@ export function VaultPage() {
               {/* Tags */}
               {previewEntry.tags?.length > 0 && (
                 <div className="preview-field">
-                  <span className="preview-field-label">{isVi ? 'Thẻ' : 'Tags'}</span>
+                  <span className="preview-field-label">{t('entry.tags')}</span>
                   <div className="preview-tags">
                     {previewEntry.tags.map(tag => (
                       <span key={tag} className="preview-tag">
@@ -524,29 +513,27 @@ export function VaultPage() {
               {/* Badges */}
               <div className="preview-badges">
                 {previewEntry.hasOtp && (
-                  <span className="preview-badge preview-badge--otp">OTP</span>
+                  <span className="preview-badge preview-badge--otp">{t('otp.title')}</span>
                 )}
                 {previewEntry.hasPasskey && (
-                  <span className="preview-badge preview-badge--passkey">Passkey</span>
+                  <span className="preview-badge preview-badge--passkey">{t('passkey.title')}</span>
                 )}
                 {previewEntry.hasSshKey && (
-                  <span className="preview-badge preview-badge--ssh">SSH</span>
+                  <span className="preview-badge preview-badge--ssh">{t('ssh.title')}</span>
                 )}
                 {previewEntry.isExpired && (
-                  <span className="preview-badge preview-badge--expired">
-                    {isVi ? 'Hết hạn' : 'Expired'}
-                  </span>
+                  <span className="preview-badge preview-badge--expired">{t('entry.expired')}</span>
                 )}
               </div>
 
               {/* Metadata */}
               <div className="preview-meta">
                 <span>
-                  {isVi ? 'Sửa' : 'Modified'}:{' '}
+                  {t('entry.sortByModified')}:{' '}
                   {new Date(previewEntry.modifiedAt).toLocaleDateString()}
                 </span>
                 <span>
-                  {isVi ? 'Tạo' : 'Created'}:{' '}
+                  {t('entry.sortByCreated')}:{' '}
                   {new Date(previewEntry.createdAt).toLocaleDateString()}
                 </span>
               </div>

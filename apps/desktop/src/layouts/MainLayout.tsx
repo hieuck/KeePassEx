@@ -3,8 +3,8 @@
  */
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useVaultStore } from '../store/vault';
-import { useSettingsStore } from '../store/settings';
 import { GroupTree } from '../components/GroupTree';
 import { SearchBar } from '../components/SearchBar';
 
@@ -14,9 +14,8 @@ interface MainLayoutProps {
 
 export function MainLayout({ onOpenPalette }: MainLayoutProps) {
   const { meta, lockVault, closeVault, setSearchQuery } = useVaultStore();
-  const { settings } = useSettingsStore();
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const isVi = settings.language === 'vi';
 
   const handleLock = async () => {
     await lockVault();
@@ -24,32 +23,32 @@ export function MainLayout({ onOpenPalette }: MainLayoutProps) {
   };
 
   const navItems = [
-    { to: '/vault', icon: '🔑', labelEn: 'Vault', labelVi: 'Kho mật khẩu' },
-    { to: '/health', icon: '🛡️', labelEn: 'Health', labelVi: 'Sức khỏe' },
-    { to: '/breach', icon: '🔍', labelEn: 'Breach', labelVi: 'Rò rỉ' },
-    { to: '/generator', icon: '⚡', labelEn: 'Generator', labelVi: 'Tạo mật khẩu' },
-    { to: '/team', icon: '👥', labelEn: 'Team', labelVi: 'Nhóm' },
-    { to: '/import-export', icon: '📥', labelEn: 'Import/Export', labelVi: 'Nhập/Xuất' },
-    { to: '/sync', icon: '🔄', labelEn: 'Sync', labelVi: 'Đồng bộ' },
-    { to: '/emergency-access', icon: '🆘', labelEn: 'Emergency Access', labelVi: 'Khẩn cấp' },
-    { to: '/plugins', icon: '🔧', labelEn: 'Plugins', labelVi: 'Plugin' },
-    { to: '/settings', icon: '⚙️', labelEn: 'Settings', labelVi: 'Cài đặt' },
+    { to: '/vault', icon: '🔑', label: t('vault.open') },
+    { to: '/health', icon: '🛡️', label: t('health.title') },
+    { to: '/breach', icon: '🔍', label: t('breach.title') },
+    { to: '/generator', icon: '⚡', label: t('generator.title') },
+    { to: '/team', icon: '👥', label: t('team.title') },
+    { to: '/import-export', icon: '📥', label: `${t('common.import')}/${t('common.export')}` },
+    { to: '/sync', icon: '🔄', label: t('sync.title') },
+    { to: '/emergency-access', icon: '🆘', label: t('emergencyAccess.title') },
+    { to: '/plugins', icon: '🔧', label: t('plugins.title') },
+    { to: '/settings', icon: '⚙️', label: t('settings.title') },
   ];
 
   const settingsItems = [
-    { to: '/settings/analytics', icon: '📊', labelEn: 'Analytics', labelVi: 'Phân tích' },
-    { to: '/settings/steganography', icon: '🕵️', labelEn: 'Steganography', labelVi: 'Ẩn dữ liệu' },
-    { to: '/settings/backup', icon: '💾', labelEn: 'Backup', labelVi: 'Sao lưu' },
-    { to: '/settings/audit-log', icon: '📋', labelEn: 'Audit Log', labelVi: 'Nhật ký' },
-    { to: '/settings/password-policy', icon: '🔒', labelEn: 'Policies', labelVi: 'Chính sách' },
-    { to: '/settings/statistics', icon: '📈', labelEn: 'Statistics', labelVi: 'Thống kê' },
-    { to: '/vault/compare', icon: '⚖️', labelEn: 'Compare', labelVi: 'So sánh' },
+    { to: '/settings/analytics', icon: '📊', label: t('analytics.title') },
+    { to: '/settings/steganography', icon: '🕵️', label: t('steganography.title') },
+    { to: '/settings/backup', icon: '💾', label: t('scheduledBackup.title') },
+    { to: '/settings/audit-log', icon: '📋', label: t('auditLog.title') },
+    { to: '/settings/password-policy', icon: '🔒', label: t('passwordPolicy.title') },
+    { to: '/settings/statistics', icon: '📈', label: t('statistics.title') },
+    { to: '/vault/compare', icon: '⚖️', label: t('vaultCompare.title') },
   ];
 
   return (
     <div className="main-layout">
       {/* Sidebar */}
-      <aside className="sidebar" role="navigation" aria-label="Main navigation">
+      <aside className="sidebar" role="navigation" aria-label={t('settings.general')}>
         {/* Vault name + palette trigger */}
         <div className="sidebar-header">
           <span className="vault-icon">🔐</span>
@@ -57,7 +56,7 @@ export function MainLayout({ onOpenPalette }: MainLayoutProps) {
           <button
             className="palette-trigger"
             onClick={onOpenPalette}
-            title={isVi ? 'Bảng lệnh (Ctrl+K)' : 'Command palette (Ctrl+K)'}
+            title={`${t('common.search')} (Ctrl+K)`}
             aria-label="Open command palette"
           >
             ⌘K
@@ -66,7 +65,7 @@ export function MainLayout({ onOpenPalette }: MainLayoutProps) {
 
         {/* Search */}
         <div className="sidebar-search">
-          <SearchBar placeholder={isVi ? 'Tìm kiếm...' : 'Search...'} onChange={setSearchQuery} />
+          <SearchBar placeholder={t('entry.searchPlaceholder')} onChange={setSearchQuery} />
         </div>
 
         {/* Group tree */}
@@ -83,7 +82,7 @@ export function MainLayout({ onOpenPalette }: MainLayoutProps) {
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
             >
               <span aria-hidden="true">{item.icon}</span>
-              <span>{isVi ? item.labelVi : item.labelEn}</span>
+              <span>{item.label}</span>
             </NavLink>
           ))}
         </nav>
@@ -92,7 +91,7 @@ export function MainLayout({ onOpenPalette }: MainLayoutProps) {
         <details className="sidebar-advanced">
           <summary className="sidebar-advanced-toggle">
             <span aria-hidden="true">🔧</span>
-            <span>{isVi ? 'Nâng cao' : 'Advanced'}</span>
+            <span>{t('advanced.title')}</span>
           </summary>
           <nav className="sidebar-subnav" aria-label="Advanced settings">
             {settingsItems.map(item => (
@@ -102,7 +101,7 @@ export function MainLayout({ onOpenPalette }: MainLayoutProps) {
                 className={({ isActive }) => `nav-item nav-item-sub ${isActive ? 'active' : ''}`}
               >
                 <span aria-hidden="true">{item.icon}</span>
-                <span>{isVi ? item.labelVi : item.labelEn}</span>
+                <span>{item.label}</span>
               </NavLink>
             ))}
           </nav>
@@ -113,8 +112,8 @@ export function MainLayout({ onOpenPalette }: MainLayoutProps) {
           <button
             className="btn-icon"
             onClick={handleLock}
-            title={isVi ? 'Khóa kho' : 'Lock vault'}
-            aria-label={isVi ? 'Khóa kho' : 'Lock vault'}
+            title={t('vault.lock')}
+            aria-label={t('vault.lock')}
           >
             🔒
           </button>
@@ -122,8 +121,8 @@ export function MainLayout({ onOpenPalette }: MainLayoutProps) {
           <button
             className="btn-icon"
             onClick={closeVault}
-            title={isVi ? 'Đóng kho' : 'Close vault'}
-            aria-label={isVi ? 'Đóng kho' : 'Close vault'}
+            title={t('vault.close')}
+            aria-label={t('vault.close')}
           >
             ✕
           </button>

@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { open, save } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
-import { useSettingsStore } from '../store/settings';
+import { useTranslation } from 'react-i18next';
 
 export interface Attachment {
   name: string;
@@ -32,12 +32,29 @@ function formatBytes(bytes: number): string {
 function getFileIcon(name: string): string {
   const ext = name.split('.').pop()?.toLowerCase() ?? '';
   const icons: Record<string, string> = {
-    pdf: '📄', png: '🖼️', jpg: '🖼️', jpeg: '🖼️', gif: '🖼️', svg: '🖼️',
-    txt: '📝', md: '📝', doc: '📝', docx: '📝',
-    xls: '📊', xlsx: '📊', csv: '📊',
-    zip: '📦', tar: '📦', gz: '📦',
-    key: '🔑', pem: '🔑', p12: '🔑', pfx: '🔑',
-    mp3: '🎵', mp4: '🎬', mov: '🎬',
+    pdf: '📄',
+    png: '🖼️',
+    jpg: '🖼️',
+    jpeg: '🖼️',
+    gif: '🖼️',
+    svg: '🖼️',
+    txt: '📝',
+    md: '📝',
+    doc: '📝',
+    docx: '📝',
+    xls: '📊',
+    xlsx: '📊',
+    csv: '📊',
+    zip: '📦',
+    tar: '📦',
+    gz: '📦',
+    key: '🔑',
+    pem: '🔑',
+    p12: '🔑',
+    pfx: '🔑',
+    mp3: '🎵',
+    mp4: '🎬',
+    mov: '🎬',
   };
   return icons[ext] ?? '📎';
 }
@@ -49,20 +66,17 @@ export function AttachmentViewer({
   onAdd,
   onRemove,
 }: AttachmentViewerProps) {
-  const { settings } = useSettingsStore();
-  const isVi = settings.language === 'vi';
+  const { t } = useTranslation();
   const [saving, setSaving] = useState<string | null>(null);
 
   const handleAdd = async () => {
     const selected = await open({ multiple: false });
     if (!selected || typeof selected !== 'string') return;
-
     try {
-      // Read file via Tauri fs plugin
       const data = await invoke<number[]>('read_file_bytes', { path: selected });
       const name = selected.split('/').pop() ?? selected.split('\\').pop() ?? 'attachment';
       onAdd?.(name, data);
-    } catch (e: unknown) {
+    } catch (e) {
       console.error('Failed to read attachment:', e);
     }
   };
@@ -70,26 +84,21 @@ export function AttachmentViewer({
   const handleSave = async (attachment: Attachment) => {
     setSaving(attachment.name);
     try {
-      const savePath = await save({
-        defaultPath: attachment.name,
-      });
+      const savePath = await save({ defaultPath: attachment.name });
       if (!savePath) return;
-
       await invoke('save_attachment', {
         entryUuid,
         attachmentName: attachment.name,
         outputPath: savePath,
       });
-    } catch (e: unknown) {
+    } catch (e) {
       console.error('Failed to save attachment:', e);
     } finally {
       setSaving(null);
     }
   };
 
-  if (attachments.length === 0 && readOnly) {
-    return null;
-  }
+  if (attachments.length === 0 && readOnly) return null;
 
   return (
     <div className="att-container">
@@ -97,7 +106,9 @@ export function AttachmentViewer({
         <div className="att-list">
           {attachments.map(att => (
             <div key={att.name} className="att-item">
-              <span className="att-icon" aria-hidden="true">{getFileIcon(att.name)}</span>
+              <span className="att-icon" aria-hidden="true">
+                {getFileIcon(att.name)}
+              </span>
               <div className="att-info">
                 <span className="att-name">{att.name}</span>
                 {att.size !== undefined && (
@@ -109,7 +120,7 @@ export function AttachmentViewer({
                   className="btn-icon"
                   onClick={() => handleSave(att)}
                   disabled={saving === att.name}
-                  title={isVi ? 'Lưu tệp' : 'Save file'}
+                  title={t('common.save')}
                   aria-label={`Save ${att.name}`}
                 >
                   {saving === att.name ? '⏳' : '💾'}
@@ -118,14 +129,9 @@ export function AttachmentViewer({
                   <button
                     className="btn-icon"
                     onClick={() => {
-                      if (confirm(isVi
-                        ? `Xóa tệp đính kèm "${att.name}"?`
-                        : `Remove attachment "${att.name}"?`
-                      )) {
-                        onRemove(att.name);
-                      }
+                      if (confirm(`${t('common.delete')} "${att.name}"?`)) onRemove(att.name);
                     }}
-                    title={isVi ? 'Xóa tệp đính kèm' : 'Remove attachment'}
+                    title={t('entry.attachments')}
                     aria-label={`Remove ${att.name}`}
                   >
                     🗑
@@ -136,35 +142,23 @@ export function AttachmentViewer({
           ))}
         </div>
       )}
-
       {!readOnly && (
         <button className="btn btn-secondary att-add-btn" onClick={handleAdd}>
-          📎 {isVi ? 'Thêm tệp đính kèm' : 'Add Attachment'}
+          📎 {t('entry.addAttachment')}
         </button>
       )}
-
-      {attachments.length === 0 && !readOnly && (
-        <p className="att-empty">
-          {isVi ? 'Chưa có tệp đính kèm' : 'No attachments'}
-        </p>
-      )}
-
+      {attachments.length === 0 && !readOnly && <p className="att-empty">{t('common.none')}</p>}
       <style>{`
-        .att-container { display: flex; flex-direction: column; gap: var(--space-sm); }
-        .att-list { display: flex; flex-direction: column; gap: 4px; }
-        .att-item {
-          display: flex; align-items: center; gap: var(--space-sm);
-          padding: var(--space-sm) var(--space-md);
-          background: var(--color-bg-secondary); border: 1px solid var(--color-border);
-          border-radius: var(--radius-sm);
-        }
-        .att-icon { font-size: 18px; flex-shrink: 0; }
-        .att-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-        .att-name { font-size: 13px; font-weight: 500; color: var(--color-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .att-size { font-size: 11px; color: var(--color-text-tertiary); }
-        .att-actions { display: flex; gap: 2px; flex-shrink: 0; }
-        .att-add-btn { align-self: flex-start; font-size: 13px; }
-        .att-empty { font-size: 13px; color: var(--color-text-tertiary); }
+        .att-container { display:flex; flex-direction:column; gap:var(--space-sm); }
+        .att-list { display:flex; flex-direction:column; gap:4px; }
+        .att-item { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-sm) var(--space-md); background:var(--color-bg-secondary); border:1px solid var(--color-border); border-radius:var(--radius-sm); }
+        .att-icon { font-size:18px; flex-shrink:0; }
+        .att-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+        .att-name { font-size:13px; font-weight:500; color:var(--color-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .att-size { font-size:11px; color:var(--color-text-tertiary); }
+        .att-actions { display:flex; gap:2px; flex-shrink:0; }
+        .att-add-btn { align-self:flex-start; font-size:13px; }
+        .att-empty { font-size:13px; color:var(--color-text-tertiary); }
       `}</style>
     </div>
   );

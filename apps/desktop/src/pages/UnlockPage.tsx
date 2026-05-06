@@ -3,18 +3,17 @@
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useVaultStore } from '../store/vault';
-import { useSettingsStore } from '../store/settings';
 
 export function UnlockPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { unlockVault, meta, closeVault } = useVaultStore();
-  const { settings } = useSettingsStore();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
-  const isVi = settings.language === 'vi';
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -30,7 +29,7 @@ export function UnlockPage() {
       await unlockVault(password);
       navigate('/vault');
     } catch {
-      setError(isVi ? 'Sai mật khẩu chính. Vui lòng thử lại.' : 'Wrong master password. Please try again.');
+      setError(t('vault.wrongPassword'));
       setPassword('');
       inputRef.current?.focus();
     } finally {
@@ -49,15 +48,13 @@ export function UnlockPage() {
         <div className="unlock-hero">
           <span className="unlock-icon">🔒</span>
           <h1 className="unlock-title">KeePassEx</h1>
-          {meta && (
-            <p className="unlock-vault-name">{meta.name}</p>
-          )}
+          {meta && <p className="unlock-vault-name">{meta.name}</p>}
         </div>
 
         <form onSubmit={handleUnlock} className="unlock-form">
           <div className="form-group">
             <label htmlFor="master-password" className="form-label">
-              {isVi ? 'Mật khẩu chính' : 'Master Password'}
+              {t('vault.masterPassword')}
             </label>
             <input
               id="master-password"
@@ -66,7 +63,7 @@ export function UnlockPage() {
               className={`form-input ${error ? 'form-input-error' : ''}`}
               value={password}
               onChange={e => setPassword(e.target.value)}
-              placeholder={isVi ? 'Nhập mật khẩu chính...' : 'Enter master password...'}
+              placeholder={t('vault.masterPassword')}
               autoComplete="current-password"
               disabled={loading}
               aria-describedby={error ? 'unlock-error' : undefined}
@@ -83,16 +80,12 @@ export function UnlockPage() {
             className="btn btn-primary btn-lg"
             disabled={loading || !password.trim()}
           >
-            {loading ? (isVi ? 'Đang mở khóa...' : 'Unlocking...') : (isVi ? '🔓 Mở khóa' : '🔓 Unlock')}
+            {loading ? t('vault.unlocking') : `🔓 ${t('vault.unlock')}`}
           </button>
         </form>
 
-        <button
-          className="btn btn-ghost"
-          onClick={handleClose}
-          disabled={loading}
-        >
-          {isVi ? 'Đóng kho' : 'Close Vault'}
+        <button className="btn btn-ghost" onClick={handleClose} disabled={loading}>
+          {t('vault.close')}
         </button>
       </div>
 

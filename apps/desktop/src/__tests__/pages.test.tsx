@@ -121,12 +121,34 @@ describe('WelcomePage', () => {
 
   it('renders feature highlights', () => {
     render(<WelcomePage />, { wrapper: createWrapper() });
-    expect(screen.getByText(/Argon2id/i)).toBeTruthy();
+    // Feature highlights use i18n keys — check for known translated values
+    expect(screen.getByText(/Hardware Key/i)).toBeTruthy();
   });
 
   it('shows tagline', () => {
     render(<WelcomePage />, { wrapper: createWrapper() });
     expect(screen.getByText(/Your passwords, your control/i)).toBeTruthy();
+  });
+
+  it('shows password dialog when open vault is clicked', async () => {
+    const { open } = await import('@tauri-apps/plugin-dialog');
+    vi.mocked(open).mockResolvedValueOnce('/test/vault.kdbx');
+
+    render(<WelcomePage />, { wrapper: createWrapper() });
+    fireEvent.click(screen.getByText(/Open Vault/i));
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/Master Password/i)).toBeTruthy();
+    });
+  });
+
+  it('shows create vault dialog when create is clicked', async () => {
+    render(<WelcomePage />, { wrapper: createWrapper() });
+    fireEvent.click(screen.getByText(/Create New Vault/i));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Vault Name/i)).toBeTruthy();
+    });
   });
 });
 
@@ -247,7 +269,7 @@ describe('BreachPage', () => {
     expect(screen.getByText(/Online/i)).toBeTruthy();
   });
 
-  it('shows no breaches when report is clean', () => {
+  it('shows no breaches when report is clean', async () => {
     const { useBreachStore } = vi.mocked(await import('../store/breach'));
     // Already mocked with null report — no results shown
     render(<BreachPage />, { wrapper: createWrapper() });

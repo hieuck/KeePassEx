@@ -1,10 +1,9 @@
 /**
  * OTP Setup Dialog — desktop
- * Add or edit TOTP/HOTP for an entry
  */
 import React, { useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
-import { useSettingsStore } from '../store/settings';
+import { useTranslation } from 'react-i18next';
 
 interface OtpSetupDialogProps {
   entryUuid: string;
@@ -29,9 +28,7 @@ function isValidBase32(s: string): boolean {
 }
 
 export function OtpSetupDialog({ entryUuid, existingUri, onSave, onClose }: OtpSetupDialogProps) {
-  const { settings } = useSettingsStore();
-  const isVi = settings.language === 'vi';
-
+  const { t } = useTranslation();
   const [mode, setMode] = useState<'manual' | 'uri'>('manual');
   const [secret, setSecret] = useState('');
   const [issuer, setIssuer] = useState('');
@@ -54,31 +51,26 @@ export function OtpSetupDialog({ entryUuid, existingUri, onSave, onClose }: OtpS
       setDigits(parsed.digits);
       setPeriod(parsed.period);
       setMode('manual');
-    } catch (e: unknown) {
+    } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
   };
 
-  const handlePreview = async () => {
+  const handlePreview = () => {
     if (!isValidBase32(secret)) {
-      setError(isVi ? 'Khóa bí mật không hợp lệ (phải là base32)' : 'Invalid secret key (must be base32)');
+      setError(t('otp.invalidSecret'));
       return;
     }
     setError('');
-    // Build URI and generate preview code
     const cleanSecret = secret.toUpperCase().replace(/\s|-/g, '');
-    const testUri = `otpauth://totp/${encodeURIComponent(issuer || 'KeePassEx')}:${encodeURIComponent(account || 'user')}?secret=${cleanSecret}&algorithm=${algorithm}&digits=${digits}&period=${period}`;
-    try {
-      // We can't generate TOTP without saving first, so just show the URI
-      setPreview(testUri);
-    } catch {
-      setPreview(null);
-    }
+    setPreview(
+      `otpauth://totp/${encodeURIComponent(issuer || 'KeePassEx')}:${encodeURIComponent(account || 'user')}?secret=${cleanSecret}&algorithm=${algorithm}&digits=${digits}&period=${period}`
+    );
   };
 
   const handleSave = () => {
     if (!isValidBase32(secret)) {
-      setError(isVi ? 'Khóa bí mật không hợp lệ' : 'Invalid secret key');
+      setError(t('otp.invalidSecret'));
       return;
     }
     const cleanSecret = secret.toUpperCase().replace(/\s|-/g, '');
@@ -87,14 +79,20 @@ export function OtpSetupDialog({ entryUuid, existingUri, onSave, onClose }: OtpS
   };
 
   return (
-    <div className="otp-dialog-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="otp-dialog" role="dialog" aria-modal="true" aria-label={isVi ? 'Thiết lập OTP' : 'Set up OTP'}>
+    <div
+      className="otp-dialog-overlay"
+      onClick={e => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="otp-dialog" role="dialog" aria-modal="true" aria-label={t('otp.title')}>
         <div className="otp-dialog-header">
-          <h2>{isVi ? '⏱ Thiết lập OTP' : '⏱ Set Up OTP'}</h2>
-          <button className="btn-icon" onClick={onClose} aria-label="Close">✕</button>
+          <h2>⏱ {t('otp.title')}</h2>
+          <button className="btn-icon" onClick={onClose} aria-label={t('common.close')}>
+            ✕
+          </button>
         </div>
 
-        {/* Mode tabs */}
         <div className="otp-tabs">
           <button
             className={`otp-tab ${mode === 'manual' ? 'active' : ''}`}
@@ -102,7 +100,7 @@ export function OtpSetupDialog({ entryUuid, existingUri, onSave, onClose }: OtpS
             role="tab"
             aria-selected={mode === 'manual'}
           >
-            {isVi ? '✏️ Nhập thủ công' : '✏️ Manual Entry'}
+            ✏️ {t('otp.enterManually')}
           </button>
           <button
             className={`otp-tab ${mode === 'uri' ? 'active' : ''}`}
@@ -110,7 +108,7 @@ export function OtpSetupDialog({ entryUuid, existingUri, onSave, onClose }: OtpS
             role="tab"
             aria-selected={mode === 'uri'}
           >
-            {isVi ? '🔗 Từ URI' : '🔗 From URI'}
+            🔗 {t('otp.scanQr')}
           </button>
         </div>
 
@@ -118,7 +116,7 @@ export function OtpSetupDialog({ entryUuid, existingUri, onSave, onClose }: OtpS
           {mode === 'uri' ? (
             <div className="otp-uri-section">
               <label className="otp-label" htmlFor="otp-uri">
-                {isVi ? 'URI (otpauth://...)' : 'URI (otpauth://...)'}
+                URI (otpauth://...)
               </label>
               <textarea
                 id="otp-uri"
@@ -129,34 +127,34 @@ export function OtpSetupDialog({ entryUuid, existingUri, onSave, onClose }: OtpS
                 rows={3}
               />
               <button className="btn btn-secondary" onClick={handleParseUri} disabled={!uri.trim()}>
-                {isVi ? '📋 Phân tích URI' : '📋 Parse URI'}
+                📋 Parse URI
               </button>
             </div>
           ) : (
             <div className="otp-manual-section">
-              {/* Secret */}
               <div className="otp-field">
                 <label className="otp-label" htmlFor="otp-secret">
-                  {isVi ? 'Khóa bí mật *' : 'Secret Key *'}
+                  {t('otp.secret')} *
                 </label>
                 <input
                   id="otp-secret"
                   type="text"
                   className={`form-input otp-secret-input ${error ? 'form-input-error' : ''}`}
                   value={secret}
-                  onChange={e => { setSecret(e.target.value); setError(''); }}
+                  onChange={e => {
+                    setSecret(e.target.value);
+                    setError('');
+                  }}
                   placeholder="JBSWY3DPEHPK3PXP"
                   style={{ fontFamily: 'monospace', letterSpacing: '2px' }}
                   autoComplete="off"
                   spellCheck={false}
                 />
               </div>
-
-              {/* Issuer + Account */}
               <div className="otp-row">
                 <div className="otp-field">
                   <label className="otp-label" htmlFor="otp-issuer">
-                    {isVi ? 'Nhà phát hành' : 'Issuer'}
+                    {t('otp.issuer')}
                   </label>
                   <input
                     id="otp-issuer"
@@ -169,7 +167,7 @@ export function OtpSetupDialog({ entryUuid, existingUri, onSave, onClose }: OtpS
                 </div>
                 <div className="otp-field">
                   <label className="otp-label" htmlFor="otp-account">
-                    {isVi ? 'Tài khoản' : 'Account'}
+                    {t('otp.account')}
                   </label>
                   <input
                     id="otp-account"
@@ -181,12 +179,10 @@ export function OtpSetupDialog({ entryUuid, existingUri, onSave, onClose }: OtpS
                   />
                 </div>
               </div>
-
-              {/* Algorithm + Digits + Period */}
               <div className="otp-row">
                 <div className="otp-field">
                   <label className="otp-label" htmlFor="otp-algo">
-                    {isVi ? 'Thuật toán' : 'Algorithm'}
+                    {t('otp.algorithm')}
                   </label>
                   <select
                     id="otp-algo"
@@ -201,7 +197,7 @@ export function OtpSetupDialog({ entryUuid, existingUri, onSave, onClose }: OtpS
                 </div>
                 <div className="otp-field">
                   <label className="otp-label" htmlFor="otp-digits">
-                    {isVi ? 'Số chữ số' : 'Digits'}
+                    {t('otp.digits')}
                   </label>
                   <select
                     id="otp-digits"
@@ -215,7 +211,7 @@ export function OtpSetupDialog({ entryUuid, existingUri, onSave, onClose }: OtpS
                 </div>
                 <div className="otp-field">
                   <label className="otp-label" htmlFor="otp-period">
-                    {isVi ? 'Chu kỳ (s)' : 'Period (s)'}
+                    {t('otp.period')}
                   </label>
                   <select
                     id="otp-period"
@@ -230,14 +226,14 @@ export function OtpSetupDialog({ entryUuid, existingUri, onSave, onClose }: OtpS
               </div>
             </div>
           )}
-
           {error && (
-            <p className="otp-error" role="alert">⚠️ {error}</p>
+            <p className="otp-error" role="alert">
+              ⚠️ {error}
+            </p>
           )}
-
           {preview && (
             <div className="otp-preview">
-              <p className="otp-preview-label">{isVi ? 'URI đã tạo:' : 'Generated URI:'}</p>
+              <p className="otp-preview-label">Generated URI:</p>
               <code className="otp-preview-uri">{preview}</code>
             </div>
           )}
@@ -245,79 +241,39 @@ export function OtpSetupDialog({ entryUuid, existingUri, onSave, onClose }: OtpS
 
         <div className="otp-dialog-footer">
           <button className="btn btn-secondary" onClick={handlePreview} disabled={!secret.trim()}>
-            {isVi ? '👁 Xem trước' : '👁 Preview'}
+            👁 Preview
           </button>
           <div style={{ flex: 1 }} />
           <button className="btn btn-secondary" onClick={onClose}>
-            {isVi ? 'Hủy' : 'Cancel'}
+            {t('common.cancel')}
           </button>
-          <button
-            className="btn btn-primary"
-            onClick={handleSave}
-            disabled={!secret.trim()}
-          >
-            {isVi ? '💾 Lưu OTP' : '💾 Save OTP'}
+          <button className="btn btn-primary" onClick={handleSave} disabled={!secret.trim()}>
+            💾 {t('common.save')}
           </button>
         </div>
       </div>
 
       <style>{`
-        .otp-dialog-overlay {
-          position: fixed; inset: 0; background: rgba(0,0,0,.5);
-          display: flex; align-items: center; justify-content: center;
-          z-index: 1000;
-        }
-        .otp-dialog {
-          background: var(--color-surface); border: 1px solid var(--color-border);
-          border-radius: var(--radius-lg); width: 100%; max-width: 520px;
-          box-shadow: 0 24px 64px rgba(0,0,0,.2); overflow: hidden;
-          display: flex; flex-direction: column; max-height: 90vh;
-        }
-        .otp-dialog-header {
-          display: flex; align-items: center; justify-content: space-between;
-          padding: var(--space-md) var(--space-xl);
-          border-bottom: 1px solid var(--color-border);
-        }
-        .otp-dialog-header h2 { font-size: 16px; font-weight: 600; }
-        .otp-tabs {
-          display: flex; border-bottom: 1px solid var(--color-border);
-          padding: 0 var(--space-xl);
-        }
-        .otp-tab {
-          padding: var(--space-sm) var(--space-lg); background: none; border: none;
-          border-bottom: 2px solid transparent; cursor: pointer;
-          font-size: 13px; color: var(--color-text-secondary);
-          transition: color .15s, border-color .15s;
-        }
-        .otp-tab:hover { color: var(--color-text); }
-        .otp-tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); font-weight: 500; }
-        .otp-dialog-body { padding: var(--space-xl); overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-md); }
-        .otp-uri-section, .otp-manual-section { display: flex; flex-direction: column; gap: var(--space-md); }
-        .otp-field { display: flex; flex-direction: column; gap: var(--space-xs); flex: 1; }
-        .otp-row { display: flex; gap: var(--space-md); }
-        .otp-label { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .05em; }
-        .otp-secret-input { font-family: 'SF Mono', 'Consolas', monospace !important; letter-spacing: 2px; }
-        .otp-textarea {
-          border: 1px solid var(--color-border); border-radius: var(--radius-md);
-          padding: var(--space-sm) var(--space-md); font-size: 13px;
-          background: var(--color-bg); color: var(--color-text);
-          resize: vertical; font-family: monospace;
-        }
-        .otp-error { font-size: 13px; color: var(--color-danger); }
-        .otp-preview {
-          background: var(--color-bg-secondary); border: 1px solid var(--color-border);
-          border-radius: var(--radius-md); padding: var(--space-md);
-        }
-        .otp-preview-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
-        .otp-preview-uri {
-          font-size: 11px; font-family: monospace; color: var(--color-text);
-          word-break: break-all; display: block;
-        }
-        .otp-dialog-footer {
-          display: flex; align-items: center; gap: var(--space-sm);
-          padding: var(--space-md) var(--space-xl);
-          border-top: 1px solid var(--color-border);
-        }
+        .otp-dialog-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:1000; }
+        .otp-dialog { background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-lg); width:100%; max-width:520px; box-shadow:0 24px 64px rgba(0,0,0,.2); overflow:hidden; display:flex; flex-direction:column; max-height:90vh; }
+        .otp-dialog-header { display:flex; align-items:center; justify-content:space-between; padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--color-border); }
+        .otp-dialog-header h2 { font-size:16px; font-weight:600; }
+        .otp-tabs { display:flex; border-bottom:1px solid var(--color-border); padding:0 var(--space-xl); }
+        .otp-tab { padding:var(--space-sm) var(--space-lg); background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; font-size:13px; color:var(--color-text-secondary); transition:color .15s, border-color .15s; }
+        .otp-tab:hover { color:var(--color-text); }
+        .otp-tab.active { color:var(--color-primary); border-bottom-color:var(--color-primary); font-weight:500; }
+        .otp-dialog-body { padding:var(--space-xl); overflow-y:auto; display:flex; flex-direction:column; gap:var(--space-md); }
+        .otp-uri-section, .otp-manual-section { display:flex; flex-direction:column; gap:var(--space-md); }
+        .otp-field { display:flex; flex-direction:column; gap:var(--space-xs); flex:1; }
+        .otp-row { display:flex; gap:var(--space-md); }
+        .otp-label { font-size:12px; font-weight:500; color:var(--color-text-secondary); text-transform:uppercase; letter-spacing:.05em; }
+        .otp-secret-input { font-family:'SF Mono','Consolas',monospace !important; letter-spacing:2px; }
+        .otp-textarea { border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-sm) var(--space-md); font-size:13px; background:var(--color-bg); color:var(--color-text); resize:vertical; font-family:monospace; }
+        .otp-error { font-size:13px; color:var(--color-danger); }
+        .otp-preview { background:var(--color-bg-secondary); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-md); }
+        .otp-preview-label { font-size:12px; color:var(--color-text-secondary); margin-bottom:4px; }
+        .otp-preview-uri { font-size:11px; font-family:monospace; color:var(--color-text); word-break:break-all; display:block; }
+        .otp-dialog-footer { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-md) var(--space-xl); border-top:1px solid var(--color-border); }
       `}</style>
     </div>
   );

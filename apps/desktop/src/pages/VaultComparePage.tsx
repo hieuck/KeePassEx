@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
-import { useSettingsStore } from '../store/settings';
+import { useTranslation } from 'react-i18next';
 
 interface VaultDiff {
   only_in_first: EntryRef[];
@@ -39,8 +39,7 @@ type MergeStrategy = 'KeepFirst' | 'KeepSecond' | 'KeepNewer' | 'KeepBoth';
 
 export function VaultComparePage() {
   const navigate = useNavigate();
-  const { settings } = useSettingsStore();
-  const isVi = settings.language === 'vi';
+  const { t } = useTranslation();
 
   const [vault1Path, setVault1Path] = useState('');
   const [vault2Path, setVault2Path] = useState('');
@@ -98,38 +97,35 @@ export function VaultComparePage() {
       {/* Header */}
       <div className="compare-header">
         <button className="btn-back" onClick={() => navigate(-1)}>
-          ← {isVi ? 'Quay lại' : 'Back'}
+          ← {t('common.back')}
         </button>
-        <h2>{isVi ? '🔀 So sánh kho' : '🔀 Compare Vaults'}</h2>
-        <p className="compare-subtitle">
-          {isVi
-            ? 'So sánh hai kho KDBX và hợp nhất thay đổi'
-            : 'Diff two KDBX vaults and merge changes'}
-        </p>
+        <h2>🔀 {t('vaultCompare.title')}</h2>
+        <p className="compare-subtitle">{t('vaultCompare.subtitle')}</p>
       </div>
 
       <div className="compare-content">
         {/* Vault selection */}
         <div className="compare-vaults">
           <VaultSelector
-            label={isVi ? 'Kho thứ nhất (đích)' : 'First vault (target)'}
+            label={t('vaultCompare.selectFirst')}
             path={vault1Path}
             password={password1}
             onBrowse={() => browseVault(1)}
             onPasswordChange={setPassword1}
-            isVi={isVi}
+            passwordPlaceholder={t('vault.masterPassword')}
+            browsePlaceholder={t('common.none')}
+            browseLabel={t('syncExt.browsePath')}
           />
           <div className="compare-vs">⇄</div>
           <VaultSelector
-            label={isVi ? 'Kho thứ hai (nguồn)' : 'Second vault (source)'}
+            label={t('vaultCompare.selectSecond')}
             path={vault2Path}
             password={password2}
             onBrowse={() => browseVault(2)}
             onPasswordChange={setPassword2}
-            isVi={isVi}
-            passwordPlaceholder={
-              isVi ? 'Để trống nếu giống kho 1' : 'Leave blank if same as vault 1'
-            }
+            passwordPlaceholder={t('vault.masterPassword')}
+            browsePlaceholder={t('common.none')}
+            browseLabel={t('syncExt.browsePath')}
           />
         </div>
 
@@ -141,12 +137,8 @@ export function VaultComparePage() {
             disabled={!vault1Path || !vault2Path || !password1 || compareMutation.isPending}
           >
             {compareMutation.isPending
-              ? isVi
-                ? '⏳ Đang so sánh...'
-                : '⏳ Comparing...'
-              : isVi
-                ? '🔍 So sánh'
-                : '🔍 Compare'}
+              ? `⏳ ${t('vaultCompare.comparing')}`
+              : `🔍 ${t('vaultCompare.compare')}`}
           </button>
         </div>
 
@@ -162,46 +154,46 @@ export function VaultComparePage() {
             <div className="compare-summary">
               <div className="summary-stat">
                 <span className="summary-num">{diff.first_total}</span>
-                <span className="summary-label">{isVi ? 'Mục kho 1' : 'Vault 1 entries'}</span>
+                <span className="summary-label">{t('vaultCompare.onlyInFirst')}</span>
               </div>
               <div className="summary-stat">
                 <span className="summary-num">{diff.second_total}</span>
-                <span className="summary-label">{isVi ? 'Mục kho 2' : 'Vault 2 entries'}</span>
+                <span className="summary-label">{t('vaultCompare.onlyInSecond')}</span>
               </div>
               <div className="summary-stat summary-stat--identical">
                 <span className="summary-num">{diff.identical_count}</span>
-                <span className="summary-label">{isVi ? 'Giống nhau' : 'Identical'}</span>
+                <span className="summary-label">{t('vaultCompare.identical')}</span>
               </div>
               <div className="summary-stat summary-stat--diff">
                 <span className="summary-num">{totalDiffs}</span>
-                <span className="summary-label">{isVi ? 'Khác biệt' : 'Differences'}</span>
+                <span className="summary-label">{t('vaultCompare.modified')}</span>
               </div>
             </div>
 
             {totalDiffs === 0 ? (
               <div className="compare-identical">
                 <span>✅</span>
-                <p>{isVi ? 'Hai kho giống nhau!' : 'Vaults are identical!'}</p>
+                <p>{t('vaultCompare.noChanges')}</p>
               </div>
             ) : (
               <>
                 {/* Filter tabs */}
                 <div className="compare-filters" role="tablist">
                   {[
-                    { id: 'all', label: isVi ? 'Tất cả' : 'All', count: totalDiffs },
+                    { id: 'all', label: t('vaultFilter.all'), count: totalDiffs },
                     {
                       id: 'added',
-                      label: isVi ? 'Chỉ kho 2' : 'Only in 2',
+                      label: t('vaultCompare.onlyInSecond'),
                       count: filteredOnlySecond.length,
                     },
                     {
                       id: 'removed',
-                      label: isVi ? 'Chỉ kho 1' : 'Only in 1',
+                      label: t('vaultCompare.onlyInFirst'),
                       count: filteredOnlyFirst.length,
                     },
                     {
                       id: 'modified',
-                      label: isVi ? 'Đã sửa' : 'Modified',
+                      label: t('vaultCompare.modified'),
                       count: filteredModified.length,
                     },
                   ].map(f => (
@@ -220,63 +212,60 @@ export function VaultComparePage() {
 
                 {/* Diff list */}
                 <div className="diff-list">
-                  {/* Only in second (added) */}
                   {(activeFilter === 'all' || activeFilter === 'added') &&
                     filteredOnlySecond.map(e => (
-                      <DiffRow key={e.uuid} type="added" entry={e} isVi={isVi} />
+                      <DiffRow key={e.uuid} type="added" entry={e} addedLabel={t('common.add')} />
                     ))}
-
-                  {/* Only in first (removed) */}
                   {(activeFilter === 'all' || activeFilter === 'removed') &&
                     filteredOnlyFirst.map(e => (
-                      <DiffRow key={e.uuid} type="removed" entry={e} isVi={isVi} />
+                      <DiffRow
+                        key={e.uuid}
+                        type="removed"
+                        entry={e}
+                        addedLabel={t('common.delete')}
+                      />
                     ))}
-
-                  {/* Modified */}
                   {(activeFilter === 'all' || activeFilter === 'modified') &&
-                    filteredModified.map(m => <ModifiedRow key={m.uuid} mod={m} isVi={isVi} />)}
+                    filteredModified.map(m => (
+                      <ModifiedRow
+                        key={m.uuid}
+                        mod={m}
+                        changedLabel={t('vaultCompare.modified')}
+                        vault1NewerLabel={t('vaultCompare.onlyInFirst')}
+                        vault2NewerLabel={t('vaultCompare.onlyInSecond')}
+                        sameTimeLabel={t('vaultCompare.identical')}
+                      />
+                    ))}
                 </div>
 
                 {/* Merge section */}
                 <div className="merge-section">
-                  <h3>{isVi ? 'Hợp nhất kho 2 → kho 1' : 'Merge vault 2 → vault 1'}</h3>
+                  <h3>{t('vaultCompare.mergeAll')}</h3>
                   <div className="merge-strategy">
-                    <label className="merge-label">
-                      {isVi ? 'Chiến lược xung đột:' : 'Conflict strategy:'}
-                    </label>
+                    <label className="merge-label">{t('importExport.conflictStrategy')}</label>
                     <select
                       className="merge-select"
                       value={mergeStrategy}
                       onChange={e => setMergeStrategy(e.target.value as MergeStrategy)}
                     >
-                      <option value="KeepNewer">{isVi ? 'Giữ bản mới hơn' : 'Keep newer'}</option>
-                      <option value="KeepFirst">{isVi ? 'Giữ kho 1' : 'Keep vault 1'}</option>
-                      <option value="KeepSecond">{isVi ? 'Giữ kho 2' : 'Keep vault 2'}</option>
-                      <option value="KeepBoth">{isVi ? 'Giữ cả hai' : 'Keep both'}</option>
+                      <option value="KeepNewer">{t('importExport.conflictSkip')}</option>
+                      <option value="KeepFirst">{t('vaultCompare.onlyInFirst')}</option>
+                      <option value="KeepSecond">{t('vaultCompare.onlyInSecond')}</option>
+                      <option value="KeepBoth">{t('importExport.conflictKeepBoth')}</option>
                     </select>
                   </div>
                   <button
                     className="btn btn-primary"
                     onClick={() => {
-                      if (
-                        confirm(
-                          isVi
-                            ? 'Hợp nhất kho 2 vào kho 1? Thao tác này không thể hoàn tác.'
-                            : 'Merge vault 2 into vault 1? This cannot be undone.'
-                        )
-                      ) {
+                      if (confirm(t('common.confirm'))) {
                         mergeMutation.mutate();
                       }
                     }}
                     disabled={mergeMutation.isPending}
                   >
                     {mergeMutation.isPending
-                      ? isVi
-                        ? '⏳ Đang hợp nhất...'
-                        : '⏳ Merging...'
-                      : isVi
-                        ? '🔀 Hợp nhất'
-                        : '🔀 Merge'}
+                      ? `⏳ ${t('common.loading')}`
+                      : `🔀 ${t('vaultCompare.mergeSelected')}`}
                   </button>
                 </div>
               </>
@@ -392,24 +381,26 @@ function VaultSelector({
   password,
   onBrowse,
   onPasswordChange,
-  isVi,
   passwordPlaceholder,
+  browsePlaceholder,
+  browseLabel,
 }: {
   label: string;
   path: string;
   password: string;
   onBrowse: () => void;
   onPasswordChange: (v: string) => void;
-  isVi: boolean;
   passwordPlaceholder?: string;
+  browsePlaceholder?: string;
+  browseLabel?: string;
 }) {
   return (
     <div className="vault-selector">
       <span className="vault-selector-label">{label}</span>
       <div className="vault-path-row">
-        <span className="vault-path">{path || (isVi ? 'Chưa chọn...' : 'Not selected...')}</span>
+        <span className="vault-path">{path || browsePlaceholder}</span>
         <button className="btn btn-secondary" onClick={onBrowse}>
-          {isVi ? 'Duyệt...' : 'Browse...'}
+          {browseLabel ?? '...'}
         </button>
       </div>
       <input
@@ -417,7 +408,7 @@ function VaultSelector({
         className="form-input"
         value={password}
         onChange={e => onPasswordChange(e.target.value)}
-        placeholder={passwordPlaceholder ?? (isVi ? 'Mật khẩu chính' : 'Master password')}
+        placeholder={passwordPlaceholder}
         autoComplete="current-password"
       />
     </div>
@@ -427,11 +418,11 @@ function VaultSelector({
 function DiffRow({
   type,
   entry,
-  isVi,
+  addedLabel,
 }: {
   type: 'added' | 'removed';
   entry: EntryRef;
-  isVi: boolean;
+  addedLabel: string;
 }) {
   const badge = type === 'added' ? '+' : '−';
   return (
@@ -446,19 +437,25 @@ function DiffRow({
   );
 }
 
-function ModifiedRow({ mod, isVi }: { mod: EntryModification; isVi: boolean }) {
+function ModifiedRow({
+  mod,
+  changedLabel,
+  vault1NewerLabel,
+  vault2NewerLabel,
+  sameTimeLabel,
+}: {
+  mod: EntryModification;
+  changedLabel: string;
+  vault1NewerLabel: string;
+  vault2NewerLabel: string;
+  sameTimeLabel: string;
+}) {
   const newerLabel =
     mod.newer_in === 'First'
-      ? isVi
-        ? 'Kho 1 mới hơn'
-        : 'Vault 1 newer'
+      ? vault1NewerLabel
       : mod.newer_in === 'Second'
-        ? isVi
-          ? 'Kho 2 mới hơn'
-          : 'Vault 2 newer'
-        : isVi
-          ? 'Cùng thời gian'
-          : 'Same time';
+        ? vault2NewerLabel
+        : sameTimeLabel;
 
   return (
     <div className="diff-row diff-row--modified">
@@ -466,7 +463,7 @@ function ModifiedRow({ mod, isVi }: { mod: EntryModification; isVi: boolean }) {
       <div className="diff-info">
         <p className="diff-title">{mod.title}</p>
         <p className="diff-changed">
-          {isVi ? 'Thay đổi' : 'Changed'}: {mod.changed_fields.join(', ')}
+          {changedLabel}: {mod.changed_fields.join(', ')}
         </p>
       </div>
       <span className="diff-newer">{newerLabel}</span>

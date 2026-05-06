@@ -1,9 +1,10 @@
 /**
  * Password generator page
  */
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
+import { useTranslation } from 'react-i18next';
 import { useSettingsStore } from '../store/settings';
 import { PasswordStrengthBar } from '../components/PasswordStrengthBar';
 
@@ -15,11 +16,10 @@ interface GenerateResult {
 }
 
 const STRENGTH_COLORS = ['#DC2626', '#EA580C', '#D97706', '#16A34A', '#059669'];
-const STRENGTH_LABELS_VI = ['Rất yếu', 'Yếu', 'Trung bình', 'Mạnh', 'Rất mạnh'];
 
 export function GeneratorPage() {
+  const { t } = useTranslation();
   const { settings } = useSettingsStore();
-  const isVi = settings.language === 'vi';
 
   const [mode, setMode] = useState<'random' | 'passphrase' | 'pronounceable'>('random');
   const [length, setLength] = useState(20);
@@ -57,7 +57,7 @@ export function GeneratorPage() {
           include_number: true,
         },
       }),
-    onSuccess: (data) => {
+    onSuccess: data => {
       setResult(data);
       setHistory(prev => [data.password, ...prev.slice(0, 9)]);
     },
@@ -73,15 +73,16 @@ export function GeneratorPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const strengthColor = result ? STRENGTH_COLORS[result.strengthScore] : '#9CA3AF';
-  const strengthLabel = result
-    ? (isVi ? STRENGTH_LABELS_VI[result.strengthScore] : result.strengthLabel)
-    : '';
+  const MODES = {
+    random: t('generator.modeRandom'),
+    passphrase: t('generator.modePassphrase'),
+    pronounceable: t('generator.modePronounce'),
+  } as const;
 
   return (
     <div className="generator-page">
       <div className="generator-header">
-        <h2>{isVi ? '⚡ Tạo mật khẩu' : '⚡ Password Generator'}</h2>
+        <h2>⚡ {t('generator.title')}</h2>
       </div>
 
       <div className="generator-content">
@@ -91,19 +92,13 @@ export function GeneratorPage() {
             {result ? (
               <span className="password-text">{result.password}</span>
             ) : (
-              <span className="password-placeholder">
-                {isVi ? 'Nhấn "Tạo" để tạo mật khẩu' : 'Click "Generate" to create a password'}
-              </span>
+              <span className="password-placeholder">{t('generator.generate')}</span>
             )}
           </div>
 
           {result && (
             <div className="password-meta">
-              <PasswordStrengthBar
-                password={result.password}
-                showLabel
-                showEntropy
-              />
+              <PasswordStrengthBar password={result.password} showLabel showEntropy />
             </div>
           )}
 
@@ -113,7 +108,7 @@ export function GeneratorPage() {
               onClick={() => generateMutation.mutate()}
               disabled={generateMutation.isPending}
             >
-              {generateMutation.isPending ? '...' : (isVi ? '🎲 Tạo' : '🎲 Generate')}
+              {generateMutation.isPending ? '...' : `🎲 ${t('generator.generate')}`}
             </button>
             {result && (
               <button
@@ -121,7 +116,7 @@ export function GeneratorPage() {
                 onClick={handleCopy}
                 aria-label="Copy password"
               >
-                {copied ? '✓ ' + (isVi ? 'Đã sao chép' : 'Copied') : '⎘ ' + (isVi ? 'Sao chép' : 'Copy')}
+                {copied ? `✓ ${t('common.copied')}` : `⎘ ${t('common.copy')}`}
               </button>
             )}
           </div>
@@ -129,9 +124,8 @@ export function GeneratorPage() {
 
         {/* Options */}
         <div className="generator-options">
-          {/* Mode */}
           <div className="option-group">
-            <label className="option-label">{isVi ? 'Chế độ' : 'Mode'}</label>
+            <label className="option-label">{t('generator.mode')}</label>
             <div className="mode-tabs" role="tablist">
               {(['random', 'passphrase', 'pronounceable'] as const).map(m => (
                 <button
@@ -141,9 +135,7 @@ export function GeneratorPage() {
                   className={`mode-tab ${mode === m ? 'active' : ''}`}
                   onClick={() => setMode(m)}
                 >
-                  {isVi
-                    ? { random: 'Ngẫu nhiên', passphrase: 'Cụm từ', pronounceable: 'Dễ đọc' }[m]
-                    : { random: 'Random', passphrase: 'Passphrase', pronounceable: 'Pronounceable' }[m]}
+                  {MODES[m]}
                 </button>
               ))}
             </div>
@@ -151,10 +143,9 @@ export function GeneratorPage() {
 
           {mode === 'random' && (
             <>
-              {/* Length */}
               <div className="option-group">
                 <label className="option-label" htmlFor="pw-length">
-                  {isVi ? 'Độ dài' : 'Length'}: <strong>{length}</strong>
+                  {t('generator.length')}: <strong>{length}</strong>
                 </label>
                 <input
                   id="pw-length"
@@ -169,38 +160,36 @@ export function GeneratorPage() {
                   aria-valuenow={length}
                 />
               </div>
-
-              {/* Character sets */}
               <div className="option-group">
-                <label className="option-label">{isVi ? 'Ký tự' : 'Characters'}</label>
+                <label className="option-label">{t('generator.characters')}</label>
                 <div className="checkboxes">
                   <CheckOption
                     id="use-uppercase"
-                    label={isVi ? 'Chữ hoa (A-Z)' : 'Uppercase (A-Z)'}
+                    label={t('generator.uppercase')}
                     checked={useUppercase}
                     onChange={setUseUppercase}
                   />
                   <CheckOption
                     id="use-lowercase"
-                    label={isVi ? 'Chữ thường (a-z)' : 'Lowercase (a-z)'}
+                    label={t('generator.lowercase')}
                     checked={useLowercase}
                     onChange={setUseLowercase}
                   />
                   <CheckOption
                     id="use-digits"
-                    label={isVi ? 'Chữ số (0-9)' : 'Digits (0-9)'}
+                    label={t('generator.digits')}
                     checked={useDigits}
                     onChange={setUseDigits}
                   />
                   <CheckOption
                     id="use-symbols"
-                    label={isVi ? 'Ký tự đặc biệt' : 'Symbols (!@#...)'}
+                    label={t('generator.symbols')}
                     checked={useSymbols}
                     onChange={setUseSymbols}
                   />
                   <CheckOption
                     id="exclude-ambiguous"
-                    label={isVi ? 'Loại trừ ký tự dễ nhầm (0,O,1,l,I)' : 'Exclude ambiguous (0,O,1,l,I)'}
+                    label={t('generator.excludeAmbiguous')}
                     checked={excludeAmbiguous}
                     onChange={setExcludeAmbiguous}
                   />
@@ -213,7 +202,7 @@ export function GeneratorPage() {
             <>
               <div className="option-group">
                 <label className="option-label" htmlFor="word-count">
-                  {isVi ? 'Số từ' : 'Word count'}: <strong>{wordCount}</strong>
+                  {t('generator.wordCount')}: <strong>{wordCount}</strong>
                 </label>
                 <input
                   id="word-count"
@@ -227,7 +216,7 @@ export function GeneratorPage() {
               </div>
               <div className="option-group">
                 <label className="option-label" htmlFor="word-sep">
-                  {isVi ? 'Ký tự phân cách' : 'Separator'}
+                  {t('generator.wordSeparator')}
                 </label>
                 <input
                   id="word-sep"
@@ -246,7 +235,7 @@ export function GeneratorPage() {
         {/* History */}
         {history.length > 0 && (
           <div className="generator-history">
-            <h3 className="history-title">{isVi ? 'Lịch sử' : 'History'}</h3>
+            <h3 className="history-title">{t('entry.history')}</h3>
             {history.map((pw, i) => (
               <div key={i} className="history-item">
                 <span className="history-password">{pw}</span>
@@ -265,112 +254,38 @@ export function GeneratorPage() {
 
       <style>{`
         .generator-page { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-        .generator-header {
-          padding: var(--space-md) var(--space-xl);
-          border-bottom: 1px solid var(--color-border);
-          flex-shrink: 0;
-        }
+        .generator-header { padding: var(--space-md) var(--space-xl); border-bottom: 1px solid var(--color-border); flex-shrink: 0; }
         .generator-header h2 { font-size: 16px; font-weight: 600; }
-        .generator-content {
-          flex: 1;
-          overflow-y: auto;
-          padding: var(--space-xl);
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-xl);
-          max-width: 560px;
-        }
-        .generator-output {
-          background: var(--color-bg-secondary);
-          border: 1px solid var(--color-border);
-          border-radius: var(--radius-lg);
-          padding: var(--space-xl);
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-md);
-        }
-        .password-display {
-          min-height: 48px;
-          display: flex;
-          align-items: center;
-        }
-        .password-text {
-          font-family: 'SF Mono', 'Consolas', monospace;
-          font-size: 18px;
-          font-weight: 600;
-          color: var(--color-text);
-          word-break: break-all;
-          letter-spacing: 1px;
-        }
-        .password-placeholder {
-          color: var(--color-text-tertiary);
-          font-size: 14px;
-        }
-        .password-meta {
-          display: flex;
-          align-items: center;
-          gap: var(--space-md);
-        }
-        .strength-bar-container {
-          flex: 1;
-          height: 4px;
-          background: var(--color-border);
-          border-radius: var(--radius-full);
-          overflow: hidden;
-        }
-        .strength-bar {
-          height: 100%;
-          border-radius: var(--radius-full);
-          transition: width 0.3s, background-color 0.3s;
-        }
-        .strength-label { font-size: 12px; font-weight: 600; }
-        .entropy-label { font-size: 12px; color: var(--color-text-tertiary); }
+        .generator-content { flex: 1; overflow-y: auto; padding: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-xl); max-width: 560px; }
+        .generator-output { background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-md); }
+        .password-display { min-height: 48px; display: flex; align-items: center; }
+        .password-text { font-family: 'SF Mono', 'Consolas', monospace; font-size: 18px; font-weight: 600; color: var(--color-text); word-break: break-all; letter-spacing: 1px; }
+        .password-placeholder { color: var(--color-text-tertiary); font-size: 14px; }
+        .password-meta { display: flex; align-items: center; gap: var(--space-md); }
         .output-actions { display: flex; gap: var(--space-sm); }
         .btn-success { background: var(--color-success) !important; color: white !important; }
         .generator-options { display: flex; flex-direction: column; gap: var(--space-lg); }
         .option-group { display: flex; flex-direction: column; gap: var(--space-sm); }
         .option-label { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); }
         .mode-tabs { display: flex; gap: 4px; background: var(--color-bg-tertiary); padding: 3px; border-radius: var(--radius-md); }
-        .mode-tab {
-          flex: 1;
-          padding: var(--space-xs) var(--space-sm);
-          border: none;
-          background: none;
-          border-radius: calc(var(--radius-md) - 2px);
-          font-size: 13px;
-          cursor: pointer;
-          color: var(--color-text-secondary);
-          transition: background 0.15s, color 0.15s;
-        }
+        .mode-tab { flex: 1; padding: var(--space-xs) var(--space-sm); border: none; background: none; border-radius: calc(var(--radius-md) - 2px); font-size: 13px; cursor: pointer; color: var(--color-text-secondary); transition: background 0.15s, color 0.15s; }
         .mode-tab.active { background: var(--color-surface); color: var(--color-text); font-weight: 500; }
         .checkboxes { display: flex; flex-direction: column; gap: var(--space-sm); }
         .range-input { width: 100%; accent-color: var(--color-primary); }
         .generator-history { display: flex; flex-direction: column; gap: var(--space-sm); }
         .history-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); }
-        .history-item {
-          display: flex;
-          align-items: center;
-          gap: var(--space-sm);
-          padding: var(--space-sm) var(--space-md);
-          background: var(--color-bg-secondary);
-          border-radius: var(--radius-sm);
-        }
-        .history-password {
-          flex: 1;
-          font-family: 'SF Mono', 'Consolas', monospace;
-          font-size: 13px;
-          color: var(--color-text-secondary);
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
+        .history-item { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); background: var(--color-bg-secondary); border-radius: var(--radius-sm); }
+        .history-password { flex: 1; font-family: 'SF Mono', 'Consolas', monospace; font-size: 13px; color: var(--color-text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       `}</style>
     </div>
   );
 }
 
 function CheckOption({
-  id, label, checked, onChange,
+  id,
+  label,
+  checked,
+  onChange,
 }: {
   id: string;
   label: string;
@@ -387,16 +302,7 @@ function CheckOption({
         style={{ accentColor: 'var(--color-primary)' }}
       />
       <span>{label}</span>
-      <style>{`
-        .check-option {
-          display: flex;
-          align-items: center;
-          gap: var(--space-sm);
-          font-size: 13px;
-          cursor: pointer;
-          color: var(--color-text);
-        }
-      `}</style>
+      <style>{`.check-option { display: flex; align-items: center; gap: var(--space-sm); font-size: 13px; cursor: pointer; color: var(--color-text); }`}</style>
     </label>
   );
 }

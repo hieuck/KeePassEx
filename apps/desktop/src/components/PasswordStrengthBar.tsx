@@ -1,10 +1,9 @@
 /**
- * Password Strength Bar — inline strength indicator for password inputs
- * Shows real-time strength as user types
+ * Password Strength Bar — inline strength indicator
  */
 import React, { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
-import { useSettingsStore } from '../store/settings';
+import { useTranslation } from 'react-i18next';
 
 interface PasswordStrengthBarProps {
   password: string;
@@ -13,16 +12,20 @@ interface PasswordStrengthBarProps {
 }
 
 const STRENGTH_COLORS = ['#DC2626', '#EA580C', '#D97706', '#16A34A', '#059669'];
-const STRENGTH_LABELS_EN = ['Very Weak', 'Weak', 'Fair', 'Strong', 'Very Strong'];
-const STRENGTH_LABELS_VI = ['Rất yếu', 'Yếu', 'Trung bình', 'Mạnh', 'Rất mạnh'];
+const STRENGTH_KEYS = [
+  'generator.strengthVeryWeak',
+  'generator.strengthWeak',
+  'generator.strengthFair',
+  'generator.strengthStrong',
+  'generator.strengthVeryStrong',
+];
 
 export function PasswordStrengthBar({
   password,
   showLabel = true,
   showEntropy = false,
 }: PasswordStrengthBarProps) {
-  const { settings } = useSettingsStore();
-  const isVi = settings.language === 'vi';
+  const { t } = useTranslation();
   const [score, setScore] = useState(0);
   const [entropy, setEntropy] = useState(0);
 
@@ -32,31 +35,29 @@ export function PasswordStrengthBar({
       setEntropy(0);
       return;
     }
-
-    // Use Tauri command for accurate scoring
     invoke<number>('score_strength', { password })
       .then(setScore)
-      .catch(() => {
-        // Fallback: simple client-side estimate
-        setScore(estimateScore(password));
-      });
-
+      .catch(() => setScore(estimateScore(password)));
     invoke<number>('estimate_entropy', { password })
       .then(setEntropy)
-      .catch(() => {
-        setEntropy(estimateEntropy(password));
-      });
+      .catch(() => setEntropy(estimateEntropy(password)));
   }, [password]);
 
   if (!password) return null;
 
   const color = STRENGTH_COLORS[score] ?? STRENGTH_COLORS[0];
-  const label = isVi ? STRENGTH_LABELS_VI[score] : STRENGTH_LABELS_EN[score];
+  const label = t(STRENGTH_KEYS[score] ?? STRENGTH_KEYS[0]);
   const width = `${(score + 1) * 20}%`;
 
   return (
     <div className="psb-container" aria-label={`Password strength: ${label}`}>
-      <div className="psb-track" role="progressbar" aria-valuenow={score} aria-valuemin={0} aria-valuemax={4}>
+      <div
+        className="psb-track"
+        role="progressbar"
+        aria-valuenow={score}
+        aria-valuemin={0}
+        aria-valuemax={4}
+      >
         <div
           className="psb-fill"
           style={{ width, backgroundColor: color, transition: 'width 0.3s, background-color 0.3s' }}
@@ -65,30 +66,27 @@ export function PasswordStrengthBar({
       {(showLabel || showEntropy) && (
         <div className="psb-meta">
           {showLabel && (
-            <span className="psb-label" style={{ color }}>{label}</span>
+            <span className="psb-label" style={{ color }}>
+              {label}
+            </span>
           )}
           {showEntropy && entropy > 0 && (
             <span className="psb-entropy">{entropy.toFixed(0)} bits</span>
           )}
         </div>
       )}
-
       <style>{`
-        .psb-container { display: flex; flex-direction: column; gap: 4px; }
-        .psb-track {
-          height: 4px; background: var(--color-border);
-          border-radius: var(--radius-full); overflow: hidden;
-        }
-        .psb-fill { height: 100%; border-radius: var(--radius-full); }
-        .psb-meta { display: flex; justify-content: space-between; align-items: center; }
-        .psb-label { font-size: 12px; font-weight: 600; }
-        .psb-entropy { font-size: 11px; color: var(--color-text-tertiary); }
+        .psb-container { display:flex; flex-direction:column; gap:4px; }
+        .psb-track { height:4px; background:var(--color-border); border-radius:var(--radius-full); overflow:hidden; }
+        .psb-fill { height:100%; border-radius:var(--radius-full); }
+        .psb-meta { display:flex; justify-content:space-between; align-items:center; }
+        .psb-label { font-size:12px; font-weight:600; }
+        .psb-entropy { font-size:11px; color:var(--color-text-tertiary); }
       `}</style>
     </div>
   );
 }
 
-// Client-side fallback estimators
 function estimateScore(password: string): number {
   const entropy = estimateEntropy(password);
   if (entropy < 28) return 0;

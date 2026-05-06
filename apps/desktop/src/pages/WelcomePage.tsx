@@ -4,20 +4,23 @@
  */
 import React, { useState } from 'react';
 import { open, save } from '@tauri-apps/plugin-dialog';
-import { invoke } from '@tauri-apps/api/core';
+import { useTranslation } from 'react-i18next';
 import { useVaultStore } from '../store/vault';
 import { useSettingsStore } from '../store/settings';
+import { formatRelativeTime } from '@keepassex/utils';
 import type { RecentVault } from '@keepassex/types';
 
 export function WelcomePage() {
   const { openVault, createVault } = useVaultStore();
   const { settings } = useSettingsStore();
+  const { t, i18n } = useTranslation();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [recentVaults, setRecentVaults] = useState<RecentVault[]>(
-    settings.recentVaults ?? []
-  );
-  const isVi = settings.language === 'vi';
+  const [recentVaults, setRecentVaults] = useState<RecentVault[]>(settings.recentVaults ?? []);
+
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [selectedVaultPath, setSelectedVaultPath] = useState<string | null>(null);
+  const [passwordInput, setPasswordInput] = useState('');
 
   const handleOpenVault = async (filePath?: string) => {
     setError(null);
@@ -32,78 +35,195 @@ export function WelcomePage() {
       path = selected;
     }
 
-    const password = window.prompt(
-      isVi ? 'Nhập mật khẩu chính:' : 'Enter master password:'
-    );
-    if (password === null) return;
+    // Show password dialog instead of window.prompt()
+    setSelectedVaultPath(path);
+    setShowPasswordDialog(true);
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedVaultPath || !passwordInput.trim()) return;
 
     setLoading(true);
     try {
-      await openVault(path, password);
+      await openVault(selectedVaultPath, passwordInput);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e));
+      setPasswordInput('');
     } finally {
       setLoading(false);
+      setShowPasswordDialog(false);
+      setSelectedVaultPath(null);
+      setPasswordInput('');
     }
   };
 
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [createForm, setCreateForm] = useState({ name: '', password: '', confirmPassword: '' });
+
   const handleCreateVault = async () => {
     setError(null);
+    setCreateForm({ name: t('app.name'), password: '', confirmPassword: '' });
+    setShowCreateDialog(true);
+  };
 
-    const name = window.prompt(
-      isVi ? 'Tên kho mật khẩu:' : 'Vault name:',
-      isVi ? 'Kho của tôi' : 'My Vault'
-    );
-    if (!name?.trim()) return;
+  const handleCreateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!createForm.name.trim() || !createForm.password) return;
 
-    const password = window.prompt(
-      isVi ? 'Mật khẩu chính (hãy chọn mật khẩu mạnh):' : 'Master password (choose a strong one):'
-    );
-    if (!password) return;
-
-    const confirm = window.prompt(
-      isVi ? 'Xác nhận mật khẩu chính:' : 'Confirm master password:'
-    );
-    if (confirm !== password) {
-      setError(isVi ? 'Mật khẩu không khớp' : 'Passwords do not match');
+    if (createForm.password !== createForm.confirmPassword) {
+      setError(t('vault.passwordsDoNotMatch'));
       return;
     }
 
     const filePath = await save({
       filters: [{ name: 'KeePass Database', extensions: ['kdbx'] }],
-      defaultPath: `${name.trim()}.kdbx`,
+      defaultPath: `${createForm.name.trim()}.kdbx`,
     });
     if (!filePath) return;
 
     setLoading(true);
     try {
-      await createVault(filePath, name.trim(), password);
+      await createVault(filePath, createForm.name.trim(), createForm.password);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
+      setShowCreateDialog(false);
+      setCreateForm({ name: '', password: '', confirmPassword: '' });
     }
   };
 
-  const formatRelativeTime = (dateStr: string): string => {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffDays = Math.floor((now.getTime() - date.getTime()) / 86_400_000);
-    if (diffDays === 0) return isVi ? 'Hôm nay' : 'Today';
-    if (diffDays === 1) return isVi ? 'Hôm qua' : 'Yesterday';
-    if (diffDays < 7) return isVi ? `${diffDays} ngày trước` : `${diffDays} days ago`;
-    return date.toLocaleDateString(isVi ? 'vi-VN' : 'en-US', { month: 'short', day: 'numeric' });
-  };
+  const formatVaultTime = (dateStr: string): string => formatRelativeTime(dateStr, i18n.language);
 
   return (
     <div className="welcome-page">
+      {/* Password Dialog */}
+      {showPasswordDialog && (
+        <div className="dialog-overlay" onClick={() => setShowPasswordDialog(false)}>
+          <div className="dialog" onClick={e => e.stopPropagation()}>
+            <h3 className="dialog-title">{t('vault.masterPassword')}</h3>
+            <form onSubmit={handlePasswordSubmit} className="dialog-form">
+              <input
+                type="password"
+                className="form-input"
+                value={passwordInput}
+                onChange={e => setPasswordInput(e.target.value)}
+                placeholder={t('vault.masterPassword')}
+                autoFocus
+                disabled={loading}
+              />
+              <div className="dialog-actions">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setShowPasswordDialog(false);
+                    setPasswordInput('');
+                  }}
+                  disabled={loading}
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={loading || !passwordInput.trim()}
+                >
+                  {loading ? t('vault.unlocking') : t('vault.unlock')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Create Vault Dialog */}
+      {showCreateDialog && (
+        <div className="dialog-overlay" onClick={() => setShowCreateDialog(false)}>
+          <div className="dialog" onClick={e => e.stopPropagation()}>
+            <h3 className="dialog-title">{t('vault.create')}</h3>
+            <form onSubmit={handleCreateSubmit} className="dialog-form">
+              <div className="form-group">
+                <label htmlFor="vault-name" className="form-label">
+                  {t('vault.name')}
+                </label>
+                <input
+                  id="vault-name"
+                  type="text"
+                  className="form-input"
+                  value={createForm.name}
+                  onChange={e => setCreateForm(f => ({ ...f, name: e.target.value }))}
+                  placeholder={t('vault.name')}
+                  autoFocus
+                  disabled={loading}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="vault-password" className="form-label">
+                  {t('vault.masterPassword')}
+                </label>
+                <input
+                  id="vault-password"
+                  type="password"
+                  className="form-input"
+                  value={createForm.password}
+                  onChange={e => setCreateForm(f => ({ ...f, password: e.target.value }))}
+                  placeholder={t('vault.masterPassword')}
+                  disabled={loading}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="vault-confirm" className="form-label">
+                  {t('vault.confirmPassword')}
+                </label>
+                <input
+                  id="vault-confirm"
+                  type="password"
+                  className="form-input"
+                  value={createForm.confirmPassword}
+                  onChange={e => setCreateForm(f => ({ ...f, confirmPassword: e.target.value }))}
+                  placeholder={t('vault.confirmPassword')}
+                  disabled={loading}
+                />
+              </div>
+              <div className="dialog-actions">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setShowCreateDialog(false);
+                    setCreateForm({ name: '', password: '', confirmPassword: '' });
+                  }}
+                  disabled={loading}
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={
+                    loading ||
+                    !createForm.name.trim() ||
+                    !createForm.password ||
+                    !createForm.confirmPassword
+                  }
+                >
+                  {loading ? t('vault.saving') : t('common.create')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Hero */}
       <div className="welcome-hero">
-        <div className="app-logo" aria-hidden="true">🔐</div>
-        <h1 className="app-name">KeePassEx</h1>
-        <p className="app-tagline">
-          {isVi ? 'Mật khẩu của bạn, quyền kiểm soát của bạn' : 'Your passwords, your control'}
-        </p>
+        <div className="app-logo" aria-hidden="true">
+          🔐
+        </div>
+        <h1 className="app-name">{t('app.name')}</h1>
+        <p className="app-tagline">{t('app.tagline')}</p>
       </div>
 
       {/* Main actions */}
@@ -112,18 +232,18 @@ export function WelcomePage() {
           className="btn btn-primary btn-lg"
           onClick={() => handleOpenVault()}
           disabled={loading}
-          aria-label={isVi ? 'Mở kho mật khẩu' : 'Open vault'}
+          aria-label={t('vault.open')}
         >
-          {loading ? '⏳' : '📂'} {isVi ? 'Mở kho mật khẩu' : 'Open Vault'}
+          {loading ? '⏳' : '📂'} {t('vault.open')}
         </button>
 
         <button
           className="btn btn-secondary btn-lg"
           onClick={handleCreateVault}
           disabled={loading}
-          aria-label={isVi ? 'Tạo kho mới' : 'Create new vault'}
+          aria-label={t('vault.create')}
         >
-          ✨ {isVi ? 'Tạo kho mới' : 'Create New Vault'}
+          ✨ {t('vault.create')}
         </button>
       </div>
 
@@ -137,9 +257,7 @@ export function WelcomePage() {
       {/* Recent vaults */}
       {recentVaults.length > 0 && (
         <div className="recent-vaults">
-          <h2 className="recent-title">
-            {isVi ? '🕐 Kho gần đây' : '🕐 Recent Vaults'}
-          </h2>
+          <h2 className="recent-title">🕐 {t('vault.recentVaults')}</h2>
           <div className="recent-list" role="list">
             {recentVaults.slice(0, 5).map(vault => (
               <button
@@ -148,20 +266,18 @@ export function WelcomePage() {
                 onClick={() => handleOpenVault(vault.path)}
                 disabled={loading}
                 role="listitem"
-                aria-label={`Open ${vault.name}`}
+                aria-label={`${t('vault.open')} ${vault.name}`}
               >
-                <span className="recent-icon" aria-hidden="true">🔐</span>
+                <span className="recent-icon" aria-hidden="true">
+                  🔐
+                </span>
                 <div className="recent-info">
                   <span className="recent-name">{vault.name}</span>
                   <span className="recent-path" title={vault.path}>
-                    {vault.path.length > 50
-                      ? '...' + vault.path.slice(-47)
-                      : vault.path}
+                    {vault.path.length > 50 ? '...' + vault.path.slice(-47) : vault.path}
                   </span>
                 </div>
-                <span className="recent-time">
-                  {formatRelativeTime(vault.lastOpened)}
-                </span>
+                <span className="recent-time">{formatVaultTime(vault.lastOpened)}</span>
               </button>
             ))}
           </div>
@@ -171,16 +287,16 @@ export function WelcomePage() {
       {/* Feature highlights */}
       <div className="welcome-features" aria-label="Key features">
         {[
-          { icon: '🔒', en: 'Argon2id + ChaCha20 encryption', vi: 'Mã hóa Argon2id + ChaCha20' },
-          { icon: '📱', en: 'Native on all platforms', vi: 'Native trên mọi nền tảng' },
-          { icon: '🔑', en: 'Passkey & SSH support', vi: 'Hỗ trợ Passkey & SSH' },
-          { icon: '🛡️', en: 'Breach monitoring', vi: 'Kiểm tra rò rỉ dữ liệu' },
-          { icon: '🔄', en: 'Multi-provider sync', vi: 'Đồng bộ đa nhà cung cấp' },
-          { icon: '🌐', en: 'Browser extension', vi: 'Tiện ích trình duyệt' },
-        ].map(f => (
-          <div key={f.en} className="feature-item">
+          { icon: '🔒', label: t('hardwareKey.title') },
+          { icon: '📱', label: t('settings.general') },
+          { icon: '🔑', label: t('passkey.title') },
+          { icon: '🛡️', label: t('breach.title') },
+          { icon: '🔄', label: t('sync.title') },
+          { icon: '🌐', label: t('browserExtension.fill') },
+        ].map((f, i) => (
+          <div key={i} className="feature-item">
             <span aria-hidden="true">{f.icon}</span>
-            <span>{isVi ? f.vi : f.en}</span>
+            <span>{f.label}</span>
           </div>
         ))}
       </div>
@@ -274,6 +390,63 @@ export function WelcomePage() {
         }
         @media (max-width: 600px) {
           .welcome-features { grid-template-columns: repeat(2, 1fr); }
+        }
+        .dialog-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+        .dialog {
+          background: var(--color-surface);
+          border: 1px solid var(--color-border);
+          border-radius: var(--radius-lg);
+          padding: var(--space-xl);
+          width: 100%;
+          max-width: 400px;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .dialog-title {
+          font-size: 18px;
+          font-weight: 600;
+          margin-bottom: var(--space-lg);
+        }
+        .dialog-form {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-md);
+        }
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-xs);
+        }
+        .form-label {
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--color-text-secondary);
+        }
+        .form-input {
+          border: 1px solid var(--color-border);
+          border-radius: var(--radius-md);
+          padding: var(--space-sm) var(--space-md);
+          font-size: 15px;
+          background: var(--color-bg);
+          color: var(--color-text);
+          outline: none;
+          transition: border-color 0.15s;
+        }
+        .form-input:focus {
+          border-color: var(--color-primary);
+        }
+        .dialog-actions {
+          display: flex;
+          gap: var(--space-sm);
+          justify-content: flex-end;
+          margin-top: var(--space-md);
         }
       `}</style>
     </div>

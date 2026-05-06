@@ -5,13 +5,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
-import { useSettingsStore } from '../store/settings';
+import { useTranslation } from 'react-i18next';
 import type { VaultStatistics } from '@keepassex/types';
 
 export function StatisticsPage() {
   const navigate = useNavigate();
-  const { settings } = useSettingsStore();
-  const isVi = settings.language === 'vi';
+  const { t } = useTranslation();
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ['vault-statistics'],
@@ -26,11 +25,11 @@ export function StatisticsPage() {
   };
 
   const strengthLabel = (score: number) => {
-    if (score >= 4) return isVi ? 'Rất mạnh' : 'Very Strong';
-    if (score >= 3) return isVi ? 'Mạnh' : 'Strong';
-    if (score >= 2) return isVi ? 'Trung bình' : 'Fair';
-    if (score >= 1) return isVi ? 'Yếu' : 'Weak';
-    return isVi ? 'Rất yếu' : 'Very Weak';
+    if (score >= 4) return t('generator.strengthVeryStrong');
+    if (score >= 3) return t('generator.strengthStrong');
+    if (score >= 2) return t('generator.strengthFair');
+    if (score >= 1) return t('generator.strengthWeak');
+    return t('generator.strengthVeryWeak');
   };
 
   const strengthColor = (score: number) => {
@@ -45,16 +44,16 @@ export function StatisticsPage() {
     <div className="stats-page">
       <div className="stats-header">
         <button className="btn-back" onClick={() => navigate('/settings')}>
-          ← {isVi ? 'Cài đặt' : 'Settings'}
+          ← {t('settings.title')}
         </button>
-        <h2>{isVi ? '📊 Thống kê kho' : '📊 Vault Statistics'}</h2>
+        <h2>📊 {t('statistics.title')}</h2>
       </div>
 
       <div className="stats-content">
         {isLoading ? (
           <div className="stats-loading">
             <span className="animate-pulse">⏳</span>
-            <p>{isVi ? 'Đang tải...' : 'Loading...'}</p>
+            <p>{t('common.loading')}</p>
           </div>
         ) : stats ? (
           <>
@@ -63,45 +62,45 @@ export function StatisticsPage() {
               <StatCard
                 icon="🔑"
                 value={stats.totalEntries}
-                label={isVi ? 'Tổng mục' : 'Total Entries'}
+                label={t('statistics.totalEntries')}
                 color="var(--color-primary)"
               />
               <StatCard
                 icon="📁"
                 value={stats.totalGroups}
-                label={isVi ? 'Nhóm' : 'Groups'}
+                label={t('statistics.totalGroups')}
                 color="#8b5cf6"
               />
               <StatCard
                 icon="📎"
                 value={stats.totalAttachments}
-                label={isVi ? 'Đính kèm' : 'Attachments'}
+                label={t('statistics.totalAttachments')}
                 color="#f59e0b"
                 subtitle={formatBytes(stats.totalAttachmentSize)}
               />
               <StatCard
                 icon="⏱"
                 value={stats.entriesWithOtp}
-                label="OTP"
+                label={t('statistics.entriesWithOtp')}
                 color="#06b6d4"
               />
               <StatCard
                 icon="🛡️"
                 value={stats.entriesWithPasskey}
-                label="Passkey"
+                label={t('statistics.entriesWithPasskey')}
                 color="#10b981"
               />
               <StatCard
                 icon="🔐"
                 value={stats.entriesWithSshKey}
-                label="SSH"
+                label={t('statistics.entriesWithSshKey')}
                 color="#6366f1"
               />
             </div>
 
             {/* Password strength */}
             <div className="stats-section">
-              <h3>{isVi ? 'Độ mạnh mật khẩu trung bình' : 'Average Password Strength'}</h3>
+              <h3>{t('statistics.averageStrength')}</h3>
               <div className="stats-strength">
                 <div className="stats-strength-bar-wrap">
                   <div
@@ -116,29 +115,29 @@ export function StatisticsPage() {
                   className="stats-strength-label"
                   style={{ color: strengthColor(stats.averagePasswordStrength) }}
                 >
-                  {strengthLabel(stats.averagePasswordStrength)}
-                  {' '}({stats.averagePasswordStrength.toFixed(1)}/4)
+                  {strengthLabel(stats.averagePasswordStrength)} (
+                  {stats.averagePasswordStrength.toFixed(1)}/4)
                 </span>
               </div>
             </div>
 
             {/* Expiry */}
             <div className="stats-section">
-              <h3>{isVi ? 'Hết hạn' : 'Expiry'}</h3>
+              <h3>{t('entry.expiry')}</h3>
               <div className="stats-row-list">
                 <StatsRow
-                  label={isVi ? 'Mục có ngày hết hạn' : 'Entries with expiry'}
+                  label={t('entry.expires')}
                   value={stats.entriesWithExpiry}
                   total={stats.totalEntries}
                 />
                 <StatsRow
-                  label={isVi ? 'Đã hết hạn' : 'Expired'}
+                  label={t('entry.expired')}
                   value={stats.entriesExpired}
                   total={stats.totalEntries}
                   danger={stats.entriesExpired > 0}
                 />
                 <StatsRow
-                  label={isVi ? 'Sắp hết hạn (30 ngày)' : 'Expiring soon (30 days)'}
+                  label={t('health.expiringSoon')}
                   value={stats.entriesExpiringSoon}
                   total={stats.totalEntries}
                   warn={stats.entriesExpiringSoon > 0}
@@ -149,15 +148,13 @@ export function StatisticsPage() {
             {/* Notable entries */}
             {(stats.mostUsedEntry || stats.oldestEntry || stats.newestEntry) && (
               <div className="stats-section">
-                <h3>{isVi ? 'Đáng chú ý' : 'Notable'}</h3>
+                <h3>{t('statistics.mostUsed')}</h3>
                 <div className="stats-notable">
                   {stats.mostUsedEntry && (
                     <div className="stats-notable-row">
                       <span className="stats-notable-icon">🏆</span>
                       <div>
-                        <p className="stats-notable-label">
-                          {isVi ? 'Dùng nhiều nhất' : 'Most used'}
-                        </p>
+                        <p className="stats-notable-label">{t('statistics.mostUsed')}</p>
                         <p className="stats-notable-value">{stats.mostUsedEntry.title}</p>
                       </div>
                     </div>
@@ -166,9 +163,7 @@ export function StatisticsPage() {
                     <div className="stats-notable-row">
                       <span className="stats-notable-icon">📅</span>
                       <div>
-                        <p className="stats-notable-label">
-                          {isVi ? 'Mục cũ nhất' : 'Oldest entry'}
-                        </p>
+                        <p className="stats-notable-label">{t('statistics.oldestEntry')}</p>
                         <p className="stats-notable-value">
                           {new Date(stats.oldestEntry).toLocaleDateString()}
                         </p>
@@ -179,9 +174,7 @@ export function StatisticsPage() {
                     <div className="stats-notable-row">
                       <span className="stats-notable-icon">🆕</span>
                       <div>
-                        <p className="stats-notable-label">
-                          {isVi ? 'Mục mới nhất' : 'Newest entry'}
-                        </p>
+                        <p className="stats-notable-label">{t('statistics.newestEntry')}</p>
                         <p className="stats-notable-value">
                           {new Date(stats.newestEntry).toLocaleDateString()}
                         </p>
@@ -195,7 +188,7 @@ export function StatisticsPage() {
         ) : (
           <div className="stats-loading">
             <span>📊</span>
-            <p>{isVi ? 'Không có dữ liệu' : 'No data available'}</p>
+            <p>{t('common.none')}</p>
           </div>
         )}
       </div>
@@ -276,22 +269,43 @@ export function StatisticsPage() {
   );
 }
 
-function StatCard({ icon, value, label, color, subtitle }: {
-  icon: string; value: number; label: string; color: string; subtitle?: string;
+function StatCard({
+  icon,
+  value,
+  label,
+  color,
+  subtitle,
+}: {
+  icon: string;
+  value: number;
+  label: string;
+  color: string;
+  subtitle?: string;
 }) {
   return (
     <div className="stat-card">
       <span className="stat-card-icon">{icon}</span>
-      <span className="stat-card-value" style={{ color }}>{value.toLocaleString()}</span>
+      <span className="stat-card-value" style={{ color }}>
+        {value.toLocaleString()}
+      </span>
       <span className="stat-card-label">{label}</span>
       {subtitle && <span className="stat-card-subtitle">{subtitle}</span>}
     </div>
   );
 }
 
-function StatsRow({ label, value, total, danger, warn }: {
-  label: string; value: number; total: number;
-  danger?: boolean; warn?: boolean;
+function StatsRow({
+  label,
+  value,
+  total,
+  danger,
+  warn,
+}: {
+  label: string;
+  value: number;
+  total: number;
+  danger?: boolean;
+  warn?: boolean;
 }) {
   const pct = total > 0 ? (value / total) * 100 : 0;
   const color = danger ? '#ef4444' : warn ? '#f59e0b' : 'var(--color-primary)';
@@ -300,12 +314,11 @@ function StatsRow({ label, value, total, danger, warn }: {
     <div className="stats-row">
       <span className="stats-row-label">{label}</span>
       <div className="stats-row-bar-wrap">
-        <div
-          className="stats-row-bar"
-          style={{ width: `${pct}%`, background: color }}
-        />
+        <div className="stats-row-bar" style={{ width: `${pct}%`, background: color }} />
       </div>
-      <span className="stats-row-value" style={{ color }}>{value}</span>
+      <span className="stats-row-value" style={{ color }}>
+        {value}
+      </span>
     </div>
   );
 }

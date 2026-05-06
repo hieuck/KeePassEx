@@ -3,6 +3,7 @@
  */
 import { create } from 'zustand';
 import { invoke } from '@tauri-apps/api/core';
+import { changeLocale, type SupportedLocale } from '@keepassex/i18n';
 import type { RecentVault } from '@keepassex/types';
 
 export interface AppSettings {
@@ -52,15 +53,24 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   init: async () => {
     try {
       const settings = await invoke<AppSettings>('get_settings');
-      set({ settings: { ...defaults, ...settings } });
+      const merged = { ...defaults, ...settings };
+      set({ settings: merged });
+      // Apply saved language immediately on startup — no restart required
+      if (merged.language && merged.language !== 'en') {
+        await changeLocale(merged.language as SupportedLocale).catch(() => {});
+      }
     } catch {
       // Use defaults
     }
   },
 
-  update: async (partial) => {
+  update: async partial => {
     const newSettings = { ...get().settings, ...partial };
     set({ settings: newSettings });
+    // Apply language change live — no restart required
+    if (partial.language) {
+      await changeLocale(partial.language as SupportedLocale).catch(() => {});
+    }
     try {
       await invoke('save_settings', { settings: newSettings });
     } catch {
@@ -68,7 +78,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     }
   },
 
-  addRecentVault: async (vault) => {
+  addRecentVault: async vault => {
     const current = get().settings.recentVaults;
     const filtered = current.filter(v => v.path !== vault.path);
     const updated = [vault, ...filtered].slice(0, 10);

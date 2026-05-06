@@ -5,7 +5,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
 import { useNavigate } from 'react-router-dom';
-import { useSettingsStore } from '../store/settings';
+import { useTranslation } from 'react-i18next';
 import { useBreachStore } from '../store/breach';
 
 interface HealthReport {
@@ -17,72 +17,91 @@ interface HealthReport {
   expiringSoonCount: number;
   noPasswordCount: number;
   oldPasswordCount: number;
-  weakPasswords: Array<{ entryUuid: string; entryTitle: string; strengthScore: number; strengthLabel: string }>;
+  weakPasswords: Array<{
+    entryUuid: string;
+    entryTitle: string;
+    strengthScore: number;
+    strengthLabel: string;
+  }>;
   reusedPasswords: Array<{ entries: Array<{ uuid: string; title: string }> }>;
   expiredEntries: Array<{ entryUuid: string; entryTitle: string; expiredAt: string }>;
-  expiringSoon: Array<{ entryUuid: string; entryTitle: string; expiresAt: string; daysRemaining: number }>;
+  expiringSoon: Array<{
+    entryUuid: string;
+    entryTitle: string;
+    expiresAt: string;
+    daysRemaining: number;
+  }>;
 }
 
 export function HealthPage() {
-  const { settings } = useSettingsStore();
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const isVi = settings.language === 'vi';
   const { checkVault: checkBreaches, report: breachReport } = useBreachStore();
 
-  const { data: report, isLoading, refetch } = useQuery({
+  const {
+    data: report,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['health'],
     queryFn: () => invoke<HealthReport>('audit_vault'),
     staleTime: 60_000,
   });
 
-  const scoreColor = !report ? '#9CA3AF'
-    : report.score >= 90 ? '#059669'
-    : report.score >= 70 ? '#16A34A'
-    : report.score >= 50 ? '#D97706'
-    : '#DC2626';
+  const scoreColor = !report
+    ? '#9CA3AF'
+    : report.score >= 90
+      ? '#059669'
+      : report.score >= 70
+        ? '#16A34A'
+        : report.score >= 50
+          ? '#D97706'
+          : '#DC2626';
 
   return (
     <div className="health-page">
       <div className="health-header">
-        <h2>{isVi ? '🛡️ Sức khỏe kho' : '🛡️ Vault Health'}</h2>
+        <h2>🛡️ {t('health.title')}</h2>
         <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
           <button
             className="btn btn-secondary"
             onClick={() => checkBreaches(false)}
-            title={isVi ? 'Kiểm tra rò rỉ dữ liệu' : 'Check for breaches'}
+            title={t('health.breachCheck')}
           >
-            🔍 {isVi ? 'Kiểm tra rò rỉ' : 'Breach Check'}
+            🔍 {t('health.breachCheck')}
           </button>
           <button className="btn btn-secondary" onClick={() => refetch()}>
-            {isVi ? '🔄 Kiểm tra lại' : '🔄 Re-check'}
+            🔄 {t('health.runCheck')}
           </button>
         </div>
       </div>
 
       {isLoading ? (
         <div className="health-loading">
-          <p>{isVi ? 'Đang kiểm tra...' : 'Checking...'}</p>
+          <p>{t('health.checking')}</p>
         </div>
       ) : report ? (
         <div className="health-content">
           {/* Score card */}
           <div className="score-card">
             <div className="score-circle" style={{ borderColor: scoreColor }}>
-              <span className="score-number" style={{ color: scoreColor }}>{report.score}</span>
-              <span className="score-label">{isVi ? 'điểm' : '/100'}</span>
+              <span className="score-number" style={{ color: scoreColor }}>
+                {report.score}
+              </span>
+              <span className="score-label">/100</span>
             </div>
             <div className="score-info">
               <h3 className="score-title">
                 {report.score >= 90
-                  ? (isVi ? '✅ Kho rất khỏe mạnh' : '✅ Excellent vault health')
+                  ? '✅ Excellent vault health'
                   : report.score >= 70
-                  ? (isVi ? '👍 Kho khỏe mạnh' : '👍 Good vault health')
-                  : report.score >= 50
-                  ? (isVi ? '⚠️ Cần cải thiện' : '⚠️ Needs improvement')
-                  : (isVi ? '🚨 Cần chú ý ngay' : '🚨 Needs attention')}
+                    ? '👍 Good vault health'
+                    : report.score >= 50
+                      ? '⚠️ Needs improvement'
+                      : '🚨 Needs attention'}
               </h3>
               <p className="score-desc">
-                {report.totalEntries} {isVi ? 'mục được kiểm tra' : 'entries checked'}
+                {report.totalEntries} {t('health.lastChecked', { time: '' }).split(':')[0]}
               </p>
             </div>
           </div>
@@ -92,25 +111,25 @@ export function HealthPage() {
             <HealthCard
               icon="🔓"
               count={report.weakCount}
-              label={isVi ? 'Mật khẩu yếu' : 'Weak passwords'}
+              label={t('health.weakPasswords')}
               severity={report.weakCount > 0 ? 'danger' : 'ok'}
             />
             <HealthCard
               icon="♻️"
               count={report.reusedCount}
-              label={isVi ? 'Dùng lại' : 'Reused'}
+              label={t('health.reusedPasswords')}
               severity={report.reusedCount > 0 ? 'warning' : 'ok'}
             />
             <HealthCard
               icon="⏰"
               count={report.expiredCount}
-              label={isVi ? 'Đã hết hạn' : 'Expired'}
+              label={t('health.expiredEntries')}
               severity={report.expiredCount > 0 ? 'danger' : 'ok'}
             />
             <HealthCard
               icon="📅"
               count={report.expiringSoonCount}
-              label={isVi ? 'Sắp hết hạn' : 'Expiring soon'}
+              label={t('health.expiringSoon')}
               severity={report.expiringSoonCount > 0 ? 'warning' : 'ok'}
             />
           </div>
@@ -118,7 +137,7 @@ export function HealthPage() {
           {/* Issue lists */}
           {report.weakPasswords.length > 0 && (
             <IssueSection
-              title={isVi ? '🔓 Mật khẩu yếu' : '🔓 Weak Passwords'}
+              title={`🔓 ${t('health.weakPasswords')}`}
               items={report.weakPasswords.map(w => ({
                 uuid: w.entryUuid,
                 title: w.entryTitle,
@@ -131,7 +150,7 @@ export function HealthPage() {
 
           {report.reusedPasswords.length > 0 && (
             <div className="issue-section">
-              <h3 className="issue-title">{isVi ? '♻️ Mật khẩu dùng lại' : '♻️ Reused Passwords'}</h3>
+              <h3 className="issue-title">♻️ {t('health.reusedPasswords')}</h3>
               {report.reusedPasswords.map((group, i) => (
                 <div key={i} className="reused-group">
                   {group.entries.map(e => (
@@ -150,7 +169,7 @@ export function HealthPage() {
 
           {report.expiredEntries.length > 0 && (
             <IssueSection
-              title={isVi ? '⏰ Đã hết hạn' : '⏰ Expired Entries'}
+              title={`⏰ ${t('health.expiredEntries')}`}
               items={report.expiredEntries.map(e => ({
                 uuid: e.entryUuid,
                 title: e.entryTitle,
@@ -163,24 +182,26 @@ export function HealthPage() {
 
           {report.expiringSoon.length > 0 && (
             <IssueSection
-              title={isVi ? '📅 Sắp hết hạn' : '📅 Expiring Soon'}
+              title={`📅 ${t('health.expiringSoon')}`}
               items={report.expiringSoon.map(e => ({
                 uuid: e.entryUuid,
                 title: e.entryTitle,
-                detail: `${e.daysRemaining} ${isVi ? 'ngày' : 'days'}`,
+                detail: `${e.daysRemaining} days`,
                 detailColor: '#D97706',
               }))}
               onItemClick={uuid => navigate(`/vault/entry/${uuid}`)}
             />
           )}
 
-          {report.weakCount === 0 && report.reusedCount === 0 &&
-           report.expiredCount === 0 && report.expiringSoonCount === 0 && (
-            <div className="health-all-good">
-              <span style={{ fontSize: 48 }}>🎉</span>
-              <p>{isVi ? 'Không có vấn đề! Kho của bạn đang khỏe mạnh.' : 'No issues found! Your vault is healthy.'}</p>
-            </div>
-          )}
+          {report.weakCount === 0 &&
+            report.reusedCount === 0 &&
+            report.expiredCount === 0 &&
+            report.expiringSoonCount === 0 && (
+              <div className="health-all-good">
+                <span style={{ fontSize: 48 }}>🎉</span>
+                <p>{t('health.noIssues')}</p>
+              </div>
+            )}
         </div>
       ) : null}
 
@@ -271,7 +292,12 @@ export function HealthPage() {
   );
 }
 
-function HealthCard({ icon, count, label, severity }: {
+function HealthCard({
+  icon,
+  count,
+  label,
+  severity,
+}: {
   icon: string;
   count: number;
   label: string;
@@ -285,7 +311,9 @@ function HealthCard({ icon, count, label, severity }: {
   return (
     <div className="health-card" style={{ background: bg, borderColor: color + '40' }}>
       <span className="health-card-icon">{icon}</span>
-      <span className="health-card-count" style={{ color }}>{count}</span>
+      <span className="health-card-count" style={{ color }}>
+        {count}
+      </span>
       <span className="health-card-label">{label}</span>
       <style>{`
         .health-card {
@@ -306,7 +334,11 @@ function HealthCard({ icon, count, label, severity }: {
   );
 }
 
-function IssueSection({ title, items, onItemClick }: {
+function IssueSection({
+  title,
+  items,
+  onItemClick,
+}: {
   title: string;
   items: Array<{ uuid: string; title: string; detail: string; detailColor: string }>;
   onItemClick: (uuid: string) => void;
@@ -315,11 +347,7 @@ function IssueSection({ title, items, onItemClick }: {
     <div className="issue-section">
       <h3 className="issue-title">{title}</h3>
       {items.map(item => (
-        <button
-          key={item.uuid}
-          className="issue-item"
-          onClick={() => onItemClick(item.uuid)}
-        >
+        <button key={item.uuid} className="issue-item" onClick={() => onItemClick(item.uuid)}>
           <span className="issue-item-title">{item.title}</span>
           <span style={{ fontSize: 12, color: item.detailColor, fontWeight: 500 }}>
             {item.detail}

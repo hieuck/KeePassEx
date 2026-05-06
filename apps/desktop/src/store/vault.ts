@@ -55,6 +55,8 @@ interface VaultState {
   isOpen: boolean;
   isLocked: boolean;
   meta: VaultMeta | null;
+  /** Preserved vault path so we can re-open after lock */
+  vaultPath: string | null;
   selectedGroupUuid: string | null;
   searchQuery: string;
 
@@ -63,7 +65,7 @@ interface VaultState {
   createVault: (path: string, name: string, password: string) => Promise<void>;
   closeVault: () => Promise<void>;
   lockVault: () => Promise<void>;
-  unlockVault: (password: string) => Promise<void>;
+  unlockVault: (password: string, keyFileData?: Uint8Array) => Promise<void>;
   setLocked: (locked: boolean) => void;
   setSelectedGroup: (uuid: string | null) => void;
   setSearchQuery: (query: string) => void;
@@ -73,6 +75,7 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   isOpen: false,
   isLocked: false,
   meta: null,
+  vaultPath: null,
   selectedGroupUuid: null,
   searchQuery: '',
 
@@ -84,7 +87,8 @@ export const useVaultStore = create<VaultState>((set, get) => ({
         key_file_data: keyFileData ? Array.from(keyFileData) : null,
       },
     });
-    set({ isOpen: true, isLocked: false, meta });
+    // Persist path separately so it survives lock (meta is kept but path is explicit)
+    set({ isOpen: true, isLocked: false, meta, vaultPath: path });
 
     // Track in recent vaults
     const { addRecentVault } = useSettingsStore.getState();
@@ -99,30 +103,34 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     const meta = await invoke<VaultMeta>('create_vault', {
       args: { path, name, password },
     });
-    set({ isOpen: true, isLocked: false, meta });
+    set({ isOpen: true, isLocked: false, meta, vaultPath: path });
   },
 
   closeVault: async () => {
     await invoke('close_vault');
-    set({ isOpen: false, isLocked: false, meta: null, selectedGroupUuid: null });
+    set({ isOpen: false, isLocked: false, meta: null, vaultPath: null, selectedGroupUuid: null });
   },
 
   lockVault: async () => {
     await invoke('lock_vault');
+    // Keep meta and vaultPath so UnlockPage can display the vault name and re-open it
     set({ isLocked: true });
   },
 
-  unlockVault: async (password) => {
-    // Re-open with stored path
-    const { meta } = get();
-    if (!meta) throw new Error('No vault to unlock');
+  unlockVault: async (password, keyFileData) => {
+    const { vaultPath } = get();
+    if (!vaultPath) throw new Error('No vault path stored — cannot unlock');
     await invoke('open_vault', {
-      args: { path: meta.path, password },
+      args: {
+        path: vaultPath,
+        password,
+        key_file_data: keyFileData ? Array.from(keyFileData) : null,
+      },
     });
     set({ isLocked: false });
   },
 
-  setLocked: (locked) => set({ isLocked: locked }),
-  setSelectedGroup: (uuid) => set({ selectedGroupUuid: uuid }),
-  setSearchQuery: (query) => set({ searchQuery: query }),
+  setLocked: locked => set({ isLocked: locked }),
+  setSelectedGroup: uuid => set({ selectedGroupUuid: uuid }),
+  setSearchQuery: query => set({ searchQuery: query }),
 }));

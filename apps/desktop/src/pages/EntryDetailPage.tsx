@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
+import { useTranslation } from 'react-i18next';
 import { useSettingsStore } from '../store/settings';
 import { OtpSetupDialog } from '../components/OtpSetupDialog';
 import { CustomFieldEditor, type CustomField } from '../components/CustomFieldEditor';
@@ -21,7 +22,7 @@ export function EntryDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { settings } = useSettingsStore();
-  const isVi = settings.language === 'vi';
+  const { t } = useTranslation();
   const isNew = uuid === 'new';
 
   const [editing, setEditing] = useState(isNew);
@@ -39,11 +40,19 @@ export function EntryDetailPage() {
     expiry: '',
     customFields: [] as CustomField[],
   });
-  const [otpCode, setOtpCode] = useState<{ code: string; remainingSeconds: number; period: number } | null>(null);
+  const [otpCode, setOtpCode] = useState<{
+    code: string;
+    remainingSeconds: number;
+    period: number;
+  } | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [tagInput, setTagInput] = useState('');
   const [activeTab, setActiveTab] = useState<'fields' | 'history' | 'passkeys' | 'ssh'>('fields');
-  const [passwordStrength, setPasswordStrength] = useState<{ score: 0|1|2|3|4; entropy: number; label: string } | null>(null);
+  const [passwordStrength, setPasswordStrength] = useState<{
+    score: 0 | 1 | 2 | 3 | 4;
+    entropy: number;
+    label: string;
+  } | null>(null);
 
   // Fetch entry
   const { data: entry } = useQuery({
@@ -55,10 +64,18 @@ export function EntryDetailPage() {
   // Fetch entry history
   const { data: history = [] } = useQuery({
     queryKey: ['entry-history', uuid],
-    queryFn: () => invoke<Array<{
-      uuid: string; modifiedAt: string; title: string;
-      username: string; url: string; notes: string; hasPassword: boolean;
-    }>>('get_entry_history', { uuid }),
+    queryFn: () =>
+      invoke<
+        Array<{
+          uuid: string;
+          modifiedAt: string;
+          title: string;
+          username: string;
+          url: string;
+          notes: string;
+          hasPassword: boolean;
+        }>
+      >('get_entry_history', { uuid }),
     enabled: !isNew && !!uuid,
   });
 
@@ -87,7 +104,9 @@ export function EntryDetailPage() {
   useEffect(() => {
     if (!entry?.hasOtp || !uuid) return;
     const refresh = () => {
-      invoke<{ code: string; remainingSeconds: number; period: number }>('generate_totp', { entryUuid: uuid })
+      invoke<{ code: string; remainingSeconds: number; period: number }>('generate_totp', {
+        entryUuid: uuid,
+      })
         .then(setOtpCode)
         .catch(() => {});
     };
@@ -98,10 +117,19 @@ export function EntryDetailPage() {
 
   // Password strength check when editing
   useEffect(() => {
-    if (!editing || !form.password) { setPasswordStrength(null); return; }
-    invoke<{ score: 0|1|2|3|4; entropy: number; strengthLabel: string }>('check_password_strength', {
-      password: form.password,
-    }).then(r => setPasswordStrength({ score: r.score, entropy: r.entropy, label: r.strengthLabel }))
+    if (!editing || !form.password) {
+      setPasswordStrength(null);
+      return;
+    }
+    invoke<{ score: 0 | 1 | 2 | 3 | 4; entropy: number; strengthLabel: string }>(
+      'check_password_strength',
+      {
+        password: form.password,
+      }
+    )
+      .then(r =>
+        setPasswordStrength({ score: r.score, entropy: r.entropy, label: r.strengthLabel })
+      )
       .catch(() => {});
   }, [form.password, editing]);
 
@@ -193,7 +221,7 @@ export function EntryDetailPage() {
   if (!isNew && !entry) {
     return (
       <div className="entry-detail-loading">
-        <p>{isVi ? 'Đang tải...' : 'Loading...'}</p>
+        <p>{t('common.loading')}</p>
       </div>
     );
   }
@@ -211,25 +239,25 @@ export function EntryDetailPage() {
 
       {/* Header */}
       <div className="entry-detail-header">
-        <button className="btn-icon" onClick={() => navigate(-1)} aria-label="Back">←</button>
-        <h2 className="entry-detail-title">
-          {isNew ? (isVi ? 'Mục mới' : 'New Entry') : (entry?.title ?? '')}
-        </h2>
+        <button className="btn-icon" onClick={() => navigate(-1)} aria-label={t('common.back')}>
+          ←
+        </button>
+        <h2 className="entry-detail-title">{isNew ? t('entry.new') : (entry?.title ?? '')}</h2>
         <div className="entry-detail-actions">
           {!isNew && !editing && (
             <>
               <button className="btn btn-secondary" onClick={() => setEditing(true)}>
-                {isVi ? 'Chỉnh sửa' : 'Edit'}
+                {t('common.edit')}
               </button>
               <button
                 className="btn btn-danger"
                 onClick={() => {
-                  if (confirm(isVi ? `Xóa "${entry?.title}"?` : `Delete "${entry?.title}"?`)) {
+                  if (confirm(t('entry.confirmDelete', { title: entry?.title }))) {
                     deleteMutation.mutate();
                   }
                 }}
               >
-                {isVi ? 'Xóa' : 'Delete'}
+                {t('common.delete')}
               </button>
             </>
           )}
@@ -240,11 +268,11 @@ export function EntryDetailPage() {
                 onClick={() => saveMutation.mutate()}
                 disabled={saveMutation.isPending || !form.title.trim()}
               >
-                {saveMutation.isPending ? '...' : (isVi ? 'Lưu' : 'Save')}
+                {saveMutation.isPending ? '...' : t('common.save')}
               </button>
               {!isNew && (
                 <button className="btn btn-secondary" onClick={() => setEditing(false)}>
-                  {isVi ? 'Hủy' : 'Cancel'}
+                  {t('common.cancel')}
                 </button>
               )}
             </>
@@ -256,24 +284,26 @@ export function EntryDetailPage() {
       {!isNew && (
         <div className="entry-tabs" role="tablist">
           {[
-            { id: 'fields', label: isVi ? 'Thông tin' : 'Details' },
-            { id: 'history', label: isVi ? 'Lịch sử' : 'History', count: history.length },
-            { id: 'passkeys', label: 'Passkeys', show: entry?.hasPasskey },
-            { id: 'ssh', label: 'SSH', show: entry?.hasSshKey },
-          ].filter(t => t.show !== false).map(tab => (
-            <button
-              key={tab.id}
-              role="tab"
-              aria-selected={activeTab === tab.id}
-              className={`entry-tab${activeTab === tab.id ? ' entry-tab--active' : ''}`}
-              onClick={() => setActiveTab(tab.id as typeof activeTab)}
-            >
-              {tab.label}
-              {tab.count !== undefined && tab.count > 0 && (
-                <span className="entry-tab-badge">{tab.count}</span>
-              )}
-            </button>
-          ))}
+            { id: 'fields', label: t('common.info') ?? 'Details' },
+            { id: 'history', label: t('entry.history'), count: history.length },
+            { id: 'passkeys', label: t('passkey.title'), show: entry?.hasPasskey },
+            { id: 'ssh', label: t('ssh.title'), show: entry?.hasSshKey },
+          ]
+            .filter(t => t.show !== false)
+            .map(tab => (
+              <button
+                key={tab.id}
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                className={`entry-tab${activeTab === tab.id ? ' entry-tab--active' : ''}`}
+                onClick={() => setActiveTab(tab.id as typeof activeTab)}
+              >
+                {tab.label}
+                {tab.count !== undefined && tab.count > 0 && (
+                  <span className="entry-tab-badge">{tab.count}</span>
+                )}
+              </button>
+            ))}
         </div>
       )}
 
@@ -283,57 +313,92 @@ export function EntryDetailPage() {
         {(isNew || activeTab === 'fields') && (
           <>
             {/* Title */}
-            <FieldRow label={isVi ? 'Tiêu đề' : 'Title'} editing={editing}
-              value={entry?.title} inputValue={form.title}
+            <FieldRow
+              label={t('entry.title')}
+              editing={editing}
+              value={entry?.title}
+              inputValue={form.title}
               onInputChange={v => setForm(f => ({ ...f, title: v }))}
-              placeholder={isVi ? 'Tiêu đề mục' : 'Entry title'} />
+              placeholder={t('entry.title')}
+            />
 
             {/* Username */}
-            <FieldRow label={isVi ? 'Tên đăng nhập' : 'Username'} editing={editing}
-              value={entry?.username} inputValue={form.username}
+            <FieldRow
+              label={t('entry.username')}
+              editing={editing}
+              value={entry?.username}
+              inputValue={form.username}
               onInputChange={v => setForm(f => ({ ...f, username: v }))}
-              placeholder={isVi ? 'Tên đăng nhập' : 'Username'}
+              placeholder={t('entry.username')}
               onCopy={() => copyToClipboard(entry?.username ?? form.username, 'username')}
-              copied={copied === 'username'} />
+              copied={copied === 'username'}
+            />
 
             {/* Password — use PasswordField component */}
             <div className="field-row">
-              <span className="field-label">{isVi ? 'Mật khẩu' : 'Password'}</span>
+              <span className="field-label">{t('entry.password')}</span>
               <PasswordField
-                value={editing ? form.password : (showPassword ? password : '')}
+                value={editing ? form.password : showPassword ? password : ''}
                 onChange={v => setForm(f => ({ ...f, password: v }))}
                 onCopy={() => copyToClipboard(showPassword ? password : '', 'password')}
-                onGenerate={editing ? () => invoke<string>('generate_password', {
-                  config: { mode: 'random', length: 20, useUppercase: true, useLowercase: true, useDigits: true, useSymbols: true, excludeAmbiguous: false, excludeChars: '', minUppercase: 0, minLowercase: 0, minDigits: 0, minSymbols: 0, wordCount: 6, wordSeparator: '-', capitalizeWords: false, includeNumber: false },
-                }).then(pw => setForm(f => ({ ...f, password: pw }))) : undefined}
+                onGenerate={
+                  editing
+                    ? () =>
+                        invoke<string>('generate_password', {
+                          config: {
+                            mode: 'random',
+                            length: 20,
+                            useUppercase: true,
+                            useLowercase: true,
+                            useDigits: true,
+                            useSymbols: true,
+                            excludeAmbiguous: false,
+                            excludeChars: '',
+                            minUppercase: 0,
+                            minLowercase: 0,
+                            minDigits: 0,
+                            minSymbols: 0,
+                            wordCount: 6,
+                            wordSeparator: '-',
+                            capitalizeWords: false,
+                            includeNumber: false,
+                          },
+                        }).then(pw => setForm(f => ({ ...f, password: pw })))
+                    : undefined
+                }
                 readOnly={!editing}
                 copied={copied === 'password'}
                 strengthScore={passwordStrength?.score}
                 strengthLabel={passwordStrength?.label}
                 entropy={passwordStrength?.entropy}
-                placeholder={isVi ? 'Mật khẩu' : 'Password'}
-                showLabel={isVi ? 'Hiện mật khẩu' : 'Show password'}
-                hideLabel={isVi ? 'Ẩn mật khẩu' : 'Hide password'}
-                copyLabel={isVi ? 'Sao chép mật khẩu' : 'Copy password'}
-                generateLabel={isVi ? 'Tạo mật khẩu' : 'Generate password'}
+                placeholder={t('entry.password')}
+                showLabel={t('entry.showPassword')}
+                hideLabel={t('entry.hidePassword')}
+                copyLabel={t('entry.copyPassword')}
+                generateLabel={t('entry.generatePassword')}
               />
             </div>
 
             {/* URL */}
-            <FieldRow label="URL" editing={editing}
-              value={entry?.url} inputValue={form.url}
+            <FieldRow
+              label="URL"
+              editing={editing}
+              value={entry?.url}
+              inputValue={form.url}
               onInputChange={v => setForm(f => ({ ...f, url: v }))}
               placeholder="https://"
               onCopy={() => copyToClipboard(entry?.url ?? form.url, 'url')}
-              copied={copied === 'url'} isUrl />
+              copied={copied === 'url'}
+              isUrl
+            />
 
             {/* OTP — use OtpDisplay component */}
             <div className="field-row">
               <div className="field-label-row">
-                <span className="field-label">OTP</span>
+                <span className="field-label">{t('otp.title')}</span>
                 {editing && (
                   <button className="btn-link" onClick={() => setShowOtpSetup(true)}>
-                    {entry?.hasOtp ? (isVi ? 'Chỉnh sửa' : 'Edit') : (isVi ? '+ Thêm OTP' : '+ Add OTP')}
+                    {entry?.hasOtp ? t('common.edit') : `+ ${t('entry.addOtp')}`}
                   </button>
                 )}
               </div>
@@ -342,24 +407,28 @@ export function EntryDetailPage() {
                   otp={otpCode}
                   onCopy={code => copyToClipboard(code, 'otp')}
                   copied={copied === 'otp'}
-                  label="OTP"
-                  expiresInLabel={isVi ? 'hết hạn sau' : 'expires in'}
-                  copyLabel={isVi ? 'Sao chép OTP' : 'Copy OTP'}
+                  label={t('otp.title')}
+                  expiresInLabel={t('otp.refreshIn', { seconds: '' }).split('{{')[0].trim()}
+                  copyLabel={t('entry.copyOtp')}
                 />
               ) : !editing ? (
                 <span className="field-value" style={{ color: 'var(--color-text-tertiary)' }}>
-                  {isVi ? 'Chưa cấu hình' : 'Not configured'}
+                  {t('common.none')}
                 </span>
               ) : null}
             </div>
 
             {/* Notes */}
             <div className="field-row">
-              <span className="field-label">{isVi ? 'Ghi chú' : 'Notes'}</span>
+              <span className="field-label">{t('entry.notes')}</span>
               {editing ? (
-                <textarea className="form-input form-textarea"
-                  value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                  placeholder={isVi ? 'Ghi chú...' : 'Notes...'} rows={4} />
+                <textarea
+                  className="form-input form-textarea"
+                  value={form.notes}
+                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                  placeholder={t('entry.notes')}
+                  rows={4}
+                />
               ) : (
                 <span className="field-value field-value-notes">{entry?.notes || '—'}</span>
               )}
@@ -367,20 +436,24 @@ export function EntryDetailPage() {
 
             {/* Tags */}
             <div className="field-row">
-              <span className="field-label">{isVi ? 'Thẻ' : 'Tags'}</span>
+              <span className="field-label">{t('entry.tags')}</span>
               {editing ? (
                 <TagInput
                   tags={form.tags}
                   onChange={tags => setForm(f => ({ ...f, tags }))}
-                  placeholder={isVi ? 'Thêm thẻ...' : 'Add tags...'}
+                  placeholder={t('entry.tags')}
                 />
               ) : (
                 <div className="tags-list">
                   {(entry?.tags ?? []).map(tag => (
-                    <span key={tag} className="tag">{tag}</span>
+                    <span key={tag} className="tag">
+                      {tag}
+                    </span>
                   ))}
                   {(entry?.tags ?? []).length === 0 && (
-                    <span className="field-value" style={{ color: 'var(--color-text-tertiary)' }}>—</span>
+                    <span className="field-value" style={{ color: 'var(--color-text-tertiary)' }}>
+                      —
+                    </span>
                   )}
                 </div>
               )}
@@ -389,15 +462,23 @@ export function EntryDetailPage() {
             {/* Expiry */}
             {(editing || entry?.expiry) && (
               <div className="field-row">
-                <span className="field-label">{isVi ? 'Ngày hết hạn' : 'Expiry Date'}</span>
+                <span className="field-label">{t('entry.expiry')}</span>
                 {editing ? (
-                  <input type="date" className="form-input"
+                  <input
+                    type="date"
+                    className="form-input"
                     value={form.expiry ? form.expiry.slice(0, 10) : ''}
-                    onChange={e => setForm(f => ({ ...f, expiry: e.target.value ? new Date(e.target.value).toISOString() : '' }))} />
+                    onChange={e =>
+                      setForm(f => ({
+                        ...f,
+                        expiry: e.target.value ? new Date(e.target.value).toISOString() : '',
+                      }))
+                    }
+                  />
                 ) : (
                   <span className={`field-value ${entry?.isExpired ? 'text-danger' : ''}`}>
                     {entry?.expiry ? new Date(entry.expiry).toLocaleDateString() : '—'}
-                    {entry?.isExpired && ` (${isVi ? 'Đã hết hạn' : 'Expired'})`}
+                    {entry?.isExpired && ` (${t('entry.expired')})`}
                   </span>
                 )}
               </div>
@@ -405,9 +486,17 @@ export function EntryDetailPage() {
 
             {/* Custom Fields */}
             <div className="field-row">
-              <span className="field-label">{isVi ? 'Trường tùy chỉnh' : 'Custom Fields'}</span>
+              <span className="field-label">{t('entry.customFields')}</span>
               <CustomFieldEditor
-                fields={editing ? form.customFields : (entry?.customFields ?? []).map(f => ({ key: f.key, value: f.value, protected: f.protected }))}
+                fields={
+                  editing
+                    ? form.customFields
+                    : (entry?.customFields ?? []).map(f => ({
+                        key: f.key,
+                        value: f.value,
+                        protected: f.protected,
+                      }))
+                }
                 onChange={fields => setForm(f => ({ ...f, customFields: fields }))}
                 readOnly={!editing}
               />
@@ -415,7 +504,7 @@ export function EntryDetailPage() {
 
             {/* Attachments */}
             <div className="field-row">
-              <span className="field-label">{isVi ? 'Tệp đính kèm' : 'Attachments'}</span>
+              <span className="field-label">{t('entry.attachments')}</span>
               <AttachmentViewer
                 attachments={(entry?.customFields ?? [])
                   .filter(f => f.key.startsWith('_attachment_'))
@@ -428,8 +517,12 @@ export function EntryDetailPage() {
             {/* Metadata */}
             {!editing && entry && (
               <div className="entry-meta">
-                <span>{isVi ? 'Tạo lúc' : 'Created'}: {new Date(entry.createdAt).toLocaleDateString()}</span>
-                <span>{isVi ? 'Sửa lúc' : 'Modified'}: {new Date(entry.modifiedAt).toLocaleDateString()}</span>
+                <span>
+                  {t('entry.sortByCreated')}: {new Date(entry.createdAt).toLocaleDateString()}
+                </span>
+                <span>
+                  {t('entry.sortByModified')}: {new Date(entry.modifiedAt).toLocaleDateString()}
+                </span>
               </div>
             )}
           </>
@@ -439,9 +532,12 @@ export function EntryDetailPage() {
         {activeTab === 'history' && !isNew && (
           <EntryHistoryViewer
             history={history}
-            onRestore={async (h) => {
-              if (confirm(isVi ? 'Khôi phục từ lịch sử này?' : 'Restore from this history entry?')) {
-                await invoke('restore_entry_from_history', { entryUuid: uuid, historyUuid: h.uuid });
+            onRestore={async h => {
+              if (confirm(t('entry.restoreFromHistory'))) {
+                await invoke('restore_entry_from_history', {
+                  entryUuid: uuid,
+                  historyUuid: h.uuid,
+                });
                 queryClient.invalidateQueries({ queryKey: ['entry', uuid] });
                 queryClient.invalidateQueries({ queryKey: ['entry-history', uuid] });
                 setActiveTab('fields');
@@ -451,27 +547,23 @@ export function EntryDetailPage() {
               await invoke('clear_entry_history', { uuid });
               queryClient.invalidateQueries({ queryKey: ['entry-history', uuid] });
             }}
-            historyLabel={isVi ? 'Lịch sử' : 'History'}
-            noHistoryLabel={isVi ? 'Không có lịch sử' : 'No history entries'}
-            restoreLabel={isVi ? 'Khôi phục' : 'Restore'}
-            clearLabel={isVi ? 'Xóa lịch sử' : 'Clear History'}
-            confirmClearLabel={isVi ? 'Xóa tất cả lịch sử?' : 'Clear all history entries?'}
-            modifiedLabel={isVi ? 'Sửa lúc' : 'Modified'}
-            changedFieldsLabel={isVi ? 'Đã thay đổi' : 'Changed'}
+            historyLabel={t('entry.history')}
+            noHistoryLabel={t('common.none')}
+            restoreLabel={t('entry.restoreFromHistory')}
+            clearLabel={t('entry.clearHistory')}
+            confirmClearLabel={t('entry.clearHistory')}
+            modifiedLabel={t('entry.sortByModified')}
+            changedFieldsLabel={t('common.info') ?? 'Changed'}
           />
         )}
 
         {/* ── Passkeys tab ── */}
         {activeTab === 'passkeys' && !isNew && (
           <div className="passkeys-section">
-            <p className="section-desc">
-              {isVi
-                ? 'Passkey (FIDO2/WebAuthn) được lưu trữ cho mục này.'
-                : 'Passkeys (FIDO2/WebAuthn) stored for this entry.'}
-            </p>
+            <p className="section-desc">{t('passkey.title')}</p>
             <div className="passkey-placeholder">
               <span>🔑</span>
-              <p>{isVi ? 'Quản lý passkey trong cài đặt mục.' : 'Manage passkeys in entry settings.'}</p>
+              <p>{t('passkey.noPasskeys')}</p>
             </div>
           </div>
         )}
@@ -479,14 +571,10 @@ export function EntryDetailPage() {
         {/* ── SSH tab ── */}
         {activeTab === 'ssh' && !isNew && (
           <div className="ssh-section">
-            <p className="section-desc">
-              {isVi
-                ? 'Khóa SSH được lưu trữ cho mục này.'
-                : 'SSH keys stored for this entry.'}
-            </p>
+            <p className="section-desc">{t('ssh.title')}</p>
             <div className="ssh-placeholder">
               <span>🔐</span>
-              <p>{isVi ? 'Quản lý khóa SSH trong cài đặt mục.' : 'Manage SSH keys in entry settings.'}</p>
+              <p>{t('ssh.agentStopped')}</p>
             </div>
           </div>
         )}
@@ -601,26 +689,53 @@ interface FieldRowProps {
   isUrl?: boolean;
 }
 
-function FieldRow({ label, value, editing, inputValue, onInputChange, placeholder, onCopy, copied, isUrl }: FieldRowProps) {
+function FieldRow({
+  label,
+  value,
+  editing,
+  inputValue,
+  onInputChange,
+  placeholder,
+  onCopy,
+  copied,
+  isUrl,
+}: FieldRowProps) {
   return (
     <div className="field-row">
       <span className="field-label">{label}</span>
       <div className="field-value-row">
         {editing ? (
-          <input type="text" className="form-input" value={inputValue}
+          <input
+            type="text"
+            className="form-input"
+            value={inputValue}
             onChange={e => onInputChange(e.target.value)}
-            placeholder={placeholder} style={{ flex: 1 }} />
+            placeholder={placeholder}
+            style={{ flex: 1 }}
+          />
         ) : (
           <>
             {isUrl && value ? (
-              <a href={value} target="_blank" rel="noopener noreferrer"
-                className="field-link" style={{ flex: 1 }}>{value || '—'}</a>
+              <a
+                href={value}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="field-link"
+                style={{ flex: 1 }}
+              >
+                {value || '—'}
+              </a>
             ) : (
-              <span className="field-value" style={{ flex: 1 }}>{value || '—'}</span>
+              <span className="field-value" style={{ flex: 1 }}>
+                {value || '—'}
+              </span>
             )}
             {onCopy && (
-              <button className={`btn-icon ${copied ? 'copied' : ''}`}
-                onClick={onCopy} aria-label={`Copy ${label}`}>
+              <button
+                className={`btn-icon ${copied ? 'copied' : ''}`}
+                onClick={onCopy}
+                aria-label={`Copy ${label}`}
+              >
                 {copied ? '✓' : '⎘'}
               </button>
             )}

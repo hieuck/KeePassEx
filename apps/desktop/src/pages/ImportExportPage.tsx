@@ -6,7 +6,9 @@ import React, { useState } from 'react';
 import { open, save } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
 import { useQueryClient } from '@tanstack/react-query';
-import { useSettingsStore } from '../store/settings';
+import { useTranslation } from 'react-i18next';
+
+import { useTranslation } from 'react-i18next';
 
 type ImportFormat = 'auto' | 'bitwarden' | 'lastpass' | 'chrome' | 'firefox' | '1password' | 'csv';
 type ExportFormat = 'csv' | 'json';
@@ -18,20 +20,19 @@ interface ImportResult {
   warnings: string[];
 }
 
-const IMPORT_FORMATS: { value: ImportFormat; labelEn: string; labelVi: string; ext: string[] }[] = [
-  { value: 'auto',        labelEn: 'Auto-detect',          labelVi: 'Tự động nhận dạng',    ext: ['json','csv'] },
-  { value: 'bitwarden',   labelEn: 'Bitwarden JSON',       labelVi: 'Bitwarden JSON',        ext: ['json'] },
-  { value: 'lastpass',    labelEn: 'LastPass CSV',         labelVi: 'LastPass CSV',          ext: ['csv'] },
-  { value: 'chrome',      labelEn: 'Chrome / Edge CSV',    labelVi: 'Chrome / Edge CSV',     ext: ['csv'] },
-  { value: 'firefox',     labelEn: 'Firefox CSV',          labelVi: 'Firefox CSV',           ext: ['csv'] },
-  { value: '1password',   labelEn: '1Password 1PUX',       labelVi: '1Password 1PUX',        ext: ['1pux','json'] },
-  { value: 'csv',         labelEn: 'Generic CSV',          labelVi: 'CSV chung',             ext: ['csv'] },
+const IMPORT_FORMATS: { value: ImportFormat; label: string; ext: string[] }[] = [
+  { value: 'auto', label: 'Auto-detect', ext: ['json', 'csv'] },
+  { value: 'bitwarden', label: 'Bitwarden JSON', ext: ['json'] },
+  { value: 'lastpass', label: 'LastPass CSV', ext: ['csv'] },
+  { value: 'chrome', label: 'Chrome / Edge CSV', ext: ['csv'] },
+  { value: 'firefox', label: 'Firefox CSV', ext: ['csv'] },
+  { value: '1password', label: '1Password 1PUX', ext: ['1pux', 'json'] },
+  { value: 'csv', label: 'Generic CSV', ext: ['csv'] },
 ];
 
 export function ImportExportPage() {
-  const { settings } = useSettingsStore();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const isVi = settings.language === 'vi';
 
   // Import state
   const [importFormat, setImportFormat] = useState<ImportFormat>('auto');
@@ -91,9 +92,9 @@ export function ImportExportPage() {
       const bytes = await invoke<number>('export_vault_cmd', {
         args: { file_path: filePath, format: exportFormat },
       });
-      setExportSuccess(isVi
-        ? `Đã xuất ${bytes.toLocaleString()} bytes sang ${filePath}`
-        : `Exported ${bytes.toLocaleString()} bytes to ${filePath}`);
+      setExportSuccess(
+        `${t('importExport.exportSuccess', { path: filePath })} (${bytes.toLocaleString()} bytes)`
+      );
     } catch (e: unknown) {
       setExportError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -104,24 +105,19 @@ export function ImportExportPage() {
   return (
     <div className="ie-page">
       <div className="ie-header">
-        <h2>{isVi ? '📥 Nhập / Xuất' : '📥 Import / Export'}</h2>
+        <h2>
+          📥 {t('importExport.import')} / {t('importExport.export')}
+        </h2>
       </div>
 
       <div className="ie-content">
-        {/* ── Import ── */}
         <section className="ie-section">
-          <h3 className="ie-section-title">
-            {isVi ? '📥 Nhập từ trình quản lý mật khẩu khác' : '📥 Import from another password manager'}
-          </h3>
-          <p className="ie-section-desc">
-            {isVi
-              ? 'Nhập mục từ Bitwarden, LastPass, Chrome, Firefox, 1Password hoặc CSV.'
-              : 'Import entries from Bitwarden, LastPass, Chrome, Firefox, 1Password, or CSV.'}
-          </p>
+          <h3 className="ie-section-title">📥 {t('importExport.importFrom')}</h3>
+          <p className="ie-section-desc">{t('importExport.importWarning')}</p>
 
           <div className="ie-form">
             <label className="ie-label" htmlFor="import-format">
-              {isVi ? 'Định dạng' : 'Format'}
+              {t('common.info')}
             </label>
             <select
               id="import-format"
@@ -131,47 +127,46 @@ export function ImportExportPage() {
             >
               {IMPORT_FORMATS.map(f => (
                 <option key={f.value} value={f.value}>
-                  {isVi ? f.labelVi : f.labelEn}
+                  {f.label}
                 </option>
               ))}
             </select>
-
-            <button
-              className="btn btn-primary"
-              onClick={handleImport}
-              disabled={importing}
-            >
-              {importing
-                ? (isVi ? 'Đang nhập...' : 'Importing...')
-                : (isVi ? '📂 Chọn tệp để nhập' : '📂 Choose file to import')}
+            <button className="btn btn-primary" onClick={handleImport} disabled={importing}>
+              {importing ? t('common.loading') : `📂 ${t('importExport.selectFile')}`}
             </button>
           </div>
 
           {importResult && (
             <div className="ie-result ie-result-success" role="status">
               <p className="ie-result-title">
-                {isVi ? '✅ Nhập thành công!' : '✅ Import successful!'}
+                ✅ {t('importExport.importSuccess', { count: importResult.entriesImported })}
               </p>
               <ul className="ie-result-list">
-                <li>{isVi ? `${importResult.entriesImported} mục đã nhập` : `${importResult.entriesImported} entries imported`}</li>
+                <li>
+                  {importResult.entriesImported}{' '}
+                  {t('importExport.importSuccess', { count: '' }).split(' ')[0]}
+                </li>
                 {importResult.groupsCreated > 0 && (
-                  <li>{isVi ? `${importResult.groupsCreated} nhóm đã tạo` : `${importResult.groupsCreated} groups created`}</li>
+                  <li>{importResult.groupsCreated} groups created</li>
                 )}
                 {importResult.entriesSkipped > 0 && (
-                  <li>{isVi ? `${importResult.entriesSkipped} mục bỏ qua` : `${importResult.entriesSkipped} entries skipped`}</li>
+                  <li>{t('importExport.importSkipped', { count: importResult.entriesSkipped })}</li>
                 )}
               </ul>
               {importResult.warnings.length > 0 && (
                 <details className="ie-warnings">
-                  <summary>{isVi ? `${importResult.warnings.length} cảnh báo` : `${importResult.warnings.length} warnings`}</summary>
+                  <summary>
+                    {importResult.warnings.length} {t('common.warning')}
+                  </summary>
                   <ul>
-                    {importResult.warnings.map((w, i) => <li key={i}>{w}</li>)}
+                    {importResult.warnings.map((w, i) => (
+                      <li key={i}>{w}</li>
+                    ))}
                   </ul>
                 </details>
               )}
             </div>
           )}
-
           {importError && (
             <div className="ie-result ie-result-error" role="alert">
               ⚠️ {importError}
@@ -181,21 +176,16 @@ export function ImportExportPage() {
 
         <div className="ie-divider" />
 
-        {/* ── Export ── */}
         <section className="ie-section">
-          <h3 className="ie-section-title">
-            {isVi ? '📤 Xuất kho mật khẩu' : '📤 Export vault'}
-          </h3>
+          <h3 className="ie-section-title">📤 {t('importExport.exportTo')}</h3>
 
           <div className="ie-warning-box" role="note">
-            ⚠️ {isVi
-              ? 'Tệp xuất chứa mật khẩu KHÔNG được mã hóa. Hãy bảo mật tệp này cẩn thận!'
-              : 'Exported file contains UNENCRYPTED passwords. Keep this file secure!'}
+            ⚠️ {t('importExport.exportWarning')}
           </div>
 
           <div className="ie-form">
             <label className="ie-label" htmlFor="export-format">
-              {isVi ? 'Định dạng' : 'Format'}
+              {t('common.info')}
             </label>
             <select
               id="export-format"
@@ -205,16 +195,9 @@ export function ImportExportPage() {
             >
               <option value="csv">CSV</option>
               <option value="json">JSON</option>
-            </select>
-
-            <button
-              className="btn btn-secondary"
-              onClick={handleExport}
-              disabled={exporting}
-            >
-              {exporting
-                ? (isVi ? 'Đang xuất...' : 'Exporting...')
-                : (isVi ? '💾 Xuất kho' : '💾 Export vault')}
+            </select>{' '}
+            <button className="btn btn-secondary" onClick={handleExport} disabled={exporting}>
+              {exporting ? t('common.loading') : `💾 ${t('importExport.export')}`}
             </button>
           </div>
 

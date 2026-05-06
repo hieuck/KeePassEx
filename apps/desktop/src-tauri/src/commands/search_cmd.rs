@@ -22,27 +22,27 @@ pub struct SearchResult {
 
 /// Execute a natural language search query against the vault
 #[command]
-pub async fn nl_search(
-    state: State<'_, AppState>,
-    query: String,
-) -> Result<Vec<SearchResult>, String> {
+pub fn nl_search(state: State<'_, AppState>, query: String) -> Result<Vec<SearchResult>, String> {
     let vault_guard = state.vault.read().map_err(|e| e.to_string())?;
     let open_vault = vault_guard.as_ref().ok_or("Vault not open")?;
+
+    if open_vault.locked {
+        return Err("Vault is locked".into());
+    }
+
     let vault = &open_vault.vault;
 
     // Parse natural language query
     let nl_query = parse_nl_query(&query);
     let filter = build_search_filter(&nl_query);
 
-    // Apply filter to vault entries
+    // Apply filter using the public Vault API
     let mut results: Vec<SearchResult> = vault
-        .entries
-        .values()
+        .all_entries()
         .filter(|entry| apply_filter(entry, &filter, vault))
         .map(|entry| {
             let group_name = vault
-                .groups
-                .get(&entry.group_uuid)
+                .get_group(&entry.group_uuid)
                 .map(|g| g.name.clone())
                 .unwrap_or_default();
 
@@ -74,7 +74,7 @@ pub async fn nl_search(
 
 /// Parse a natural language query and return the interpreted filter (for UI display)
 #[command]
-pub async fn parse_search_query(query: String) -> Result<serde_json::Value, String> {
+pub fn parse_search_query(query: String) -> Result<serde_json::Value, String> {
     let nl_query = parse_nl_query(&query);
     let filter = build_search_filter(&nl_query);
 
@@ -113,8 +113,8 @@ fn apply_filter(
 
     // Group filter
     if let Some(group_name) = &filter.group {
-        let entry_group = vault.groups.get(&entry.group_uuid);
-        let matches = entry_group
+        let matches = vault
+            .get_group(&entry.group_uuid)
             .map(|g| g.name.to_lowercase().contains(&group_name.to_lowercase()))
             .unwrap_or(false);
         if !matches {

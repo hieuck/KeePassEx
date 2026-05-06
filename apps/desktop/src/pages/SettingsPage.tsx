@@ -34,6 +34,9 @@ export function SettingsPage() {
               <option value="ko">🇰🇷 한국어</option>
               <option value="es">🇪🇸 Español</option>
               <option value="fr">🇫🇷 Français</option>
+              <option value="de">🇩🇪 Deutsch</option>
+              <option value="pt">🇧🇷 Português</option>
+              <option value="ru">🇷🇺 Русский</option>
             </select>
           </SettingRow>
 

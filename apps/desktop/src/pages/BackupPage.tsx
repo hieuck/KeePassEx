@@ -1,13 +1,12 @@
 /**
  * Scheduled Backup page — configure automatic vault backups
- * Unique feature: no competitor has built-in scheduled backup
  */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
-import { useSettingsStore } from '../store/settings';
+import { useTranslation } from 'react-i18next';
 
 interface BackupConfig {
   enabled: boolean;
@@ -28,8 +27,7 @@ interface BackupRecord {
 export function BackupPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { settings } = useSettingsStore();
-  const isVi = settings.language === 'vi';
+  const { t } = useTranslation();
 
   const [config, setConfig] = useState<BackupConfig>({
     enabled: false,
@@ -44,7 +42,7 @@ export function BackupPage() {
     queryFn: () => invoke<BackupRecord[]>('list_backups'),
   });
 
-  const { data: savedConfig } = useQuery({
+  useQuery({
     queryKey: ['backup-config'],
     queryFn: () => invoke<BackupConfig>('get_backup_config'),
     onSuccess: (data: BackupConfig) => setConfig(data),
@@ -72,9 +70,7 @@ export function BackupPage() {
 
   const browseDestination = async () => {
     const selected = await open({ directory: true, multiple: false });
-    if (typeof selected === 'string') {
-      setConfig(c => ({ ...c, destination: selected }));
-    }
+    if (typeof selected === 'string') setConfig(c => ({ ...c, destination: selected }));
   };
 
   const formatBytes = (bytes: number) => {
@@ -84,34 +80,28 @@ export function BackupPage() {
   };
 
   const FREQUENCIES = [
-    { id: 'on_save', label: isVi ? 'Mỗi lần lưu' : 'On every save' },
-    { id: 'daily', label: isVi ? 'Hàng ngày' : 'Daily' },
-    { id: 'weekly', label: isVi ? 'Hàng tuần' : 'Weekly' },
-    { id: 'monthly', label: isVi ? 'Hàng tháng' : 'Monthly' },
+    { id: 'on_save', label: t('scheduledBackup.frequencyOnSave') },
+    { id: 'daily', label: t('scheduledBackup.frequencyDaily') },
+    { id: 'weekly', label: t('scheduledBackup.frequencyWeekly') },
+    { id: 'monthly', label: t('scheduledBackup.frequencyMonthly') },
   ];
 
   return (
     <div className="backup-page">
-      {/* Header */}
       <div className="backup-header">
         <button className="btn-back" onClick={() => navigate('/settings')}>
-          ← {isVi ? 'Cài đặt' : 'Settings'}
+          ← {t('settings.title')}
         </button>
-        <h2>{isVi ? '💾 Sao lưu tự động' : '💾 Scheduled Backup'}</h2>
-        <p className="backup-subtitle">
-          {isVi
-            ? 'Tự động sao lưu kho theo lịch — tính năng độc quyền của KeePassEx'
-            : 'Automatically backup your vault on schedule — exclusive KeePassEx feature'}
-        </p>
+        <h2>💾 {t('scheduledBackup.title')}</h2>
+        <p className="backup-subtitle">{t('scheduledBackup.subtitle')}</p>
       </div>
 
       <div className="backup-content">
-        {/* Configuration */}
         <div className="backup-section">
           <div className="backup-section-header">
-            <h3>{isVi ? 'Cấu hình' : 'Configuration'}</h3>
+            <h3>{t('common.settings')}</h3>
             <div className="backup-enable-row">
-              <span>{isVi ? 'Bật sao lưu tự động' : 'Enable automatic backup'}</span>
+              <span>{t('scheduledBackup.enable')}</span>
               <button
                 role="switch"
                 aria-checked={config.enabled}
@@ -128,24 +118,18 @@ export function BackupPage() {
 
           {config.enabled && (
             <div className="backup-fields">
-              {/* Destination */}
               <div className="backup-field">
-                <label className="backup-label">
-                  {isVi ? 'Thư mục đích' : 'Backup destination'}
-                </label>
+                <label className="backup-label">{t('scheduledBackup.destination')}</label>
                 <div className="backup-path-row">
-                  <span className="backup-path">
-                    {config.destination || (isVi ? 'Chưa chọn...' : 'Not selected...')}
-                  </span>
+                  <span className="backup-path">{config.destination || t('common.none')}</span>
                   <button className="btn btn-secondary" onClick={browseDestination}>
-                    {isVi ? 'Duyệt...' : 'Browse...'}
+                    {t('scheduledBackup.browse')}
                   </button>
                 </div>
               </div>
 
-              {/* Frequency */}
               <div className="backup-field">
-                <label className="backup-label">{isVi ? 'Tần suất' : 'Frequency'}</label>
+                <label className="backup-label">{t('scheduledBackup.frequency')}</label>
                 <div className="backup-freq-grid">
                   {FREQUENCIES.map(f => (
                     <button
@@ -162,9 +146,8 @@ export function BackupPage() {
                 </div>
               </div>
 
-              {/* Max backups */}
               <div className="backup-field">
-                <label className="backup-label">{isVi ? 'Giữ tối đa' : 'Keep at most'}</label>
+                <label className="backup-label">{t('scheduledBackup.maxBackups')}</label>
                 <div className="backup-max-row">
                   <input
                     type="number"
@@ -173,23 +156,15 @@ export function BackupPage() {
                     min={1}
                     max={100}
                     onChange={e => setConfig(c => ({ ...c, max_backups: Number(e.target.value) }))}
-                    aria-label={isVi ? 'Số bản sao lưu tối đa' : 'Maximum backups to keep'}
                   />
-                  <span className="backup-max-label">{isVi ? 'bản sao lưu' : 'backup files'}</span>
+                  <span className="backup-max-label">{t('scheduledBackup.maxBackupsUnit')}</span>
                 </div>
               </div>
 
-              {/* Timestamp in filename */}
               <div className="backup-field backup-field-row">
                 <div>
-                  <p className="backup-label">
-                    {isVi ? 'Thêm thời gian vào tên tệp' : 'Include timestamp in filename'}
-                  </p>
-                  <p className="backup-field-desc">
-                    {isVi
-                      ? 'Ví dụ: vault_backup_20250506_143022.kdbx'
-                      : 'e.g. vault_backup_20250506_143022.kdbx'}
-                  </p>
+                  <p className="backup-label">{t('scheduledBackup.timestampInFilename')}</p>
+                  <p className="backup-field-desc">{t('scheduledBackup.timestampExample')}</p>
                 </div>
                 <button
                   role="switch"
@@ -211,24 +186,22 @@ export function BackupPage() {
                 </button>
               </div>
 
-              {/* Last backup */}
               {config.last_backup_at && (
                 <div className="backup-last">
-                  <span>✅ {isVi ? 'Sao lưu lần cuối' : 'Last backup'}:</span>
+                  <span>✅ {t('scheduledBackup.lastBackup')}:</span>
                   <span>{new Date(config.last_backup_at).toLocaleString()}</span>
                 </div>
               )}
             </div>
           )}
 
-          {/* Save + Backup Now */}
           <div className="backup-actions">
             <button
               className="btn btn-primary"
               onClick={() => saveMutation.mutate(config)}
               disabled={saveMutation.isPending}
             >
-              {saveMutation.isPending ? '⏳' : '💾'} {isVi ? 'Lưu cấu hình' : 'Save Configuration'}
+              {saveMutation.isPending ? '⏳' : '💾'} {t('scheduledBackup.saveConfig')}
             </button>
             {config.enabled && config.destination && (
               <button
@@ -236,25 +209,24 @@ export function BackupPage() {
                 onClick={() => backupNowMutation.mutate()}
                 disabled={backupNowMutation.isPending}
               >
-                {backupNowMutation.isPending ? '⏳' : '📦'} {isVi ? 'Sao lưu ngay' : 'Backup Now'}
+                {backupNowMutation.isPending ? '⏳' : '📦'} {t('scheduledBackup.backupNow')}
               </button>
             )}
           </div>
         </div>
 
-        {/* Backup history */}
         <div className="backup-section">
-          <h3>{isVi ? 'Lịch sử sao lưu' : 'Backup History'}</h3>
+          <h3>{t('scheduledBackup.history')}</h3>
           {backupsLoading ? (
-            <p className="backup-loading">⏳ {isVi ? 'Đang tải...' : 'Loading...'}</p>
+            <p className="backup-loading">⏳ {t('common.loading')}</p>
           ) : backups.length === 0 ? (
             <div className="backup-empty">
               <span>📦</span>
-              <p>{isVi ? 'Chưa có bản sao lưu nào' : 'No backups yet'}</p>
+              <p>{t('scheduledBackup.noBackups')}</p>
             </div>
           ) : (
             <div className="backup-list">
-              {backups.map((backup, i) => (
+              {backups.map(backup => (
                 <div key={backup.path} className="backup-item">
                   <div className="backup-item-info">
                     <p className="backup-item-name">{backup.path.split(/[/\\]/).pop()}</p>
@@ -267,27 +239,19 @@ export function BackupPage() {
                     <button
                       className="btn btn-secondary btn-sm"
                       onClick={() => {
-                        if (
-                          confirm(
-                            isVi
-                              ? 'Khôi phục từ bản sao lưu này? Kho hiện tại sẽ bị thay thế.'
-                              : 'Restore from this backup? Current vault will be replaced.'
-                          )
-                        ) {
+                        if (confirm(t('scheduledBackup.confirmRestore')))
                           restoreMutation.mutate(backup.path);
-                        }
                       }}
                     >
-                      ↩ {isVi ? 'Khôi phục' : 'Restore'}
+                      ↩ {t('scheduledBackup.restore')}
                     </button>
                     <button
                       className="btn-icon"
                       onClick={() => {
-                        if (confirm(isVi ? 'Xóa bản sao lưu này?' : 'Delete this backup?')) {
+                        if (confirm(t('scheduledBackup.confirmDelete')))
                           deleteMutation.mutate(backup.path);
-                        }
                       }}
-                      aria-label={isVi ? 'Xóa bản sao lưu' : 'Delete backup'}
+                      aria-label="Delete backup"
                     >
                       🗑
                     </button>
@@ -301,25 +265,12 @@ export function BackupPage() {
 
       <style>{`
         .backup-page { display:flex; flex-direction:column; height:100%; overflow:hidden; }
-        .backup-header {
-          padding:var(--space-md) var(--space-xl);
-          border-bottom:1px solid var(--color-border); flex-shrink:0;
-        }
+        .backup-header { padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--color-border); flex-shrink:0; }
         .backup-header h2 { font-size:16px; font-weight:700; margin:4px 0; }
         .backup-subtitle { font-size:13px; color:var(--color-text-secondary); }
-        .btn-back {
-          background:none; border:none; cursor:pointer; color:var(--color-primary);
-          font-size:13px; padding:0; margin-bottom:4px;
-        }
-        .backup-content {
-          flex:1; overflow-y:auto; padding:var(--space-xl);
-          display:flex; flex-direction:column; gap:var(--space-xl); max-width:600px;
-        }
-        .backup-section {
-          background:var(--color-bg-secondary); border-radius:var(--radius-md);
-          padding:var(--space-lg); display:flex; flex-direction:column; gap:var(--space-md);
-          border:1px solid var(--color-border);
-        }
+        .btn-back { background:none; border:none; cursor:pointer; color:var(--color-primary); font-size:13px; padding:0; margin-bottom:4px; }
+        .backup-content { flex:1; overflow-y:auto; padding:var(--space-xl); display:flex; flex-direction:column; gap:var(--space-xl); max-width:600px; }
+        .backup-section { background:var(--color-bg-secondary); border-radius:var(--radius-md); padding:var(--space-lg); display:flex; flex-direction:column; gap:var(--space-md); border:1px solid var(--color-border); }
         .backup-section-header { display:flex; flex-direction:column; gap:var(--space-sm); }
         .backup-section h3 { font-size:14px; font-weight:600; }
         .backup-enable-row { display:flex; align-items:center; justify-content:space-between; }
@@ -329,62 +280,30 @@ export function BackupPage() {
         .backup-label { font-size:13px; font-weight:500; }
         .backup-field-desc { font-size:11px; color:var(--color-text-secondary); }
         .backup-path-row { display:flex; gap:var(--space-sm); align-items:center; }
-        .backup-path {
-          flex:1; padding:var(--space-sm) var(--space-md);
-          background:var(--color-bg); border:1px solid var(--color-border);
-          border-radius:var(--radius-sm); font-size:13px; color:var(--color-text);
-          overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-        }
+        .backup-path { flex:1; padding:var(--space-sm) var(--space-md); background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-sm); font-size:13px; color:var(--color-text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         .backup-freq-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-sm); }
-        .backup-freq-btn {
-          padding:var(--space-sm); border:1px solid var(--color-border);
-          border-radius:var(--radius-sm); background:var(--color-bg);
-          cursor:pointer; font-size:12px; color:var(--color-text-secondary);
-          transition:all .1s;
-        }
+        .backup-freq-btn { padding:var(--space-sm); border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-bg); cursor:pointer; font-size:12px; color:var(--color-text-secondary); transition:all .1s; }
         .backup-freq-btn:hover { border-color:var(--color-primary); color:var(--color-primary); }
         .backup-freq-btn.active { background:var(--color-primary); border-color:var(--color-primary); color:white; }
         .backup-max-row { display:flex; align-items:center; gap:var(--space-sm); }
         .backup-max-input { width:80px; }
         .backup-max-label { font-size:13px; color:var(--color-text-secondary); }
-        .backup-last {
-          display:flex; gap:var(--space-sm); font-size:12px; color:var(--color-text-secondary);
-          padding:var(--space-sm) var(--space-md); background:rgba(34,197,94,.08);
-          border-radius:var(--radius-sm); border:1px solid rgba(34,197,94,.2);
-        }
+        .backup-last { display:flex; gap:var(--space-sm); font-size:12px; color:var(--color-text-secondary); padding:var(--space-sm) var(--space-md); background:rgba(34,197,94,.08); border-radius:var(--radius-sm); border:1px solid rgba(34,197,94,.2); }
         .backup-actions { display:flex; gap:var(--space-sm); flex-wrap:wrap; }
         .backup-loading { font-size:13px; color:var(--color-text-secondary); }
-        .backup-empty {
-          display:flex; flex-direction:column; align-items:center; gap:var(--space-md);
-          padding:var(--space-xl); color:var(--color-text-secondary); font-size:13px;
-        }
+        .backup-empty { display:flex; flex-direction:column; align-items:center; gap:var(--space-md); padding:var(--space-xl); color:var(--color-text-secondary); font-size:13px; }
         .backup-empty span { font-size:32px; }
         .backup-list { display:flex; flex-direction:column; gap:var(--space-sm); }
-        .backup-item {
-          display:flex; align-items:center; gap:var(--space-md);
-          padding:var(--space-sm) var(--space-md);
-          background:var(--color-bg); border-radius:var(--radius-sm);
-          border:1px solid var(--color-border);
-        }
+        .backup-item { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-sm) var(--space-md); background:var(--color-bg); border-radius:var(--radius-sm); border:1px solid var(--color-border); }
         .backup-item-info { flex:1; }
         .backup-item-name { font-size:13px; font-weight:500; color:var(--color-text); }
         .backup-item-meta { font-size:11px; color:var(--color-text-secondary); }
         .backup-item-actions { display:flex; gap:var(--space-xs); align-items:center; }
         .btn-sm { font-size:12px; padding:3px 10px; }
-        .toggle {
-          width:44px; height:24px; border-radius:12px; border:none;
-          cursor:pointer; position:relative; transition:background .2s; flex-shrink:0;
-        }
-        .toggle-thumb {
-          position:absolute; top:2px; width:20px; height:20px;
-          border-radius:50%; background:white; transition:left .2s;
-          box-shadow:0 1px 3px rgba(0,0,0,.2);
-        }
-        .icon-btn {
-          background:none; border:none; cursor:pointer; font-size:16px;
-          color:var(--color-text-secondary); padding:4px 6px; border-radius:var(--radius-sm);
-        }
-        .icon-btn:hover { background:var(--color-bg-tertiary); }
+        .toggle { width:44px; height:24px; border-radius:12px; border:none; cursor:pointer; position:relative; transition:background .2s; flex-shrink:0; }
+        .toggle-thumb { position:absolute; top:2px; width:20px; height:20px; border-radius:50%; background:white; transition:left .2s; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+        .btn-icon { background:none; border:none; cursor:pointer; font-size:16px; color:var(--color-text-secondary); padding:4px 6px; border-radius:var(--radius-sm); }
+        .btn-icon:hover { background:var(--color-bg-tertiary); }
       `}</style>
     </div>
   );

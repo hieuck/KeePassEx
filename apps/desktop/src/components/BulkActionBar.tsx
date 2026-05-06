@@ -1,11 +1,10 @@
 /**
  * Bulk Action Bar — shown when multiple entries are selected
- * Allows bulk move, delete, tag operations
  */
 import React, { useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { useQueryClient } from '@tanstack/react-query';
-import { useSettingsStore } from '../store/settings';
+import { useTranslation } from 'react-i18next';
 
 interface BulkActionBarProps {
   selectedUuids: string[];
@@ -13,21 +12,14 @@ interface BulkActionBarProps {
 }
 
 export function BulkActionBar({ selectedUuids, onClearSelection }: BulkActionBarProps) {
-  const { settings } = useSettingsStore();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const isVi = settings.language === 'vi';
   const [loading, setLoading] = useState(false);
 
   if (selectedUuids.length === 0) return null;
 
   const handleBulkDelete = async () => {
-    const confirmed = confirm(
-      isVi
-        ? `Xóa ${selectedUuids.length} mục đã chọn?`
-        : `Delete ${selectedUuids.length} selected entries?`
-    );
-    if (!confirmed) return;
-
+    if (!confirm(t('bulk.confirmDelete', { count: selectedUuids.length }))) return;
     setLoading(true);
     try {
       await Promise.all(
@@ -35,7 +27,7 @@ export function BulkActionBar({ selectedUuids, onClearSelection }: BulkActionBar
       );
       queryClient.invalidateQueries({ queryKey: ['entries'] });
       onClearSelection();
-    } catch (e: unknown) {
+    } catch (e) {
       console.error('Bulk delete failed:', e);
     } finally {
       setLoading(false);
@@ -43,21 +35,16 @@ export function BulkActionBar({ selectedUuids, onClearSelection }: BulkActionBar
   };
 
   const handleBulkMove = async () => {
-    const groupUuid = window.prompt(
-      isVi ? 'UUID nhóm đích:' : 'Target group UUID:'
-    );
+    const groupUuid = window.prompt('Target group UUID:');
     if (!groupUuid?.trim()) return;
-
     setLoading(true);
     try {
       await Promise.all(
-        selectedUuids.map(uuid =>
-          invoke('move_entry', { uuid, newGroupUuid: groupUuid.trim() })
-        )
+        selectedUuids.map(uuid => invoke('move_entry', { uuid, newGroupUuid: groupUuid.trim() }))
       );
       queryClient.invalidateQueries({ queryKey: ['entries'] });
       onClearSelection();
-    } catch (e: unknown) {
+    } catch (e) {
       console.error('Bulk move failed:', e);
     } finally {
       setLoading(false);
@@ -65,28 +52,22 @@ export function BulkActionBar({ selectedUuids, onClearSelection }: BulkActionBar
   };
 
   const handleBulkTag = async () => {
-    const tag = window.prompt(
-      isVi ? 'Thêm thẻ:' : 'Add tag:'
-    );
+    const tag = window.prompt(t('entry.tags'));
     if (!tag?.trim()) return;
-
     setLoading(true);
     try {
-      // Get each entry, add tag, update
       for (const uuid of selectedUuids) {
-        const entry = await invoke<{ tags: string[] }>('get_entry', { uuid, includePassword: false });
+        const entry = await invoke<{ tags: string[] }>('get_entry', {
+          uuid,
+          includePassword: false,
+        });
         if (!entry.tags.includes(tag.trim())) {
-          await invoke('update_entry', {
-            args: {
-              uuid,
-              tags: [...entry.tags, tag.trim()],
-            },
-          });
+          await invoke('update_entry', { args: { uuid, tags: [...entry.tags, tag.trim()] } });
         }
       }
       queryClient.invalidateQueries({ queryKey: ['entries'] });
       onClearSelection();
-    } catch (e: unknown) {
+    } catch (e) {
       console.error('Bulk tag failed:', e);
     } finally {
       setLoading(false);
@@ -94,99 +75,57 @@ export function BulkActionBar({ selectedUuids, onClearSelection }: BulkActionBar
   };
 
   return (
-    <div className="bulk-bar" role="toolbar" aria-label={`${selectedUuids.length} entries selected`}>
-      <span className="bulk-count">
-        {selectedUuids.length} {isVi ? 'mục đã chọn' : 'selected'}
-      </span>
-
+    <div
+      className="bulk-bar"
+      role="toolbar"
+      aria-label={t('bulk.selected', { count: selectedUuids.length })}
+    >
+      <span className="bulk-count">{t('bulk.selected', { count: selectedUuids.length })}</span>
       <div className="bulk-actions">
         <button
           className="bulk-btn"
           onClick={handleBulkMove}
           disabled={loading}
-          title={isVi ? 'Di chuyển đến nhóm' : 'Move to group'}
           aria-label="Move selected entries"
         >
-          📁 {isVi ? 'Di chuyển' : 'Move'}
+          📁 {t('bulk.moveSelected')}
         </button>
-
         <button
           className="bulk-btn"
           onClick={handleBulkTag}
           disabled={loading}
-          title={isVi ? 'Thêm thẻ' : 'Add tag'}
           aria-label="Tag selected entries"
         >
-          🏷️ {isVi ? 'Gắn thẻ' : 'Tag'}
+          🏷️ {t('bulk.tagSelected')}
         </button>
-
         <button
           className="bulk-btn bulk-btn-danger"
           onClick={handleBulkDelete}
           disabled={loading}
-          title={isVi ? 'Xóa đã chọn' : 'Delete selected'}
           aria-label="Delete selected entries"
         >
-          🗑 {isVi ? 'Xóa' : 'Delete'}
+          🗑 {t('bulk.deleteSelected')}
         </button>
       </div>
-
       <button
         className="bulk-clear"
         onClick={onClearSelection}
         aria-label="Clear selection"
-        title={isVi ? 'Bỏ chọn tất cả' : 'Clear selection'}
+        title={t('bulk.deselectAll')}
       >
         ✕
       </button>
-
       <style>{`
-        .bulk-bar {
-          display: flex;
-          align-items: center;
-          gap: var(--space-md);
-          padding: var(--space-sm) var(--space-xl);
-          background: var(--color-primary);
-          color: white;
-          flex-shrink: 0;
-          animation: slideIn 0.15s ease;
-        }
-        .bulk-count {
-          font-size: 13px;
-          font-weight: 600;
-          flex-shrink: 0;
-        }
-        .bulk-actions {
-          display: flex;
-          gap: var(--space-sm);
-          flex: 1;
-        }
-        .bulk-btn {
-          background: rgba(255,255,255,0.15);
-          border: 1px solid rgba(255,255,255,0.3);
-          color: white;
-          padding: var(--space-xs) var(--space-md);
-          border-radius: var(--radius-sm);
-          cursor: pointer;
-          font-size: 12px;
-          font-weight: 500;
-          transition: background 0.1s;
-        }
-        .bulk-btn:hover:not(:disabled) { background: rgba(255,255,255,0.25); }
-        .bulk-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .bulk-btn-danger { background: rgba(220,38,38,0.3); border-color: rgba(220,38,38,0.5); }
-        .bulk-btn-danger:hover:not(:disabled) { background: rgba(220,38,38,0.5); }
-        .bulk-clear {
-          background: none;
-          border: none;
-          color: rgba(255,255,255,0.7);
-          cursor: pointer;
-          font-size: 14px;
-          padding: var(--space-xs);
-          border-radius: var(--radius-sm);
-          flex-shrink: 0;
-        }
-        .bulk-clear:hover { color: white; background: rgba(255,255,255,0.1); }
+        .bulk-bar { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-sm) var(--space-xl); background:var(--color-primary); color:white; flex-shrink:0; animation:slideIn 0.15s ease; }
+        .bulk-count { font-size:13px; font-weight:600; flex-shrink:0; }
+        .bulk-actions { display:flex; gap:var(--space-sm); flex:1; }
+        .bulk-btn { background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:white; padding:var(--space-xs) var(--space-md); border-radius:var(--radius-sm); cursor:pointer; font-size:12px; font-weight:500; transition:background 0.1s; }
+        .bulk-btn:hover:not(:disabled) { background:rgba(255,255,255,0.25); }
+        .bulk-btn:disabled { opacity:0.5; cursor:not-allowed; }
+        .bulk-btn-danger { background:rgba(220,38,38,0.3); border-color:rgba(220,38,38,0.5); }
+        .bulk-btn-danger:hover:not(:disabled) { background:rgba(220,38,38,0.5); }
+        .bulk-clear { background:none; border:none; color:rgba(255,255,255,0.7); cursor:pointer; font-size:14px; padding:var(--space-xs); border-radius:var(--radius-sm); flex-shrink:0; }
+        .bulk-clear:hover { color:white; background:rgba(255,255,255,0.1); }
       `}</style>
     </div>
   );
