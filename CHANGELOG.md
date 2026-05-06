@@ -9,7 +9,33 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **entry history commands**: `get_entry_history`, `restore_entry_from_history`, `clear_entry_history` — Tauri commands now registered and implemented in `apps/desktop/src-tauri/src/commands/entries.rs`; the `EntryDetailPage` history tab is now fully functional
+- **KeePassEx Server** (`apps/server/`) — self-hosted sync server, no competitor has this:
+  - Rust + Axum, single binary, SQLite (no external DB)
+  - Zero-knowledge: server stores only encrypted vault blobs, cannot decrypt
+  - JWT authentication with Argon2id password hashing
+  - REST API: register, login, upload/download vault, version history
+  - WebSocket real-time sync notifications (`/ws?token=<jwt>`)
+  - Admin API (optional, key-protected): list users, delete user, server stats
+  - Docker image + docker-compose for one-command self-hosting
+  - `KeePassExServer` sync provider in `packages/core/src/sync/` — client-side integration
+  - `server.*` i18n keys in all 10 languages
+
+- **Windows Credential Provider** (`apps/windows-credprov/`) — no competitor has this:
+  - Rust cdylib implementing ICredentialProvider COM interface
+  - Unlock Windows login screen with KeePassEx vault master password
+  - ZKPV pre-check: fast password verification without full Argon2id overhead
+  - `credential.rs`, `provider.rs`, `registry.rs`, `tile.rs` — full COM structure
+  - `DllRegisterServer` / `DllUnregisterServer` for regsvr32 registration
+
+- **i18n `server.*` section** — 30 keys in all 10 languages (EN, VI, ZH, JA, KO, ES, FR, DE, PT, RU)
+- **i18n `menuBar.*` section** — 20 keys in all 10 languages (macOS menu bar app)
+
+### Changed
+
+- `packages/core/src/sync/mod.rs`: added `KeePassExServer` to `SyncProviderType` enum
+- `packages/core/src/sync/providers.rs`: `KeePassExServerProvider` — upload, download, metadata, test_connection
+- `Cargo.toml`: added `apps/server` and `apps/windows-credprov` to workspace members
+- Steering docs: updated to reflect 10 languages, new platforms (server, credprov, macos-menubar)
 - **12 new Rust test modules**: `analytics_tests`, `categorizer_tests`, `decoy_vault_tests`, `expiry_engine_tests`, `notifications_tests`, `scheduled_backup_tests`, `zkpv_tests`, `steg_tests`, `team_tests`, `templates_tests`, `plugin_tests`, `search_tests` — all 29 core modules now have dedicated test coverage (626 total Rust tests, up from ~60)
 
 ### Fixed

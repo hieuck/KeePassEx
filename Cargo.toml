@@ -5,6 +5,8 @@ members = [
     "apps/cli",
     "apps/desktop/src-tauri",
     "apps/tui",
+    "apps/windows-credprov",
+    "apps/server",
 ]
 
 [workspace.package]

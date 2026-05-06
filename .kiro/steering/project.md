@@ -46,10 +46,10 @@ inclusion: always
 
 ## i18n Rules
 
-- All strings in `packages/i18n/src/locales/en.ts` and `vi.ts` (primary)
-- 7 languages: `en`, `vi`, `zh`, `ja`, `ko`, `es`, `fr` — all must stay in parity
+- All strings in `packages/i18n/src/locales/en.ts` (primary)
+- **10 languages**: `en`, `vi`, `zh`, `ja`, `ko`, `es`, `fr`, `de`, `pt`, `ru` — all must stay in parity
 - Key format: `section.subsection.key` (e.g., `entry.copyPassword`)
-- New features MUST add keys to ALL 7 language files before merging
+- New features MUST add keys to ALL 10 language files before merging
 - `SupportedLocale` type in `packages/i18n/src/index.ts` must be updated when adding languages
 
 ## Key Files
@@ -59,12 +59,16 @@ inclusion: always
 - Vault operations: `packages/core/src/vault/`
 - Field references: `packages/core/src/field_references.rs`
 - Favicon fetch: `packages/core/src/favicon.rs`
+- Sync providers: `packages/core/src/sync/providers.rs` (includes KeePassExServer)
 - Desktop app: `apps/desktop/src/App.tsx`
 - Desktop stores: `apps/desktop/src/store/` (vault, settings, sync, breach, tabs)
 - Mobile app: `apps/mobile/src/App.tsx`
 - CLI: `apps/cli/src/main.rs`
 - Browser extension: `apps/browser-extension/src/background.ts`
 - Tauri commands: `apps/desktop/src-tauri/src/commands/` (one file per domain)
+- Server: `apps/server/src/main.rs` (Axum, SQLite, JWT, WebSocket)
+- macOS Menu Bar: `apps/macos-menubar/KeePassExMenuBar/`
+- Windows Credential Provider: `apps/windows-credprov/src/`
 
 ## Build Commands
 

@@ -29,7 +29,7 @@ All features are implemented. When adding code, assume these exist and work:
 - Plugin system (WASM sandbox)
 - Import: Bitwarden, LastPass, 1Password, Chrome, Firefox, Dashlane, NordPass, Enpass, RoboForm, CSV
 - Export: KDBX, CSV, JSON, HTML
-- Sync: WebDAV, Google Drive, OneDrive, Dropbox, S3, SFTP, iCloud, Local
+- Sync: WebDAV, Google Drive, OneDrive, Dropbox, S3, SFTP, iCloud, Local, **KeePassEx Server** (self-hosted, zero-knowledge)
 - iOS/Android AutoFill and Widgets
 - Steganography (vault in PNG/JPEG/MP4), Shamir secret sharing (M-of-N)
 - Entry field references `{REF:F@I:uuid}` — KeePass-compatible
@@ -42,5 +42,13 @@ All features are implemented. When adding code, assume these exist and work:
 
 ## Languages
 
-7 languages fully implemented with ~400 keys each, all in parity:
-`en` (English), `vi` (Tiếng Việt), `zh` (简体中文), `ja` (日本語), `ko` (한국어), `es` (Español), `fr` (Français)
+10 languages fully implemented with ~400 keys each, all in parity:
+`en` (English), `vi` (Tiếng Việt), `zh` (简体中文), `ja` (日本語), `ko` (한국어), `es` (Español), `fr` (Français), `de` (Deutsch), `pt` (Português), `ru` (Русский)
+
+## New Platforms (beyond original scope)
+
+| Platform                    | Stack                | Status                      |
+| --------------------------- | -------------------- | --------------------------- |
+| macOS Menu Bar              | SwiftUI              | ✅ `apps/macos-menubar/`    |
+| Windows Credential Provider | Rust cdylib          | ✅ `apps/windows-credprov/` |
+| KeePassEx Server            | Rust + Axum + SQLite | ✅ `apps/server/`           |
