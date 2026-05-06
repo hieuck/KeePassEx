@@ -1,5 +1,6 @@
 /**
  * Vault unlock screen — biometric + password (with full i18n EN/VI)
+ * Uses hardware-backed Secure Enclave (iOS) / StrongBox (Android) for biometric key storage.
  */
 import React, { useState, useEffect } from 'react';
 import {
@@ -13,19 +14,22 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import ReactNativeBiometrics from 'react-native-biometrics';
 import { useVaultStore } from '../store/vault';
 import { useThemeStore } from '../store/theme';
 import { useTranslation } from '../store/i18n';
 import { tokens } from '@keepassex/ui';
-
-const rnBiometrics = new ReactNativeBiometrics();
+import {
+  checkBiometricCapability,
+  retrieveMasterKeyWithBiometric,
+  hasBiometricKey,
+} from '../native/SecureEnclaveKeystore';
 
 export function UnlockScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
-  const { unlockVault, meta } = useVaultStore();
+  const [biometricType, setBiometricType] = useState<string>('');
+  const { unlockVault, meta, vaultPath } = useVaultStore();
   const { theme } = useThemeStore();
   const { t } = useTranslation();
 
@@ -35,11 +39,16 @@ export function UnlockScreen() {
 
   const checkBiometrics = async () => {
     try {
-      const { available } = await rnBiometrics.isSensorAvailable();
-      setBiometricAvailable(available);
-      if (available) {
-        // Auto-trigger biometric on mount
-        handleBiometricUnlock();
+      const capability = await checkBiometricCapability();
+      setBiometricAvailable(capability.available);
+      setBiometricType(capability.biometryType);
+
+      if (capability.available && vaultPath) {
+        const hasKey = await hasBiometricKey(vaultPath);
+        if (hasKey) {
+          // Auto-trigger biometric on mount if key is stored
+          handleBiometricUnlock();
+        }
       }
     } catch {
       setBiometricAvailable(false);
@@ -47,26 +56,24 @@ export function UnlockScreen() {
   };
 
   const handleBiometricUnlock = async () => {
+    if (!vaultPath) return;
     try {
-      const { success } = await rnBiometrics.simplePrompt({
-        promptMessage: t('biometric.prompt'),
-        cancelButtonText: t('biometric.fallback'),
-      });
+      setLoading(true);
+      const result = await retrieveMasterKeyWithBiometric(vaultPath, t('biometric.prompt'));
 
-      if (success) {
-        setLoading(true);
-        // Retrieve stored master password from secure keychain
-        const Keychain = require('react-native-keychain');
-        const credentials = await Keychain.getGenericPassword({
-          service: 'keepassex-vault',
-        });
-
-        if (credentials) {
-          await unlockVault(credentials.password);
+      if (result.success && result.masterKey) {
+        // Convert Uint8Array master key back to password string for vault unlock
+        const decoder = new TextDecoder();
+        const masterPassword = decoder.decode(result.masterKey);
+        await unlockVault(masterPassword);
+      } else {
+        // Biometric failed — user falls back to password
+        if (result.error && !result.error.includes('cancel')) {
+          Alert.alert(t('errors.biometricFailed'), result.error);
         }
       }
-    } catch (e: any) {
-      // Biometric failed — user can use password
+    } catch {
+      // Silent fail — user can use password
     } finally {
       setLoading(false);
     }
@@ -78,7 +85,7 @@ export function UnlockScreen() {
     setLoading(true);
     try {
       await unlockVault(password);
-    } catch (e: any) {
+    } catch (e: unknown) {
       Alert.alert(t('errors.wrongCredentials'), t('vault.wrongPassword'), [
         { text: t('common.ok') },
       ]);

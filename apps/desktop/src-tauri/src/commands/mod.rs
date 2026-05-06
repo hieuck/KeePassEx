@@ -17,6 +17,7 @@ pub mod import_export;
 pub mod otp;
 pub mod password_advisor_cmd;
 pub mod policy_cmd;
+pub mod pqc_cmd;
 pub mod search_cmd;
 pub mod settings;
 pub mod ssh;

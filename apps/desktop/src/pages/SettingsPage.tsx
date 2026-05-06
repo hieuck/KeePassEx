@@ -3,245 +3,241 @@
  */
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useSettingsStore } from '../store/settings';
 
 export function SettingsPage() {
   const { settings, update } = useSettingsStore();
   const navigate = useNavigate();
-  const isVi = settings.language === 'vi';
+  const { t } = useTranslation();
 
   return (
     <div className="settings-page">
       <div className="settings-header">
-        <h2>{isVi ? '⚙️ Cài đặt' : '⚙️ Settings'}</h2>
+        <h2>⚙️ {t('settings.title')}</h2>
       </div>
 
       <div className="settings-content">
         {/* General */}
-        <SettingsSection title={isVi ? 'Chung' : 'General'}>
-          <SettingRow label={isVi ? 'Ngôn ngữ' : 'Language'}>
+        <SettingsSection title={t('settings.general')}>
+          <SettingRow label={t('settings.language')}>
             <select
               className="settings-select"
               value={settings.language}
               onChange={e => update({ language: e.target.value })}
-              aria-label="Language"
+              aria-label={t('settings.language')}
             >
-              <option value="en">English</option>
-              <option value="vi">Tiếng Việt</option>
+              <option value="en">🇺🇸 English</option>
+              <option value="vi">🇻🇳 Tiếng Việt</option>
+              <option value="zh">🇨🇳 简体中文</option>
+              <option value="ja">🇯🇵 日本語</option>
+              <option value="ko">🇰🇷 한국어</option>
+              <option value="es">🇪🇸 Español</option>
+              <option value="fr">🇫🇷 Français</option>
             </select>
           </SettingRow>
 
-          <SettingRow label={isVi ? 'Giao diện' : 'Theme'}>
+          <SettingRow label={t('settings.theme')}>
             <select
               className="settings-select"
               value={settings.theme}
               onChange={e => update({ theme: e.target.value })}
-              aria-label="Theme"
+              aria-label={t('settings.theme')}
             >
-              <option value="system">{isVi ? 'Theo hệ thống' : 'System Default'}</option>
-              <option value="light">{isVi ? 'Sáng' : 'Light'}</option>
-              <option value="dark">{isVi ? 'Tối' : 'Dark'}</option>
+              <option value="system">{t('settings.themeSystem')}</option>
+              <option value="light">{t('settings.themeLight')}</option>
+              <option value="dark">{t('settings.themeDark')}</option>
             </select>
           </SettingRow>
         </SettingsSection>
 
         {/* Security */}
-        <SettingsSection title={isVi ? 'Bảo mật' : 'Security'}>
+        <SettingsSection title={t('settings.security')}>
           <SettingRow
-            label={isVi ? 'Khóa khi thu nhỏ' : 'Lock on minimize'}
-            description={
-              isVi
-                ? 'Tự động khóa kho khi thu nhỏ cửa sổ'
-                : 'Automatically lock vault when window is minimized'
-            }
+            label={t('settings.lockOnMinimize')}
+            description={t('settings.lockOnMinimize')}
           >
             <Toggle
               checked={settings.lockOnMinimize}
               onChange={v => update({ lockOnMinimize: v })}
-              aria-label="Lock on minimize"
+              aria-label={t('settings.lockOnMinimize')}
             />
           </SettingRow>
 
           <SettingRow
-            label={isVi ? 'Khóa khi màn hình khóa' : 'Lock on screen lock'}
-            description={
-              isVi ? 'Khóa kho khi hệ thống khóa màn hình' : 'Lock vault when system screen locks'
-            }
+            label={t('settings.lockOnScreenLock')}
+            description={t('settings.lockOnScreenLock')}
           >
             <Toggle
               checked={settings.lockOnScreenLock}
               onChange={v => update({ lockOnScreenLock: v })}
-              aria-label="Lock on screen lock"
+              aria-label={t('settings.lockOnScreenLock')}
             />
           </SettingRow>
 
-          <SettingRow label={isVi ? 'Khóa sau khi không hoạt động' : 'Lock after idle'}>
+          <SettingRow label={t('settings.lockAfterIdle')}>
             <select
               className="settings-select"
               value={settings.lockAfterIdleMinutes ?? 0}
               onChange={e => update({ lockAfterIdleMinutes: Number(e.target.value) || undefined })}
-              aria-label="Lock after idle"
+              aria-label={t('settings.lockAfterIdle')}
             >
-              <option value={0}>{isVi ? 'Không bao giờ' : 'Never'}</option>
-              <option value={1}>1 {isVi ? 'phút' : 'minute'}</option>
-              <option value={5}>5 {isVi ? 'phút' : 'minutes'}</option>
-              <option value={10}>10 {isVi ? 'phút' : 'minutes'}</option>
-              <option value={30}>30 {isVi ? 'phút' : 'minutes'}</option>
+              <option value={0}>{t('settings.clipboardClearNever')}</option>
+              <option value={1}>{t('settings.lockAfterIdleMinutes', { minutes: 1 })}</option>
+              <option value={5}>{t('settings.lockAfterIdleMinutes', { minutes: 5 })}</option>
+              <option value={10}>{t('settings.lockAfterIdleMinutes', { minutes: 10 })}</option>
+              <option value={30}>{t('settings.lockAfterIdleMinutes', { minutes: 30 })}</option>
             </select>
           </SettingRow>
 
-          <SettingRow label={isVi ? 'Xóa bộ nhớ tạm sau' : 'Clear clipboard after'}>
+          <SettingRow label={t('settings.clipboardClearDelay')}>
             <select
               className="settings-select"
               value={settings.clipboardClearSeconds ?? 0}
               onChange={e => update({ clipboardClearSeconds: Number(e.target.value) || undefined })}
-              aria-label="Clear clipboard after"
+              aria-label={t('settings.clipboardClearDelay')}
             >
-              <option value={0}>{isVi ? 'Không bao giờ' : 'Never'}</option>
-              <option value={10}>10 {isVi ? 'giây' : 'seconds'}</option>
-              <option value={30}>30 {isVi ? 'giây' : 'seconds'}</option>
-              <option value={60}>60 {isVi ? 'giây' : 'seconds'}</option>
+              <option value={0}>{t('settings.clipboardClearNever')}</option>
+              <option value={10}>
+                {t('settings.clipboardClearDelaySeconds', { seconds: 10 })}
+              </option>
+              <option value={30}>
+                {t('settings.clipboardClearDelaySeconds', { seconds: 30 })}
+              </option>
+              <option value={60}>
+                {t('settings.clipboardClearDelaySeconds', { seconds: 60 })}
+              </option>
             </select>
           </SettingRow>
 
           <SettingRow
-            label={isVi ? 'Hiện mật khẩu trong danh sách' : 'Show passwords in list'}
-            description={
-              isVi
-                ? 'Hiển thị mật khẩu trong danh sách mục (không khuyến nghị)'
-                : 'Show passwords in entry list (not recommended)'
-            }
+            label={t('settings.showPasswordInList')}
+            description={t('settings.showPasswordInList')}
           >
             <Toggle
               checked={settings.showPasswordInList}
               onChange={v => update({ showPasswordInList: v })}
-              aria-label="Show passwords in list"
+              aria-label={t('settings.showPasswordInList')}
             />
           </SettingRow>
         </SettingsSection>
 
         {/* App behavior */}
-        <SettingsSection title={isVi ? 'Ứng dụng' : 'Application'}>
-          <SettingRow label={isVi ? 'Thu nhỏ vào khay hệ thống' : 'Minimize to system tray'}>
+        <SettingsSection title={t('settings.general')}>
+          <SettingRow label={t('settings.minimizeToTray')}>
             <Toggle
               checked={settings.minimizeToTray}
               onChange={v => update({ minimizeToTray: v })}
-              aria-label="Minimize to tray"
+              aria-label={t('settings.minimizeToTray')}
             />
           </SettingRow>
 
-          <SettingRow label={isVi ? 'Khởi động thu nhỏ' : 'Start minimized'}>
+          <SettingRow label={t('settings.startMinimized')}>
             <Toggle
               checked={settings.startMinimized}
               onChange={v => update({ startMinimized: v })}
-              aria-label="Start minimized"
+              aria-label={t('settings.startMinimized')}
             />
           </SettingRow>
 
-          <SettingRow label={isVi ? 'Kiểm tra cập nhật' : 'Check for updates'}>
+          <SettingRow label={t('settings.checkForUpdates')}>
             <Toggle
               checked={settings.checkForUpdates}
               onChange={v => update({ checkForUpdates: v })}
-              aria-label="Check for updates"
+              aria-label={t('settings.checkForUpdates')}
             />
           </SettingRow>
         </SettingsSection>
 
         {/* Integration */}
-        <SettingsSection title={isVi ? 'Tích hợp' : 'Integration'}>
+        <SettingsSection title={t('settings.advanced')}>
           <SettingRow
-            label={isVi ? 'Tích hợp trình duyệt' : 'Browser Integration'}
-            description={
-              isVi
-                ? 'Bật hỗ trợ tiện ích mở rộng trình duyệt KeePassEx'
-                : 'Enable KeePassEx browser extension support'
-            }
+            label={t('settings.browserIntegration')}
+            description={t('settings.browserIntegrationDesc')}
           >
             <Toggle
               checked={settings.browserIntegration}
               onChange={v => update({ browserIntegration: v })}
-              aria-label="Browser integration"
+              aria-label={t('settings.browserIntegration')}
             />
           </SettingRow>
 
-          <SettingRow
-            label="SSH Agent"
-            description={isVi ? 'Chạy SSH agent tích hợp' : 'Run built-in SSH agent'}
-          >
+          <SettingRow label={t('settings.sshAgent')} description={t('settings.sshAgentDesc')}>
             <Toggle
               checked={settings.sshAgentEnabled}
               onChange={v => update({ sshAgentEnabled: v })}
-              aria-label="SSH agent"
+              aria-label={t('settings.sshAgent')}
             />
           </SettingRow>
         </SettingsSection>
 
         {/* Advanced */}
-        <SettingsSection title={isVi ? 'Nâng cao' : 'Advanced'}>
+        <SettingsSection title={t('advanced.title')}>
           <NavSettingRow
-            label={isVi ? '💾 Sao lưu tự động' : '💾 Scheduled Backup'}
-            description={
-              isVi ? 'Tự động sao lưu kho theo lịch' : 'Automatically backup vault on schedule'
-            }
+            label={`🔐 ${t('quantumResistant.title')}`}
+            description={t('quantumResistant.subtitle')}
+            href="/settings/security"
+          />
+          <NavSettingRow
+            label={`💾 ${t('scheduledBackup.title')}`}
+            description={t('scheduledBackup.subtitle')}
             href="/settings/backup"
           />
           <NavSettingRow
-            label={isVi ? '🔑 Khóa phần cứng' : '🔑 Hardware Key'}
-            description={isVi ? 'YubiKey, FIDO2, Smart Card' : 'YubiKey, FIDO2, Smart Card'}
+            label={`🔑 ${t('hardwareKey.title')}`}
+            description={t('hardwareKey.subtitle')}
             href="/settings/hardware-key"
           />
           <NavSettingRow
-            label={isVi ? '🆘 Truy cập khẩn cấp' : '🆘 Emergency Access'}
-            description={isVi ? 'Quản lý liên hệ tin cậy' : 'Manage trusted contacts'}
+            label={`🆘 ${t('emergencyAccess.title')}`}
+            description={t('emergencyAccess.subtitle')}
             href="/emergency-access"
           />
           <NavSettingRow
-            label={isVi ? '🔧 Plugin' : '🔧 Plugins'}
-            description={isVi ? 'Cài đặt và quản lý plugin' : 'Install and manage plugins'}
+            label={`🔧 ${t('plugins.title')}`}
+            description={t('plugins.subtitle')}
             href="/plugins"
           />
           <NavSettingRow
-            label={isVi ? '📊 Thống kê kho' : '📊 Vault Statistics'}
-            description={isVi ? 'Xem thống kê chi tiết về kho' : 'View detailed vault statistics'}
+            label={`📊 ${t('statistics.title')}`}
+            description={t('statistics.title')}
             href="/settings/statistics"
           />
           <NavSettingRow
-            label={isVi ? '🛡️ Chính sách mật khẩu' : '🛡️ Password Policies'}
-            description={isVi ? 'Định nghĩa yêu cầu mật khẩu' : 'Define password requirements'}
+            label={`🛡️ ${t('passwordPolicy.title')}`}
+            description={t('passwordPolicy.subtitle')}
             href="/settings/password-policy"
           />
           <NavSettingRow
-            label={isVi ? '📋 Nhật ký kiểm tra' : '📋 Audit Log'}
-            description={
-              isVi ? 'Theo dõi truy cập và thay đổi kho' : 'Track vault access and changes'
-            }
+            label={`📋 ${t('auditLog.title')}`}
+            description={t('auditLog.subtitle')}
             href="/settings/audit-log"
           />
           <NavSettingRow
-            label={isVi ? '🔀 So sánh kho' : '🔀 Compare Vaults'}
-            description={isVi ? 'So sánh và hợp nhất hai kho' : 'Diff and merge two vaults'}
+            label={`🔀 ${t('vaultCompare.title')}`}
+            description={t('vaultCompare.subtitle')}
             href="/vault/compare"
           />
           <NavSettingRow
-            label={isVi ? '⚙️ Cài đặt nâng cao' : '⚙️ Advanced Settings'}
-            description={isVi ? 'Lịch sử, bộ nhớ, auto-type' : 'History, memory, auto-type'}
+            label={`⚙️ ${t('advanced.title')}`}
+            description={t('advanced.database')}
             href="/settings/advanced"
           />
         </SettingsSection>
 
         {/* About */}
-        <SettingsSection title={isVi ? 'Giới thiệu' : 'About'}>
+        <SettingsSection title={t('settings.about')}>
           <div className="about-info">
             <div className="about-row">
-              <span className="about-label">{isVi ? 'Phiên bản' : 'Version'}</span>
+              <span className="about-label">{t('settings.version')}</span>
               <span className="about-value">1.0.0</span>
             </div>
             <div className="about-row">
-              <span className="about-label">{isVi ? 'Giấy phép' : 'License'}</span>
+              <span className="about-label">{t('settings.openSourceLicenses')}</span>
               <span className="about-value">GPL-3.0</span>
             </div>
             <div className="about-row">
-              <span className="about-label">{isVi ? 'Mã nguồn' : 'Source code'}</span>
+              <span className="about-label">{t('settings.reportBug')}</span>
               <a
                 href="https://github.com/keepassex/keepassex"
                 target="_blank"

@@ -54,6 +54,9 @@ pub fn run() {
             commands::entries::move_entry,
             commands::entries::duplicate_entry,
             commands::entries::search_entries,
+            commands::entries::get_entry_history,
+            commands::entries::restore_entry_from_history,
+            commands::entries::clear_entry_history,
             // Group commands
             commands::groups::get_groups,
             commands::groups::create_group,
@@ -123,6 +126,37 @@ pub fn run() {
             // Vault compare commands
             commands::vault_compare_cmd::compare_vaults_cmd,
             commands::vault_compare_cmd::merge_vaults_cmd,
+            // Analytics commands
+            commands::analytics_cmd::get_vault_analytics,
+            commands::analytics_cmd::export_analytics_report,
+            // Natural language search commands
+            commands::search_cmd::nl_search,
+            commands::search_cmd::parse_search_query,
+            // Steganography commands
+            commands::steg_cmd::detect_steg_carrier,
+            commands::steg_cmd::steg_embed_vault,
+            commands::steg_cmd::steg_extract_vault,
+            // Team vault commands
+            commands::team_cmd::get_team_vault,
+            commands::team_cmd::invite_team_member,
+            commands::team_cmd::change_team_member_role,
+            commands::team_cmd::remove_team_member,
+            commands::team_cmd::set_entry_permission,
+            // Password advisor commands
+            commands::password_advisor_cmd::advise_password_strength,
+            // Field reference commands
+            commands::field_references::resolve_entry_refs,
+            commands::field_references::resolve_ref_string,
+            commands::field_references::build_field_ref,
+            commands::field_references::check_has_refs,
+            // Favicon commands
+            commands::favicon::fetch_entry_favicon,
+            commands::favicon::fetch_all_favicons,
+            commands::favicon::get_domain_from_url,
+            // PQC commands
+            commands::pqc_cmd::migrate_to_pqc,
+            commands::pqc_cmd::downgrade_from_pqc,
+            commands::pqc_cmd::check_pqc_status,
         ])
         .setup(|app| {
             // Load persisted settings

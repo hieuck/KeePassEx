@@ -6,12 +6,14 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useVaultStore } from './store/vault';
 import { useSettingsStore } from './store/settings';
+import { useTabsStore } from './store/tabs';
 import { WelcomePage } from './pages/WelcomePage';
 import { UnlockPage } from './pages/UnlockPage';
 import { MainLayout } from './layouts/MainLayout';
 import { VaultPage } from './pages/VaultPage';
 import { EntryDetailPage } from './pages/EntryDetailPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { SecurityPage } from './pages/SecurityPage';
 import { HealthPage } from './pages/HealthPage';
 import { GeneratorPage } from './pages/GeneratorPage';
 import { ImportExportPage } from './pages/ImportExportPage';
@@ -30,6 +32,7 @@ import { AnalyticsPage } from './pages/AnalyticsPage';
 import { TeamPage } from './pages/TeamPage';
 import { CommandPalette } from './components/CommandPalette';
 import { IdleLockManager } from './components/IdleLockManager';
+import { VaultTabBar } from './components/VaultTabBar';
 import { listen } from '@tauri-apps/api/event';
 
 const queryClient = new QueryClient({
@@ -41,6 +44,7 @@ const queryClient = new QueryClient({
 export function App() {
   const { isOpen, isLocked } = useVaultStore();
   const { init: initSettings } = useSettingsStore();
+  const { tabs, openTab } = useTabsStore();
   const [paletteOpen, setPaletteOpen] = useState(false);
 
   useEffect(() => {
@@ -49,6 +53,8 @@ export function App() {
     // Listen for vault-locked event from tray
     const unlisten = listen('vault-locked', () => {
       useVaultStore.getState().setLocked(true);
+      // Also lock all tabs
+      useTabsStore.getState().lockAllTabs();
     });
 
     // Global keyboard shortcut: Cmd/Ctrl+K → command palette
@@ -66,11 +72,23 @@ export function App() {
     };
   }, [isOpen, isLocked]);
 
+  // Show tab bar when multiple vaults are open or tabs feature is active
+  const showTabBar = tabs.length > 1;
+
   return (
     <QueryClientProvider client={queryClient}>
       <HashRouter>
         {/* Global managers (no UI) */}
         <IdleLockManager />
+
+        {/* Multi-vault tab bar — shown when more than one vault is open */}
+        {showTabBar && isOpen && !isLocked && (
+          <VaultTabBar
+            onOpenNewVault={() => {
+              /* navigate to welcome to open another vault */
+            }}
+          />
+        )}
 
         {/* Command palette */}
         <CommandPalette
@@ -110,6 +128,7 @@ export function App() {
               <Route path="/emergency-access" element={<EmergencyAccessPage />} />
               <Route path="/plugins" element={<PluginsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/settings/security" element={<SecurityPage />} />
               <Route path="/settings/hardware-key" element={<HardwareKeyPage />} />
               <Route path="/settings/statistics" element={<StatisticsPage />} />
               <Route path="/settings/audit-log" element={<AuditLogPage />} />

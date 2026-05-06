@@ -32,6 +32,11 @@ export function SettingsScreen() {
   const LANGUAGE_OPTIONS = [
     { id: 'en' as const, flag: '🇺🇸', label: 'English' },
     { id: 'vi' as const, flag: '🇻🇳', label: 'Tiếng Việt' },
+    { id: 'zh' as const, flag: '🇨🇳', label: '简体中文' },
+    { id: 'ja' as const, flag: '🇯🇵', label: '日本語' },
+    { id: 'ko' as const, flag: '🇰🇷', label: '한국어' },
+    { id: 'es' as const, flag: '🇪🇸', label: 'Español' },
+    { id: 'fr' as const, flag: '🇫🇷', label: 'Français' },
   ];
 
   const CLIPBOARD_OPTIONS = [
