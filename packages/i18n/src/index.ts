@@ -1,7 +1,8 @@
 /**
  * KeePassEx i18n — Internationalization
  * Supports: English (en), Vietnamese (vi), Chinese Simplified (zh),
- *           Japanese (ja), Korean (ko), Spanish (es), French (fr)
+ *           Japanese (ja), Korean (ko), Spanish (es), French (fr),
+ *           German (de), Portuguese (pt), Russian (ru)
  */
 
 import i18next from 'i18next';
@@ -12,8 +13,11 @@ import { ja } from './locales/ja';
 import { ko } from './locales/ko';
 import { es } from './locales/es';
 import { fr } from './locales/fr';
+import { de } from './locales/de';
+import { pt } from './locales/pt';
+import { ru } from './locales/ru';
 
-export type SupportedLocale = 'en' | 'vi' | 'zh' | 'ja' | 'ko' | 'es' | 'fr';
+export type SupportedLocale = 'en' | 'vi' | 'zh' | 'ja' | 'ko' | 'es' | 'fr' | 'de' | 'pt' | 'ru';
 
 export const SUPPORTED_LOCALES: Record<SupportedLocale, string> = {
   en: 'English',
@@ -23,6 +27,9 @@ export const SUPPORTED_LOCALES: Record<SupportedLocale, string> = {
   ko: '한국어',
   es: 'Español',
   fr: 'Français',
+  de: 'Deutsch',
+  pt: 'Português',
+  ru: 'Русский',
 };
 
 export async function initI18n(locale: SupportedLocale = 'en') {
@@ -37,6 +44,9 @@ export async function initI18n(locale: SupportedLocale = 'en') {
       ko: { translation: ko },
       es: { translation: es },
       fr: { translation: fr },
+      de: { translation: de },
+      pt: { translation: pt },
+      ru: { translation: ru },
     },
     interpolation: {
       escapeValue: false,
@@ -56,5 +66,5 @@ export function currentLocale(): string {
   return i18next.language;
 }
 
-export { en, vi, zh, ja, ko, es, fr };
+export { en, vi, zh, ja, ko, es, fr, de, pt, ru };
 export type { TranslationKeys } from './types';

@@ -431,6 +431,28 @@ export const ko = {
     clearIcon: '사용자 정의 아이콘 제거',
     uniqueFeature: '자동 아이콘 가져오기',
   },
+
+  // ─── macOS Menu Bar ────────────────────────────────────────────────────────
+  menuBar: {
+    title: '메뉴 막대',
+    subtitle: 'macOS 메뉴 막대에서 볼트에 빠르게 접근',
+    searchPlaceholder: '항목 검색...',
+    recentEntries: '최근',
+    noRecentEntries: '최근 항목 없음',
+    notConnected: 'KeePassEx가 실행되지 않음',
+    notConnectedDesc: '메뉴 막대를 사용하려면 KeePassEx 앱을 여세요.',
+    openApp: 'KeePassEx 열기',
+    vaultLocked: '볼트가 잠겨 있습니다',
+    vaultLockedDesc: '항목에 접근하려면 KeePassEx에서 볼트 잠금을 해제하세요.',
+    unlockInApp: '앱에서 잠금 해제',
+    copyPassword: '비밀번호 복사',
+    copyUsername: '사용자 이름 복사',
+    copyOtp: 'OTP 복사',
+    copied: '복사됨!',
+    lockVault: '볼트 잠금',
+    shortcut: '단축키: ⌘⇧K',
+    uniqueFeature: 'KeePassEx 고유 기능 — 경쟁사에는 없음',
+  },
 } as const;
 
 export type TranslationKo = typeof ko;

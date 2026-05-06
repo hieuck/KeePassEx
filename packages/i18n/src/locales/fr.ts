@@ -433,6 +433,28 @@ export const fr = {
     clearIcon: "Supprimer l'icône personnalisée",
     uniqueFeature: "Récupération automatique d'icônes",
   },
+
+  // ─── macOS Menu Bar ────────────────────────────────────────────────────────
+  menuBar: {
+    title: 'Barre de menus',
+    subtitle: 'Accès rapide à votre coffre depuis la barre de menus macOS',
+    searchPlaceholder: 'Rechercher des entrées...',
+    recentEntries: 'Récents',
+    noRecentEntries: 'Aucune entrée récente',
+    notConnected: "KeePassEx n'est pas en cours d'exécution",
+    notConnectedDesc: "Ouvrez l'app KeePassEx pour utiliser la barre de menus.",
+    openApp: 'Ouvrir KeePassEx',
+    vaultLocked: 'Le coffre est verrouillé',
+    vaultLockedDesc: 'Déverrouillez votre coffre dans KeePassEx pour accéder aux entrées.',
+    unlockInApp: "Déverrouiller dans l'app",
+    copyPassword: 'Copier le mot de passe',
+    copyUsername: "Copier le nom d'utilisateur",
+    copyOtp: "Copier l'OTP",
+    copied: 'Copié !',
+    lockVault: 'Verrouiller le coffre',
+    shortcut: 'Raccourci : ⌘⇧K',
+    uniqueFeature: "Fonctionnalité exclusive KeePassEx — aucun concurrent ne l'a",
+  },
 } as const;
 
 export type TranslationFr = typeof fr;

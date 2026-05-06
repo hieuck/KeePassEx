@@ -1271,6 +1271,28 @@ export const en = {
     clearIcon: 'Remove custom icon',
     uniqueFeature: 'Automatic icon fetching',
   },
+
+  // ─── macOS Menu Bar ────────────────────────────────────────────────────────
+  menuBar: {
+    title: 'Menu Bar',
+    subtitle: 'Quick access to your vault from the macOS menu bar',
+    searchPlaceholder: 'Search entries...',
+    recentEntries: 'Recent',
+    noRecentEntries: 'No recent entries',
+    notConnected: 'KeePassEx not running',
+    notConnectedDesc: 'Open the KeePassEx app to use the menu bar.',
+    openApp: 'Open KeePassEx',
+    vaultLocked: 'Vault is locked',
+    vaultLockedDesc: 'Unlock your vault in KeePassEx to access entries.',
+    unlockInApp: 'Unlock in KeePassEx',
+    copyPassword: 'Copy Password',
+    copyUsername: 'Copy Username',
+    copyOtp: 'Copy OTP',
+    copied: 'Copied!',
+    lockVault: 'Lock Vault',
+    shortcut: 'Shortcut: ⌘⇧K',
+    uniqueFeature: 'Exclusive KeePassEx feature — no competitor has this',
+  },
 } as const;
 
 export type TranslationEn = typeof en;

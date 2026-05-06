@@ -1271,6 +1271,28 @@ export const vi = {
     clearIcon: 'Xóa biểu tượng tùy chỉnh',
     uniqueFeature: 'Tự động tải biểu tượng',
   },
+
+  // ─── macOS Menu Bar ────────────────────────────────────────────────────────
+  menuBar: {
+    title: 'Thanh menu',
+    subtitle: 'Truy cập nhanh kho mật khẩu từ thanh menu macOS',
+    searchPlaceholder: 'Tìm kiếm mục...',
+    recentEntries: 'Gần đây',
+    noRecentEntries: 'Không có mục gần đây',
+    notConnected: 'KeePassEx chưa chạy',
+    notConnectedDesc: 'Mở ứng dụng KeePassEx để dùng thanh menu.',
+    openApp: 'Mở KeePassEx',
+    vaultLocked: 'Kho đang bị khóa',
+    vaultLockedDesc: 'Mở khóa kho trong KeePassEx để truy cập mục.',
+    unlockInApp: 'Mở khóa trong KeePassEx',
+    copyPassword: 'Sao chép mật khẩu',
+    copyUsername: 'Sao chép tên đăng nhập',
+    copyOtp: 'Sao chép OTP',
+    copied: 'Đã sao chép!',
+    lockVault: 'Khóa kho',
+    shortcut: 'Phím tắt: ⌘⇧K',
+    uniqueFeature: 'Tính năng độc quyền của KeePassEx — không đối thủ nào có',
+  },
 } as const;
 
 export type TranslationVi = typeof vi;

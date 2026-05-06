@@ -432,6 +432,28 @@ export const ja = {
     clearIcon: 'カスタムアイコンを削除',
     uniqueFeature: '自動アイコン取得',
   },
+
+  // ─── macOS Menu Bar ────────────────────────────────────────────────────────
+  menuBar: {
+    title: 'メニューバー',
+    subtitle: 'macOSメニューバーからボルトへのクイックアクセス',
+    searchPlaceholder: 'エントリを検索...',
+    recentEntries: '最近',
+    noRecentEntries: '最近のエントリなし',
+    notConnected: 'KeePassExが起動していません',
+    notConnectedDesc: 'メニューバーを使用するにはKeePassExアプリを開いてください。',
+    openApp: 'KeePassExを開く',
+    vaultLocked: 'ボルトがロックされています',
+    vaultLockedDesc: 'エントリにアクセスするにはKeePassExでボルトのロックを解除してください。',
+    unlockInApp: 'アプリでロック解除',
+    copyPassword: 'パスワードをコピー',
+    copyUsername: 'ユーザー名をコピー',
+    copyOtp: 'OTPをコピー',
+    copied: 'コピーしました！',
+    lockVault: 'ボルトをロック',
+    shortcut: 'ショートカット：⌘⇧K',
+    uniqueFeature: 'KeePassEx独自機能 — 競合他社にはない',
+  },
 } as const;
 
 export type TranslationJa = typeof ja;

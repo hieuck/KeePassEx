@@ -431,6 +431,28 @@ export const zh = {
     clearIcon: '移除自定义图标',
     uniqueFeature: '自动图标获取',
   },
+
+  // ─── macOS Menu Bar ────────────────────────────────────────────────────────
+  menuBar: {
+    title: '菜单栏',
+    subtitle: '从 macOS 菜单栏快速访问密码库',
+    searchPlaceholder: '搜索条目...',
+    recentEntries: '最近',
+    noRecentEntries: '没有最近的条目',
+    notConnected: 'KeePassEx 未运行',
+    notConnectedDesc: '打开 KeePassEx 应用以使用菜单栏。',
+    openApp: '打开 KeePassEx',
+    vaultLocked: '密码库已锁定',
+    vaultLockedDesc: '在 KeePassEx 中解锁密码库以访问条目。',
+    unlockInApp: '在应用中解锁',
+    copyPassword: '复制密码',
+    copyUsername: '复制用户名',
+    copyOtp: '复制 OTP',
+    copied: '已复制！',
+    lockVault: '锁定密码库',
+    shortcut: '快捷键：⌘⇧K',
+    uniqueFeature: 'KeePassEx 独有功能 — 无竞争对手拥有',
+  },
 } as const;
 
 export type TranslationZh = typeof zh;
