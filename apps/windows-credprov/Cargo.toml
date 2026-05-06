@@ -1,0 +1,29 @@
+[package]
+name = "keepassex-credprov"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "KeePassEx Windows Credential Provider — unlock Windows login with vault master password"
+
+[lib]
+name = "keepassex_credprov"
+crate-type = ["cdylib"]  # Produces a .dll
+
+[dependencies]
+keepassex-core = { path = "../../packages/core" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tokio = { workspace = true }
+zeroize = { workspace = true }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_Security_Credentials",
+    "Win32_System_Com",
+    "Win32_UI_Shell",
+    "Win32_System_LibraryLoader",
+] }
