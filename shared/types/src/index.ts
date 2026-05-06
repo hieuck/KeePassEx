@@ -323,11 +323,11 @@ export interface SshKeyEntry {
 // ─── Hardware Key (YubiKey / FIDO2 / Smart Card) ──────────────────────────────
 
 export type HardwareKeyType =
-  | 'yubikey_hmac'    // YubiKey HMAC-SHA1 challenge-response (slot 1 or 2)
-  | 'yubikey_otp'     // YubiKey OTP (Yubico OTP protocol)
-  | 'fido2'           // FIDO2 / WebAuthn hardware key
-  | 'smart_card'      // PIV smart card / CAC
-  | 'onlykey';        // OnlyKey
+  | 'yubikey_hmac' // YubiKey HMAC-SHA1 challenge-response (slot 1 or 2)
+  | 'yubikey_otp' // YubiKey OTP (Yubico OTP protocol)
+  | 'fido2' // FIDO2 / WebAuthn hardware key
+  | 'smart_card' // PIV smart card / CAC
+  | 'onlykey'; // OnlyKey
 
 export interface HardwareKeyConfig {
   type: HardwareKeyType;
@@ -632,4 +632,45 @@ export interface VaultStatistics {
   newestEntry?: string;
   mostUsedEntry?: EntryRef;
   averagePasswordStrength: number;
+}
+
+// ─── Field References ─────────────────────────────────────────────────────────
+
+/** A resolved entry with all {REF:...} placeholders replaced */
+export interface ResolvedEntry {
+  uuid: string;
+  title: string;
+  username: string;
+  password: string;
+  url: string;
+  notes: string;
+}
+
+/** Field codes for field references */
+export type FieldRefCode = 'T' | 'U' | 'P' | 'A' | 'N' | 'I';
+
+// ─── Favicon ──────────────────────────────────────────────────────────────────
+
+export interface FaviconResult {
+  /** Base64-encoded icon data */
+  dataBase64: string;
+  /** MIME type */
+  mimeType: string;
+  /** Domain the icon was fetched for */
+  domain: string;
+  /** Which strategy was used */
+  source: string;
+}
+
+// ─── Multi-Vault Tabs ─────────────────────────────────────────────────────────
+
+export interface VaultTabMeta {
+  id: string;
+  path: string;
+  name: string;
+  entryCount: number;
+  groupCount: number;
+  isLocked: boolean;
+  isDirty: boolean;
+  lastAccessed: string;
 }

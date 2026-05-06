@@ -6,10 +6,14 @@
 pub mod analytics;
 pub mod audit_log;
 pub mod breach;
+pub mod categorizer;
 pub mod crypto;
 pub mod decoy_vault;
 pub mod emergency_access;
 pub mod error;
+pub mod expiry_engine;
+pub mod favicon;
+pub mod field_references;
 pub mod generator;
 pub mod hardware_key;
 pub mod health;
@@ -18,6 +22,7 @@ pub mod kdbx;
 pub mod notifications;
 pub mod otp;
 pub mod passkey;
+pub mod password_advisor;
 pub mod password_policy;
 pub mod plugin;
 pub mod scheduled_backup;
@@ -30,6 +35,7 @@ pub mod templates;
 pub mod types;
 pub mod vault;
 pub mod vault_compare;
+pub mod zkpv;
 
 #[cfg(test)]
 mod tests;
