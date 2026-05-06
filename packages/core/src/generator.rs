@@ -42,22 +42,22 @@ impl PasswordGenerator {
             charset.push_str(DIGITS);
         }
         if config.use_symbols {
-            if let Some(ref custom) = config.custom_symbols {
-                charset.push_str(custom);
-            } else {
-                charset.push_str(SYMBOLS);
-            }
+            charset.push_str(config.custom_symbols.as_deref().unwrap_or(SYMBOLS));
         }
 
-        // Remove ambiguous characters
+        // Remove ambiguous characters from ALL charsets upfront
+        let filter: Box<dyn Fn(char) -> bool> = if config.exclude_ambiguous {
+            Box::new(|c: char| !AMBIGUOUS.contains(c))
+        } else {
+            Box::new(|_: char| true)
+        };
+
         if config.exclude_ambiguous {
             charset = charset
                 .chars()
-                .filter(|c| !AMBIGUOUS.contains(*c))
+                .filter(|&c| !AMBIGUOUS.contains(c))
                 .collect();
         }
-
-        // Remove excluded characters
         if !config.exclude_chars.is_empty() {
             charset = charset
                 .chars()
@@ -71,44 +71,50 @@ impl PasswordGenerator {
             ));
         }
 
-        let charset_bytes: Vec<char> = charset.chars().collect();
+        let charset_chars: Vec<char> = charset.chars().collect();
         let mut rng = rand::thread_rng();
+        let mut password: Vec<char> = Vec::with_capacity(config.length);
 
-        // Generate with minimum requirements
-        let mut password = Vec::new();
+        // Build filtered sub-charsets for minimum requirements
+        let upper_chars: Vec<char> = UPPERCASE.chars().filter(|&c| filter(c)).collect();
+        let lower_chars: Vec<char> = LOWERCASE.chars().filter(|&c| filter(c)).collect();
+        let digit_chars: Vec<char> = DIGITS.chars().filter(|&c| filter(c)).collect();
+        let sym_chars: Vec<char> = config
+            .custom_symbols
+            .as_deref()
+            .unwrap_or(SYMBOLS)
+            .chars()
+            .filter(|&c| filter(c))
+            .collect();
 
-        // Add minimum required characters
-        if config.use_uppercase && config.min_uppercase > 0 {
-            let upper: Vec<char> = UPPERCASE.chars().collect();
+        // Add minimum required characters (from filtered charsets)
+        if config.use_uppercase && config.min_uppercase > 0 && !upper_chars.is_empty() {
             for _ in 0..config.min_uppercase {
-                password.push(upper[rng.gen_range(0..upper.len())]);
+                password.push(upper_chars[rng.gen_range(0..upper_chars.len())]);
             }
         }
-        if config.use_lowercase && config.min_lowercase > 0 {
-            let lower: Vec<char> = LOWERCASE.chars().collect();
+        if config.use_lowercase && config.min_lowercase > 0 && !lower_chars.is_empty() {
             for _ in 0..config.min_lowercase {
-                password.push(lower[rng.gen_range(0..lower.len())]);
+                password.push(lower_chars[rng.gen_range(0..lower_chars.len())]);
             }
         }
-        if config.use_digits && config.min_digits > 0 {
-            let digits: Vec<char> = DIGITS.chars().collect();
+        if config.use_digits && config.min_digits > 0 && !digit_chars.is_empty() {
             for _ in 0..config.min_digits {
-                password.push(digits[rng.gen_range(0..digits.len())]);
+                password.push(digit_chars[rng.gen_range(0..digit_chars.len())]);
             }
         }
-        if config.use_symbols && config.min_symbols > 0 {
-            let syms: Vec<char> = SYMBOLS.chars().collect();
+        if config.use_symbols && config.min_symbols > 0 && !sym_chars.is_empty() {
             for _ in 0..config.min_symbols {
-                password.push(syms[rng.gen_range(0..syms.len())]);
+                password.push(sym_chars[rng.gen_range(0..sym_chars.len())]);
             }
         }
 
-        // Fill remaining length
+        // Fill remaining length from full filtered charset
         while password.len() < config.length {
-            password.push(charset_bytes[rng.gen_range(0..charset_bytes.len())]);
+            password.push(charset_chars[rng.gen_range(0..charset_chars.len())]);
         }
 
-        // Shuffle using Fisher-Yates
+        // Fisher-Yates shuffle
         for i in (1..password.len()).rev() {
             let j = rng.gen_range(0..=i);
             password.swap(i, j);

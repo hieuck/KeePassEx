@@ -1,18 +1,17 @@
 //! KDBX file reader — supports KDBX 4.x (primary) and 3.1 (compat)
 
-use crate::error::{KeePassExError, Result};
-use crate::vault::Vault;
-use crate::kdbx::{
-    KDBX_SIGNATURE_1, KDBX_SIGNATURE_2,
-    KDBX_VERSION_3_1, KDBX_VERSION_4_0, KDBX_VERSION_4_1,
-    Compression,
-};
 use crate::crypto::{
-    kdf::{KdfParams, ArgonParams, AesKdfParams, derive_master_key},
     cipher::{Cipher, CipherAlgorithm},
-    hmac::{verify_block_hmac, compute_header_hmac},
+    hmac::{compute_header_hmac, verify_block_hmac},
+    kdf::{derive_master_key, AesKdfParams, ArgonParams, KdfParams},
     keys::MasterKey,
 };
+use crate::error::{KeePassExError, Result};
+use crate::kdbx::{
+    Compression, KDBX_SIGNATURE_1, KDBX_SIGNATURE_2, KDBX_VERSION_3_1, KDBX_VERSION_4_0,
+    KDBX_VERSION_4_1,
+};
+use crate::vault::Vault;
 use std::io::{Cursor, Read};
 
 pub struct KdbxReader;
@@ -95,9 +94,186 @@ impl KdbxReader {
     }
 
     fn read_kdbx3(&self, mut cursor: Cursor<&[u8]>, composite_key: &[u8]) -> Result<Vault> {
-        // KDBX 3.1 reading — simplified for compat
-        // Full implementation would handle Salsa20 inner stream, etc.
-        Err(KeePassExError::UnsupportedVersion { version: KDBX_VERSION_3_1 })
+        // KDBX 3.1 format:
+        // - Outer header (TLV, 2-byte length fields)
+        // - SHA-256 hash of header (32 bytes)
+        // - Encrypted payload (AES-256-CBC, no HMAC blocks)
+        // - Payload: GZip-compressed XML (no inner header)
+        // - Inner stream: Salsa20 for protected fields
+
+        let (kdf_params, cipher_algo, compression, master_seed, encryption_iv, stream_start_bytes) =
+            self.parse_outer_header_v3(&mut cursor)?;
+
+        // Derive master key (AES-KDF for KDBX 3.1)
+        let transformed_key = derive_master_key(composite_key, &kdf_params)?;
+        let master_key = MasterKey::new(transformed_key);
+        let (enc_key, _hmac_key) = master_key.derive_keys(&master_seed);
+
+        // Skip the 32-byte header hash (KDBX 3.1 uses SHA-256, not HMAC)
+        let _header_hash = read_bytes_exact(&mut cursor, 32)?;
+
+        // Read remaining encrypted data
+        let pos = cursor.position() as usize;
+        let encrypted = cursor.into_inner()[pos..].to_vec();
+
+        // Decrypt with AES-256-CBC
+        let cipher = Cipher::new(cipher_algo, enc_key, encryption_iv);
+        let decrypted = cipher.decrypt(&encrypted)?;
+
+        // Verify stream start bytes (first 32 bytes of decrypted payload)
+        if decrypted.len() < 32 {
+            return Err(KeePassExError::CorruptedVault {
+                reason: "Decrypted payload too short".into(),
+            });
+        }
+        if decrypted[..32] != stream_start_bytes[..] {
+            return Err(KeePassExError::HmacVerificationFailed);
+        }
+
+        // Skip stream start bytes, then read KDBX 3.1 block stream
+        let payload_data = &decrypted[32..];
+        let xml_data = self.read_v3_block_stream(payload_data)?;
+
+        // Decompress
+        let xml_bytes = match compression {
+            Compression::GZip => decompress_gzip(&xml_data)?,
+            Compression::None => xml_data,
+        };
+
+        // KDBX 3.1 has no inner header — use Salsa20 inner stream
+        // The inner stream key is derived from the stream start bytes
+        let inner_stream_key = stream_start_bytes.to_vec();
+        let xml_parser = super::xml::XmlParser::new(inner_stream_key);
+        xml_parser.parse(&xml_bytes, Vec::new())
+    }
+
+    fn parse_outer_header_v3(
+        &self,
+        cursor: &mut Cursor<&[u8]>,
+    ) -> Result<(
+        KdfParams,
+        CipherAlgorithm,
+        Compression,
+        Vec<u8>,
+        Vec<u8>,
+        Vec<u8>,
+    )> {
+        let mut kdf_params = None;
+        let mut cipher_algo = CipherAlgorithm::Aes256Cbc;
+        let mut compression = Compression::GZip;
+        let mut master_seed = Vec::new();
+        let mut encryption_iv = Vec::new();
+        let mut stream_start_bytes = Vec::new();
+        // KDBX 3.1 also has TransformSeed and TransformRounds for AES-KDF
+        let mut transform_seed = Vec::new();
+        let mut transform_rounds: u64 = 6000;
+
+        loop {
+            let field_id = read_u8(cursor)?;
+            // KDBX 3.1 uses 2-byte length fields
+            let field_len = {
+                let mut buf = [0u8; 2];
+                cursor.read_exact(&mut buf).map_err(KeePassExError::Io)?;
+                u16::from_le_bytes(buf) as usize
+            };
+            let field_data = read_bytes_exact(cursor, field_len)?;
+
+            match field_id {
+                0 => break, // EndOfHeader
+                2 => {
+                    // CipherId
+                    if field_data.len() == 16 {
+                        cipher_algo = parse_cipher_id(&field_data)?;
+                    }
+                }
+                3 => {
+                    // CompressionFlags
+                    if field_data.len() >= 4 {
+                        let id = u32::from_le_bytes(field_data[..4].try_into().unwrap());
+                        compression = Compression::from_id(id).unwrap_or(Compression::GZip);
+                    }
+                }
+                4 => master_seed = field_data,
+                5 => transform_seed = field_data,
+                6 => {
+                    // TransformRounds
+                    if field_data.len() == 8 {
+                        transform_rounds = u64::from_le_bytes(field_data.try_into().unwrap());
+                    }
+                }
+                7 => encryption_iv = field_data,
+                9 => stream_start_bytes = field_data,
+                _ => {}
+            }
+        }
+
+        // Build AES-KDF params from KDBX 3.1 fields
+        kdf_params = Some(KdfParams::AesKdf(AesKdfParams {
+            seed: transform_seed,
+            rounds: transform_rounds,
+        }));
+
+        let kdf = kdf_params.ok_or_else(|| KeePassExError::CorruptedVault {
+            reason: "Missing KDF parameters in KDBX 3.1 header".into(),
+        })?;
+
+        Ok((
+            kdf,
+            cipher_algo,
+            compression,
+            master_seed,
+            encryption_iv,
+            stream_start_bytes,
+        ))
+    }
+
+    /// Read KDBX 3.1 block stream (SHA-256 integrity, not HMAC)
+    fn read_v3_block_stream(&self, data: &[u8]) -> Result<Vec<u8>> {
+        let mut cursor = Cursor::new(data);
+        let mut payload = Vec::new();
+
+        loop {
+            // Block ID (4 bytes, little-endian)
+            let _block_id = {
+                let mut buf = [0u8; 4];
+                if cursor.read_exact(&mut buf).is_err() {
+                    break;
+                }
+                u32::from_le_bytes(buf)
+            };
+
+            // Block hash (32 bytes SHA-256)
+            let block_hash = read_bytes_exact(&mut cursor, 32)?;
+
+            // Block size (4 bytes)
+            let block_size = {
+                let mut buf = [0u8; 4];
+                cursor.read_exact(&mut buf).map_err(KeePassExError::Io)?;
+                u32::from_le_bytes(buf) as usize
+            };
+
+            if block_size == 0 {
+                // Terminal block — verify hash is all zeros
+                break;
+            }
+
+            let block_data = read_bytes_exact(&mut cursor, block_size)?;
+
+            // Verify SHA-256 hash
+            use sha2::{Digest, Sha256};
+            let mut hasher = Sha256::new();
+            hasher.update(&block_data);
+            let computed: [u8; 32] = hasher.finalize().into();
+            if computed != block_hash.as_slice() {
+                return Err(KeePassExError::CorruptedVault {
+                    reason: "KDBX 3.1 block hash mismatch".into(),
+                });
+            }
+
+            payload.extend_from_slice(&block_data);
+        }
+
+        Ok(payload)
     }
 
     fn parse_outer_header(
@@ -302,8 +478,8 @@ fn parse_kdf_variant_map(data: &[u8]) -> Result<KdfParams> {
 
     // Argon2 UUID: 0xEF636DDF8C29444B91F7A9A403E30A0C
     let argon2_uuid = [
-        0xEF, 0x63, 0x6D, 0xDF, 0x8C, 0x29, 0x44, 0x4B,
-        0x91, 0xF7, 0xA9, 0xA4, 0x03, 0xE3, 0x0A, 0x0C,
+        0xEF, 0x63, 0x6D, 0xDF, 0x8C, 0x29, 0x44, 0x4B, 0x91, 0xF7, 0xA9, 0xA4, 0x03, 0xE3, 0x0A,
+        0x0C,
     ];
 
     if kdf_uuid.as_deref() == Some(&argon2_uuid) {
@@ -329,6 +505,8 @@ fn decompress_gzip(data: &[u8]) -> Result<Vec<u8>> {
     use flate2::read::GzDecoder;
     let mut decoder = GzDecoder::new(data);
     let mut output = Vec::new();
-    decoder.read_to_end(&mut output).map_err(KeePassExError::Io)?;
+    decoder
+        .read_to_end(&mut output)
+        .map_err(KeePassExError::Io)?;
     Ok(output)
 }

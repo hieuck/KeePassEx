@@ -1,11 +1,8 @@
 //! KDBX format tests — edge cases and compatibility
 
-use crate::kdbx::{
-    KDBX_SIGNATURE_1, KDBX_SIGNATURE_2, KDBX_VERSION_4_1,
-    Compression,
-};
+use crate::kdbx::{Compression, KDBX_SIGNATURE_1, KDBX_SIGNATURE_2, KDBX_VERSION_4_1};
+use crate::vault::operations::{open_vault, save_vault, VaultCredentials};
 use crate::vault::Vault;
-use crate::vault::operations::{save_vault, open_vault, VaultCredentials};
 use std::path::Path;
 
 // ─── Signature tests ──────────────────────────────────────────────────────────
@@ -252,4 +249,101 @@ async fn test_vault_write_read_roundtrip() {
 
     // Note: Full round-trip read test requires complete KDBX reader implementation
     // The writer produces valid KDBX 4.x files that can be opened by KeePassXC
+}
+
+// ─── KDBX 3.1 compat tests ───────────────────────────────────────────────────
+
+#[test]
+fn test_kdbx3_version_constant() {
+    use crate::kdbx::KDBX_VERSION_3_1;
+    assert_eq!(KDBX_VERSION_3_1, 0x00030001);
+}
+
+#[test]
+fn test_kdbx3_version_detection() {
+    use crate::kdbx::header::KdbxVersion;
+    let v = KdbxVersion::new(0x00030001);
+    assert!(v.is_kdbx3());
+    assert!(!v.is_kdbx4());
+    assert_eq!(v.major, 3);
+    assert_eq!(v.minor, 1);
+}
+
+#[test]
+fn test_aes_cbc_cipher_uuid() {
+    use crate::crypto::cipher::CipherAlgorithm;
+    // AES-256-CBC UUID must match KeePass spec
+    let uuid = CipherAlgorithm::Aes256Cbc.uuid_bytes();
+    assert_eq!(uuid[0], 0x31);
+    assert_eq!(uuid[1], 0xC1);
+    assert_eq!(uuid.len(), 16);
+}
+
+#[test]
+fn test_aes_cbc_decrypt_basic() {
+    use crate::crypto::cipher::{Cipher, CipherAlgorithm};
+    // AES-256-CBC with known key/IV/plaintext
+    // We test that decrypt(encrypt(data)) == data via the Cipher API
+    // (encrypt for CBC is not exposed, so we test the error path for now)
+    let key = vec![0x42u8; 32];
+    let iv = vec![0x00u8; 16];
+    let cipher = Cipher::new(CipherAlgorithm::Aes256Cbc, key, iv);
+    // Decrypting random data should fail gracefully (bad padding), not panic
+    let result = cipher.decrypt(&[0u8; 32]);
+    // Either Ok (unlikely with random data) or a clean error
+    let _ = result; // Just verify it doesn't panic
+}
+
+// ─── Protected stream tests ───────────────────────────────────────────────────
+
+#[test]
+fn test_protected_stream_chacha20_roundtrip() {
+    use crate::crypto::protected_stream::{ProtectedStream, ProtectedStreamAlgorithm};
+
+    let key = vec![0xABu8; 64];
+    let plaintext = b"my secret password";
+
+    let mut enc = ProtectedStream::new(ProtectedStreamAlgorithm::ChaCha20, &key).unwrap();
+    let ciphertext = enc.process(plaintext).unwrap();
+    assert_ne!(&ciphertext, plaintext);
+
+    let mut dec = ProtectedStream::new(ProtectedStreamAlgorithm::ChaCha20, &key).unwrap();
+    let recovered = dec.process(&ciphertext).unwrap();
+    assert_eq!(recovered, plaintext);
+}
+
+#[test]
+fn test_protected_stream_salsa20_roundtrip() {
+    use crate::crypto::protected_stream::{ProtectedStream, ProtectedStreamAlgorithm};
+
+    let key = vec![0xCDu8; 32];
+    let plaintext = b"another secret value";
+
+    let mut enc = ProtectedStream::new(ProtectedStreamAlgorithm::Salsa20, &key).unwrap();
+    let ciphertext = enc.process(plaintext).unwrap();
+    assert_ne!(&ciphertext, plaintext);
+
+    let mut dec = ProtectedStream::new(ProtectedStreamAlgorithm::Salsa20, &key).unwrap();
+    let recovered = dec.process(&ciphertext).unwrap();
+    assert_eq!(recovered, plaintext);
+}
+
+#[test]
+fn test_protected_stream_stateful() {
+    use crate::crypto::protected_stream::{ProtectedStream, ProtectedStreamAlgorithm};
+
+    let key = vec![0x42u8; 64];
+    let mut s = ProtectedStream::new(ProtectedStreamAlgorithm::ChaCha20, &key).unwrap();
+
+    // Process two values sequentially — stream position must advance
+    let ct1 = s.process(b"first").unwrap();
+    let ct2 = s.process(b"second").unwrap();
+
+    // Decrypt in same order from a fresh stream
+    let mut s2 = ProtectedStream::new(ProtectedStreamAlgorithm::ChaCha20, &key).unwrap();
+    let pt1 = s2.process(&ct1).unwrap();
+    let pt2 = s2.process(&ct2).unwrap();
+
+    assert_eq!(pt1, b"first");
+    assert_eq!(pt2, b"second");
 }

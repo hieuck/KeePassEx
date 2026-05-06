@@ -1,14 +1,15 @@
 //! Symmetric cipher implementations for KDBX payload encryption
 
 use crate::error::{KeePassExError, Result};
+use aes::cipher::{block_padding::Pkcs7, BlockDecryptMut, KeyIvInit};
+use aes_gcm::{aead::Aead as AesAead, Aes256Gcm, Key as AesKey, Nonce as AesNonce};
 use chacha20poly1305::{
-    aead::{Aead, KeyInit, OsRng},
+    aead::{Aead, KeyInit},
     ChaCha20Poly1305, Key as ChaChaKey, Nonce as ChaChaNonce,
 };
-use aes_gcm::{
-    aead::Aead as AesAead,
-    Aes256Gcm, Key as AesKey, Nonce as AesNonce,
-};
+
+// AES-256-CBC decryptor type alias
+type Aes256CbcDec = cbc::Decryptor<aes::Aes256>;
 
 /// Supported cipher algorithms
 #[derive(Debug, Clone, PartialEq)]
@@ -28,20 +29,20 @@ impl CipherAlgorithm {
     pub fn uuid_bytes(&self) -> [u8; 16] {
         match self {
             CipherAlgorithm::Aes256Cbc => [
-                0x31, 0xC1, 0xF2, 0xE6, 0xBF, 0x71, 0x43, 0x50,
-                0xBE, 0x58, 0x05, 0x21, 0x6A, 0xFC, 0x5A, 0xFF,
+                0x31, 0xC1, 0xF2, 0xE6, 0xBF, 0x71, 0x43, 0x50, 0xBE, 0x58, 0x05, 0x21, 0x6A, 0xFC,
+                0x5A, 0xFF,
             ],
             CipherAlgorithm::TwofishCbc => [
-                0xAD, 0x68, 0xF2, 0x9F, 0x57, 0x6F, 0x4B, 0xB9,
-                0xA3, 0x6A, 0xD4, 0x7A, 0xF9, 0x65, 0x34, 0x6C,
+                0xAD, 0x68, 0xF2, 0x9F, 0x57, 0x6F, 0x4B, 0xB9, 0xA3, 0x6A, 0xD4, 0x7A, 0xF9, 0x65,
+                0x34, 0x6C,
             ],
             CipherAlgorithm::ChaCha20Poly1305 => [
-                0xD6, 0x03, 0x8A, 0x2B, 0x8B, 0x6F, 0x4C, 0xB5,
-                0xA5, 0x24, 0x33, 0x9A, 0x31, 0xDB, 0xB5, 0x9A,
+                0xD6, 0x03, 0x8A, 0x2B, 0x8B, 0x6F, 0x4C, 0xB5, 0xA5, 0x24, 0x33, 0x9A, 0x31, 0xDB,
+                0xB5, 0x9A,
             ],
             CipherAlgorithm::Aes256Gcm => [
-                0x72, 0xAE, 0x8A, 0xEF, 0x3F, 0x6A, 0x4F, 0x0D,
-                0xB0, 0xF4, 0x3A, 0x2D, 0x8C, 0x17, 0x2D, 0x4F,
+                0x72, 0xAE, 0x8A, 0xEF, 0x3F, 0x6A, 0x4F, 0x0D, 0xB0, 0xF4, 0x3A, 0x2D, 0x8C, 0x17,
+                0x2D, 0x4F,
             ],
         }
     }
@@ -101,7 +102,26 @@ impl Cipher {
                     .decrypt(nonce, ciphertext)
                     .map_err(|_| KeePassExError::DecryptionFailed)
             }
-            _ => Err(KeePassExError::DecryptionFailed),
+            CipherAlgorithm::Aes256Cbc => {
+                // AES-256-CBC with PKCS#7 padding (KDBX 3.1)
+                if self.key.len() < 32 || self.iv.len() < 16 {
+                    return Err(KeePassExError::DecryptionFailed);
+                }
+                let decryptor = Aes256CbcDec::new_from_slices(&self.key[..32], &self.iv[..16])
+                    .map_err(|_| KeePassExError::DecryptionFailed)?;
+                let mut buf = ciphertext.to_vec();
+                decryptor
+                    .decrypt_padded_mut::<Pkcs7>(&mut buf)
+                    .map(|s| s.to_vec())
+                    .map_err(|_| KeePassExError::DecryptionFailed)
+            }
+            CipherAlgorithm::TwofishCbc => {
+                // Twofish-CBC is rare in practice; return a clear error
+                Err(KeePassExError::Other(
+                    "Twofish-CBC decryption not supported; re-save the vault with AES or ChaCha20"
+                        .into(),
+                ))
+            }
         }
     }
 }

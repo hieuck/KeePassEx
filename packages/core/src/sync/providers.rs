@@ -1591,26 +1591,32 @@ impl SyncProvider for S3Provider {
 
 /// SFTP sync provider (SSH File Transfer Protocol).
 ///
-/// # Note
-/// Full implementation requires the `ssh2` crate which provides libssh2 bindings.
-/// This stub defines the complete interface and documents the required implementation.
-/// To enable: add `ssh2 = { version = "0.9", features = ["vendored-openssl"] }` to Cargo.toml.
+/// Uses `russh` (pure-Rust async SSH2) + `russh-sftp` for SFTP operations.
+/// No native OpenSSL dependency — works on all platforms including Windows.
+///
+/// # Authentication
+/// Supports both password and public-key (PEM) authentication.
+/// When `private_key` is provided it takes precedence over `password`.
+///
+/// # Host verification
+/// When `host_fingerprint` is set, the SHA-256 fingerprint of the server's
+/// host key is verified before any data is transferred, preventing MITM attacks.
 pub struct SftpProvider {
     pub host: String,
     pub port: u16,
     pub username: String,
-    /// Password authentication (mutually exclusive with private_key)
+    /// Password authentication
     pub password: Option<String>,
     /// PEM-encoded private key for key-based authentication
     pub private_key: Option<String>,
     /// Optional passphrase for encrypted private key
     pub private_key_passphrase: Option<String>,
-    /// Known host fingerprint for verification (SHA-256 base64)
+    /// Expected SHA-256 fingerprint (base64) of the server host key.
+    /// If set, the connection is aborted when the fingerprint does not match.
     pub host_fingerprint: Option<String>,
 }
 
 impl SftpProvider {
-    /// Validate configuration before attempting connection
     fn validate(&self) -> Result<()> {
         if self.host.is_empty() {
             return Err(KeePassExError::SyncProviderError(
@@ -1629,6 +1635,140 @@ impl SftpProvider {
         }
         Ok(())
     }
+
+    /// Establish an authenticated SSH session and open an SFTP subsystem.
+    /// Returns `(session_handle, sftp_session)`.
+    async fn connect_sftp(
+        &self,
+    ) -> Result<(
+        russh::client::Handle<SftpClientHandler>,
+        russh_sftp::client::SftpSession,
+    )> {
+        use std::sync::Arc;
+
+        let config = Arc::new(russh::client::Config::default());
+        let handler = SftpClientHandler {
+            expected_fingerprint: self.host_fingerprint.clone(),
+        };
+
+        let addr = format!("{}:{}", self.host, self.port);
+        let mut session = russh::client::connect(config, addr.as_str(), handler)
+            .await
+            .map_err(|e| {
+                KeePassExError::SyncProviderError(format!("SFTP connect to {addr} failed: {e}"))
+            })?;
+
+        // ── Authentication ─────────────────────────────────────────────────
+        let auth_result = if let Some(pem) = &self.private_key {
+            let passphrase = self.private_key_passphrase.as_deref();
+            let key_pair = russh::keys::decode_secret_key(pem, passphrase).map_err(|e| {
+                KeePassExError::SyncProviderError(format!("SFTP key decode failed: {e}"))
+            })?;
+            session
+                .authenticate_publickey(
+                    &self.username,
+                    russh::keys::PrivateKeyWithHashAlg::new(
+                        Arc::new(key_pair),
+                        None, // use default hash algorithm
+                    ),
+                )
+                .await
+                .map_err(|e| {
+                    KeePassExError::SyncProviderError(format!(
+                        "SFTP key authentication failed: {e}"
+                    ))
+                })?
+        } else if let Some(pw) = &self.password {
+            session
+                .authenticate_password(&self.username, pw)
+                .await
+                .map_err(|e| {
+                    KeePassExError::SyncProviderError(format!(
+                        "SFTP password authentication failed: {e}"
+                    ))
+                })?
+        } else {
+            return Err(KeePassExError::SyncProviderError(
+                "No authentication method available".to_string(),
+            ));
+        };
+
+        if !auth_result.success() {
+            return Err(KeePassExError::SyncProviderError(
+                "SFTP authentication failed — check credentials".to_string(),
+            ));
+        }
+
+        // ── Open SFTP subsystem ────────────────────────────────────────────
+        let channel = session.channel_open_session().await.map_err(|e| {
+            KeePassExError::SyncProviderError(format!("SFTP channel open failed: {e}"))
+        })?;
+        channel.request_subsystem(true, "sftp").await.map_err(|e| {
+            KeePassExError::SyncProviderError(format!("SFTP subsystem request failed: {e}"))
+        })?;
+
+        let sftp = russh_sftp::client::SftpSession::new(channel.into_stream())
+            .await
+            .map_err(|e| {
+                KeePassExError::SyncProviderError(format!("SFTP session init failed: {e}"))
+            })?;
+
+        Ok((session, sftp))
+    }
+
+    /// Convert `russh_sftp` metadata to our `SyncMetadata`.
+    fn sftp_meta_to_sync(path: &str, meta: &russh_sftp::client::fs::Metadata) -> SyncMetadata {
+        use chrono::{DateTime, Utc};
+        // russh_sftp Metadata::modified() returns Result<SystemTime, io::Error>
+        let modified_at = meta
+            .modified()
+            .ok()
+            .and_then(|t: std::time::SystemTime| {
+                t.duration_since(std::time::UNIX_EPOCH)
+                    .ok()
+                    .and_then(|d| DateTime::from_timestamp(d.as_secs() as i64, 0))
+            })
+            .unwrap_or_else(Utc::now);
+
+        SyncMetadata {
+            path: path.to_string(),
+            size: meta.len(),
+            modified_at,
+            etag: None,
+            revision: None,
+        }
+    }
+}
+
+/// russh client handler for SFTP connections.
+/// Performs optional host fingerprint verification.
+struct SftpClientHandler {
+    expected_fingerprint: Option<String>,
+}
+
+impl russh::client::Handler for SftpClientHandler {
+    // russh requires Error: From<russh::Error>; use russh::Error directly
+    // and convert to KeePassExError at the call site.
+    type Error = russh::Error;
+
+    async fn check_server_key(
+        &mut self,
+        server_public_key: &russh::keys::PublicKey,
+    ) -> std::result::Result<bool, Self::Error> {
+        if let Some(expected) = &self.expected_fingerprint {
+            use sha2::{Digest, Sha256};
+            let key_bytes = server_public_key
+                .to_bytes()
+                .map_err(|_| russh::Error::CouldNotReadKey)?;
+            let digest = Sha256::digest(&key_bytes);
+            let actual = base64::Engine::encode(&base64::engine::general_purpose::STANDARD, digest);
+            if actual != *expected {
+                // Reject the connection — fingerprint mismatch
+                return Ok(false);
+            }
+        }
+        Ok(true)
+    }
 }
 
 #[async_trait]
@@ -1637,59 +1777,134 @@ impl SyncProvider for SftpProvider {
         "SFTP"
     }
 
-    async fn upload(&self, _path: &str, _data: &[u8]) -> Result<SyncMetadata> {
+    async fn upload(&self, path: &str, data: &[u8]) -> Result<SyncMetadata> {
         self.validate()?;
-        // TODO: Implement using ssh2 crate:
-        //   1. TcpStream::connect(format!("{}:{}", self.host, self.port))
-        //   2. Session::new() + session.handshake(&tcp)
-        //   3. Verify host fingerprint against self.host_fingerprint
-        //   4. Authenticate: session.userauth_password() or session.userauth_pubkey_memory()
-        //   5. session.sftp() to get Sftp handle
-        //   6. sftp.create(path) and write data
-        Err(KeePassExError::SyncProviderError(
-            "SFTP upload requires the ssh2 crate — add it to Cargo.toml to enable".to_string(),
-        ))
+        use russh_sftp::protocol::OpenFlags;
+        use tokio::io::AsyncWriteExt;
+
+        let (_session, sftp) = self.connect_sftp().await?;
+
+        // Ensure parent directory exists (best-effort)
+        if let Some(parent) = std::path::Path::new(path).parent() {
+            let parent_str = parent.to_string_lossy();
+            if !parent_str.is_empty() && parent_str != "/" {
+                let _ = sftp.create_dir(parent_str.as_ref()).await;
+            }
+        }
+
+        let mut file = sftp
+            .open_with_flags(
+                path,
+                OpenFlags::CREATE | OpenFlags::TRUNCATE | OpenFlags::WRITE,
+            )
+            .await
+            .map_err(|e| {
+                KeePassExError::SyncProviderError(format!("SFTP create {path} failed: {e}"))
+            })?;
+
+        file.write_all(data).await.map_err(|e| {
+            KeePassExError::SyncProviderError(format!("SFTP write {path} failed: {e}"))
+        })?;
+        file.flush().await.map_err(|e| {
+            KeePassExError::SyncProviderError(format!("SFTP flush {path} failed: {e}"))
+        })?;
+        file.shutdown().await.map_err(|e| {
+            KeePassExError::SyncProviderError(format!("SFTP close {path} failed: {e}"))
+        })?;
+
+        // Stat the file to return accurate metadata
+        let meta = sftp
+            .metadata(path)
+            .await
+            .unwrap_or_else(|_| russh_sftp::client::fs::Metadata::default());
+        Ok(Self::sftp_meta_to_sync(path, &meta))
     }
 
-    async fn download(&self, _path: &str) -> Result<(Vec<u8>, SyncMetadata)> {
+    async fn download(&self, path: &str) -> Result<(Vec<u8>, SyncMetadata)> {
         self.validate()?;
-        // TODO: sftp.open(path) and read all bytes
-        Err(KeePassExError::SyncProviderError(
-            "SFTP download requires the ssh2 crate — add it to Cargo.toml to enable".to_string(),
-        ))
+        use russh_sftp::protocol::OpenFlags;
+        use tokio::io::AsyncReadExt;
+
+        let (_session, sftp) = self.connect_sftp().await?;
+
+        let meta = sftp.metadata(path).await.map_err(|e| {
+            KeePassExError::SyncProviderError(format!("SFTP stat {path} failed: {e}"))
+        })?;
+
+        let mut file = sftp
+            .open_with_flags(path, OpenFlags::READ)
+            .await
+            .map_err(|e| {
+                KeePassExError::SyncProviderError(format!("SFTP open {path} failed: {e}"))
+            })?;
+
+        let mut data = Vec::new();
+        file.read_to_end(&mut data).await.map_err(|e| {
+            KeePassExError::SyncProviderError(format!("SFTP read {path} failed: {e}"))
+        })?;
+
+        let metadata = Self::sftp_meta_to_sync(path, &meta);
+        Ok((data, metadata))
     }
 
-    async fn get_metadata(&self, _path: &str) -> Result<SyncMetadata> {
+    async fn get_metadata(&self, path: &str) -> Result<SyncMetadata> {
         self.validate()?;
-        // TODO: sftp.stat(path) → FileStat → SyncMetadata
-        Err(KeePassExError::SyncProviderError(
-            "SFTP metadata requires the ssh2 crate — add it to Cargo.toml to enable".to_string(),
-        ))
+        let (_session, sftp) = self.connect_sftp().await?;
+
+        let meta = sftp.metadata(path).await.map_err(|e| {
+            KeePassExError::SyncProviderError(format!("SFTP stat {path} failed: {e}"))
+        })?;
+
+        Ok(Self::sftp_meta_to_sync(path, &meta))
     }
 
-    async fn list(&self, _path: &str) -> Result<Vec<SyncEntry>> {
+    async fn list(&self, path: &str) -> Result<Vec<SyncEntry>> {
         self.validate()?;
-        // TODO: sftp.readdir(path) → Vec<(PathBuf, FileStat)> → Vec<SyncEntry>
-        Err(KeePassExError::SyncProviderError(
-            "SFTP list requires the ssh2 crate — add it to Cargo.toml to enable".to_string(),
-        ))
+        let (_session, sftp) = self.connect_sftp().await?;
+
+        let entries = sftp.read_dir(path).await.map_err(|e| {
+            KeePassExError::SyncProviderError(format!("SFTP readdir {path} failed: {e}"))
+        })?;
+
+        let result = entries
+            .into_iter()
+            .filter_map(|entry| {
+                let name = entry.file_name();
+                if name == "." || name == ".." {
+                    return None;
+                }
+                let full_path = format!("{}/{}", path.trim_end_matches('/'), name);
+                let meta = entry.metadata();
+                let is_directory = meta.is_dir();
+                let sync_meta = Self::sftp_meta_to_sync(&full_path, &meta);
+                Some(SyncEntry {
+                    name: name.to_string(),
+                    path: full_path,
+                    is_directory,
+                    metadata: Some(sync_meta),
+                })
+            })
+            .collect();
+
+        Ok(result)
     }
 
-    async fn delete(&self, _path: &str) -> Result<()> {
+    async fn delete(&self, path: &str) -> Result<()> {
         self.validate()?;
-        // TODO: sftp.unlink(path)
-        Err(KeePassExError::SyncProviderError(
-            "SFTP delete requires the ssh2 crate — add it to Cargo.toml to enable".to_string(),
-        ))
+        let (_session, sftp) = self.connect_sftp().await?;
+
+        sftp.remove_file(path).await.map_err(|e| {
+            KeePassExError::SyncProviderError(format!("SFTP delete {path} failed: {e}"))
+        })
     }
 
     async fn test_connection(&self) -> Result<()> {
         self.validate()?;
-        // TODO: Attempt TCP + SSH handshake + auth without file operations
-        Err(KeePassExError::SyncProviderError(
-            "SFTP connection test requires the ssh2 crate — add it to Cargo.toml to enable"
-                .to_string(),
-        ))
+        // Attempt full handshake + auth + SFTP subsystem open
+        let (_session, sftp) = self.connect_sftp().await?;
+        // Canonicalize "." as a lightweight no-op to confirm SFTP works
+        let _ = sftp.canonicalize(".").await;
+        Ok(())
     }
 }
 
