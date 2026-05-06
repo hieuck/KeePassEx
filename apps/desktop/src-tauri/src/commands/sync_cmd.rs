@@ -1,7 +1,7 @@
 //! Sync Tauri commands
 
 use crate::state::AppState;
-use keepassex_core::sync::{SyncConfig, SyncProviderType, ConflictResolution};
+use keepassex_core::sync::{ConflictResolution, SyncConfig, SyncProviderType};
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
@@ -26,6 +26,14 @@ pub struct ConfigureSyncArgs {
     pub username: Option<String>,
     pub password: Option<String>,
     pub server_url: Option<String>,
+    /// JWT access token for KeePassEx Server provider
+    pub token: Option<String>,
+    // S3-specific
+    pub access_key_id: Option<String>,
+    pub secret_access_key: Option<String>,
+    pub region: Option<String>,
+    pub bucket: Option<String>,
+    pub endpoint: Option<String>,
 }
 
 /// Get current sync configuration and status
@@ -46,10 +54,7 @@ pub fn get_sync_status(state: State<'_, AppState>) -> SyncStatusDto {
 
 /// Configure sync provider
 #[tauri::command]
-pub fn configure_sync(
-    args: ConfigureSyncArgs,
-    state: State<'_, AppState>,
-) -> Result<(), String> {
+pub fn configure_sync(args: ConfigureSyncArgs, state: State<'_, AppState>) -> Result<(), String> {
     let provider = match args.provider.to_lowercase().as_str() {
         "webdav" => SyncProviderType::WebDav,
         "icloud" => SyncProviderType::ICloudDrive,
@@ -59,6 +64,7 @@ pub fn configure_sync(
         "s3" => SyncProviderType::S3,
         "sftp" => SyncProviderType::SftpServer,
         "local" => SyncProviderType::LocalFolder,
+        "keepassex_server" | "keepassex-server" | "kpx-server" => SyncProviderType::KeePassExServer,
         _ => return Err(format!("Unknown provider: {}", args.provider)),
     };
 
@@ -71,10 +77,21 @@ pub fn configure_sync(
 
     let config = SyncConfig {
         provider,
-        remote_path: args.remote_path,
+        remote_path: args.remote_path.clone(),
         auto_sync: args.auto_sync,
         sync_interval_seconds: args.sync_interval_seconds,
         conflict_resolution,
+        credentials: Some(keepassex_core::sync::SyncCredentials {
+            username: args.username.clone(),
+            password: args.password.clone(),
+            token: args.token.clone(),
+            access_key_id: args.access_key_id.clone(),
+            secret_access_key: args.secret_access_key.clone(),
+            region: args.region.clone(),
+            bucket: args.bucket.clone(),
+            endpoint: args.endpoint.clone(),
+            ..Default::default()
+        }),
     };
 
     // TODO: persist config and store credentials in OS keychain
@@ -127,7 +144,10 @@ pub async fn test_sync_connection(
         }
         _ => {
             // In production: test actual connection
-            Err(format!("Provider '{}' connection test not yet implemented in this version", provider))
+            Err(format!(
+                "Provider '{}' connection test not yet implemented in this version",
+                provider
+            ))
         }
     }
 }
