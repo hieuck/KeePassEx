@@ -1,0 +1,102 @@
+# KeePassEx Server — Helm values
+# Override these in your own values file or with --set
+
+replicaCount: 1
+
+image:
+  repository: keepassex/server
+  pullPolicy: IfNotPresent
+  tag: '' # Defaults to Chart.appVersion
+
+imagePullSecrets: []
+nameOverride: ''
+fullnameOverride: ''
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+  className: ''
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: sync.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: keepassex-tls
+  #    hosts:
+  #      - sync.example.com
+
+# Server configuration
+config:
+  # Port to listen on
+  port: '8080'
+  # Maximum vault size in MB
+  maxVaultMb: '100'
+  # Enable admin API (requires adminKey)
+  adminEnabled: 'false'
+
+# Secrets — set these via --set or a sealed secret
+secrets:
+  # JWT signing secret (auto-generated if empty, but won't persist across restarts)
+  jwtSecret: ''
+  # Admin API key (required if adminEnabled=true)
+  adminKey: ''
+
+# Persistent storage for SQLite database
+persistence:
+  enabled: true
+  storageClass: ''
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  # Existing PVC name (leave empty to create new)
+  existingClaim: ''
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 30
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ''
+
+podAnnotations: {}
+podSecurityContext:
+  fsGroup: 1000
+  runAsNonRoot: true
+  runAsUser: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
