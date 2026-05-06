@@ -37,6 +37,9 @@ export function SettingsScreen() {
     { id: 'ko' as const, flag: '🇰🇷', label: '한국어' },
     { id: 'es' as const, flag: '🇪🇸', label: 'Español' },
     { id: 'fr' as const, flag: '🇫🇷', label: 'Français' },
+    { id: 'de' as const, flag: '🇩🇪', label: 'Deutsch' },
+    { id: 'pt' as const, flag: '🇧🇷', label: 'Português' },
+    { id: 'ru' as const, flag: '🇷🇺', label: 'Русский' },
   ];
 
   const CLIPBOARD_OPTIONS = [

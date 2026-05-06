@@ -71,6 +71,7 @@ function TabIcon({ icon }: { icon: string }) {
 
 function MainTabs() {
   const { theme } = useThemeStore();
+  const { t } = useI18nStore();
 
   return (
     <Tab.Navigator
@@ -88,36 +89,36 @@ function MainTabs() {
         name="Vault"
         component={VaultScreen}
         options={{
-          tabBarLabel: 'Vault',
+          tabBarLabel: t('vault.open'),
           tabBarIcon: () => <TabIcon icon="🔑" />,
-          tabBarAccessibilityLabel: 'Vault',
+          tabBarAccessibilityLabel: t('vault.open'),
         }}
       />
       <Tab.Screen
         name="Health"
         component={HealthScreen}
         options={{
-          tabBarLabel: 'Health',
+          tabBarLabel: t('health.title'),
           tabBarIcon: () => <TabIcon icon="🛡️" />,
-          tabBarAccessibilityLabel: 'Health',
+          tabBarAccessibilityLabel: t('health.title'),
         }}
       />
       <Tab.Screen
         name="Generator"
         component={GeneratorScreen}
         options={{
-          tabBarLabel: 'Generator',
+          tabBarLabel: t('generator.title'),
           tabBarIcon: () => <TabIcon icon="⚡" />,
-          tabBarAccessibilityLabel: 'Password Generator',
+          tabBarAccessibilityLabel: t('generator.title'),
         }}
       />
       <Tab.Screen
         name="Settings"
         component={SettingsScreen}
         options={{
-          tabBarLabel: 'Settings',
+          tabBarLabel: t('settings.title'),
           tabBarIcon: () => <TabIcon icon="⚙️" />,
-          tabBarAccessibilityLabel: 'Settings',
+          tabBarAccessibilityLabel: t('settings.title'),
         }}
       />
     </Tab.Navigator>
