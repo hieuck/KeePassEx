@@ -1,129 +1,119 @@
 # Contributing to KeePassEx
 
-Cảm ơn bạn đã quan tâm đến KeePassEx! / Thank you for your interest in KeePassEx!
+Thank you for helping make KeePassEx better. This guide covers the development workflow, commit conventions, and quality standards.
 
-## 🌐 Language / Ngôn ngữ
-
-Issues and PRs can be written in **English** or **Vietnamese (Tiếng Việt)**.
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- **Rust** 1.75+ (`rustup install stable`)
-- **Node.js** 20+ 
-- **pnpm** 9+ (`npm install -g pnpm`)
-- **Tauri CLI** (`cargo install tauri-cli`)
-
-### Setup
+## Development Setup
 
 ```bash
-git clone https://github.com/keepassex/keepassex
-cd keepassex
-pnpm install
-cargo build
+make install      # Install all dependencies (Node + Rust)
+make desktop      # Run desktop dev server
+make mobile       # Start React Native metro bundler
+make cli ARGS="--help"  # Run CLI
+make test         # Run all tests
+make check        # Lint + typecheck + fmt-check
 ```
 
-### Running
+## Commit Conventions
 
-```bash
-# Desktop (dev)
-pnpm desktop
+KeePassEx uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for automated changelog generation and semantic versioning.
 
-# Mobile (dev)
-pnpm mobile
-
-# CLI
-pnpm cli -- --help
-
-# Run all tests
-cargo test --all
-pnpm test
-```
-
----
-
-## 📋 Development Guidelines
-
-### Code Style
-
-- **Rust**: Follow `rustfmt` and `clippy` — run `cargo fmt && cargo clippy`
-- **TypeScript**: Follow ESLint config — run `pnpm lint`
-- **Swift**: Follow Swift API Design Guidelines
-- **Kotlin**: Follow Kotlin coding conventions
-
-### Security Rules (MANDATORY)
-
-1. **Never log passwords, keys, or sensitive data**
-2. **Always use `ProtectedString` for password fields**
-3. **Always `zeroize` sensitive data on drop**
-4. **Clipboard auto-clear must default to 10 seconds**
-5. **No network calls with plaintext passwords**
-
-### i18n Rules
-
-- All user-facing strings MUST use i18n keys
-- Never hardcode English or Vietnamese text in components
-- Add both `en.ts` and `vi.ts` entries for every new string
-- Key format: `section.subsection.key`
-
-### Commit Messages
-
-Follow [Conventional Commits](https://www.conventionalcommits.org/):
+### Format
 
 ```
-feat(vault): add emergency access feature
-fix(otp): correct HOTP counter increment
-docs(readme): update build instructions
-test(crypto): add AES-GCM tamper detection test
-security(breach): implement k-anonymity HIBP check
-i18n(vi): add missing Vietnamese translations
+<type>(<scope>): <short summary>
+
+[optional body]
+
+[optional footer(s)]
 ```
 
----
+### Types
 
-## 🔒 Security Vulnerabilities
+| Type       | When to use                     | Version bump |
+| ---------- | ------------------------------- | ------------ |
+| `feat`     | New feature                     | minor        |
+| `fix`      | Bug fix                         | patch        |
+| `perf`     | Performance improvement         | patch        |
+| `refactor` | Code change without feature/fix | patch        |
+| `docs`     | Documentation only              | none         |
+| `test`     | Adding or fixing tests          | none         |
+| `chore`    | Build, CI, tooling changes      | none         |
+| `style`    | Formatting, whitespace          | none         |
+| `revert`   | Revert a previous commit        | patch        |
 
-**Do NOT open public issues for security vulnerabilities.**
+Append `!` after the type/scope for **breaking changes** (triggers a major bump):
 
-Email: security@keepassex.app
+```
+feat(vault)!: change KDBX encryption to require hardware key
+```
 
-We follow responsible disclosure. We'll respond within 48 hours.
+### Scopes
 
----
+Use the package or app name as scope:
 
-## 📝 Pull Request Process
+- `core` — `packages/core` (Rust)
+- `ui` — `packages/ui`
+- `i18n` — `packages/i18n`
+- `desktop` — `apps/desktop`
+- `mobile` — `apps/mobile`
+- `cli` — `apps/cli`
+- `tui` — `apps/tui`
+- `extension` — `apps/browser-extension`
+- `watch` — `apps/watch`
+- `ci` — GitHub Actions workflows
+- `deps` — dependency updates
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feat/my-feature`
-3. Make your changes
-4. Run tests: `cargo test --all && pnpm test`
-5. Run linters: `cargo clippy && pnpm lint`
-6. Commit with conventional commit message
-7. Push and open a PR against `develop`
+### Examples
 
-### PR Checklist
+```
+feat(desktop): add split-view preview pane to vault page
+fix(vault): preserve vaultPath through lock/unlock cycles
+perf(core): cache Argon2id parameters between vault opens
+docs(i18n): document key naming convention
+chore(ci): add aarch64-linux to CLI build matrix
+feat(i18n)!: rename all keys from camelCase to dot.notation
+```
 
-- [ ] Tests added/updated
-- [ ] i18n keys added for both EN and VI
-- [ ] No hardcoded strings
+## i18n Rules
+
+All user-facing strings **must** use i18n keys. Never hardcode English or Vietnamese text in components.
+
+1. Add the key to `packages/i18n/src/locales/en.ts`
+2. Add the **same key** with Vietnamese translation to `packages/i18n/src/locales/vi.ts`
+3. Use `useTranslation()` in React components: `const { t } = useTranslation()`
+4. Key format: `section.subsection.key` (e.g., `entry.copyPassword`)
+
+The i18n parity test will fail CI if EN and VI keys are out of sync.
+
+## Security Rules
+
+- **Never log passwords, keys, or sensitive data** — not even in debug builds
+- **Always use `ProtectedString`** for password/key fields in Rust
+- **Always `zeroize` sensitive data on drop**
+- **Clipboard auto-clear must default to 10 seconds** — do not change this default
+- **No network calls with plaintext passwords**
+
+## Pull Request Checklist
+
+- [ ] `make check` passes (lint + typecheck + fmt)
+- [ ] `make test` passes
+- [ ] New features include tests
+- [ ] i18n keys added to both `en.ts` and `vi.ts`
+- [ ] No hardcoded strings in UI components
 - [ ] Security rules followed
-- [ ] Documentation updated if needed
-- [ ] `cargo clippy` passes with no warnings
-- [ ] `pnpm typecheck` passes
+- [ ] `CHANGELOG.md` updated under `[Unreleased]`
+- [ ] Commit messages follow Conventional Commits
 
----
+## Versioning
 
-## 🏗️ Architecture
+Releases are tagged as `vMAJOR.MINOR.PATCH` and pushed to trigger the release workflow:
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed architecture documentation.
+```bash
+make version VERSION=1.2.0   # Updates version in all manifests + creates git tag
+```
 
-Key principle: **All business logic lives in `packages/core` (Rust)**. Platform apps are thin shells.
+The release workflow builds and publishes:
 
----
-
-## 📄 License
-
-By contributing, you agree that your contributions will be licensed under the GPL-3.0 License.
+- Desktop installers (Windows MSI/NSIS, macOS DMG, Linux AppImage/deb/rpm)
+- CLI binaries (Linux x64/arm64, macOS x64/arm64, Windows x64)
+- Browser extensions (Chrome, Firefox)

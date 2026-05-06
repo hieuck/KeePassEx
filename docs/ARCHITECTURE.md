@@ -65,7 +65,7 @@ src/
 ├── emergency_access.rs      # Trusted contact vault sharing (X25519 ECDH)
 ├── plugin/                  # WASM plugin system
 │   └── mod.rs               # Plugin manifest, registry, host
-├── import_export/           # Import from 11 password managers
+├── import_export/           # Import from 12 password managers
 │   ├── bitwarden.rs         # Bitwarden JSON
 │   ├── chrome.rs            # Chrome/Firefox CSV
 │   ├── csv.rs               # Generic CSV + export
@@ -82,7 +82,7 @@ src/
 └── types.rs                 # Domain types (Entry, Group, VaultMeta, etc.)
 ```
 
-**Test coverage: 200+ tests across 18 test modules**
+**Test coverage: 626 tests across 29 test modules**
 
 ### `packages/ui` — Shared Design System
 
@@ -101,7 +101,7 @@ React Native + Tamagui components used by both desktop and mobile.
 
 ### `packages/i18n` — Internationalization
 
-- **English** (en) — 400+ keys, default
+- **English** (en) — 900+ keys, default
 - **Vietnamese** (vi) — full parity, verified by automated tests
 - Extensible: add new locale by creating `locales/{code}.ts`
 
@@ -109,13 +109,13 @@ React Native + Tamagui components used by both desktop and mobile.
 
 **Frontend (React + TypeScript):**
 
-- 12 pages: Vault, Entry Detail, Health, Breach, Generator, Import/Export, Sync, Emergency Access, Plugins, Settings, Welcome, Unlock
-- 10 components: EntryRow, GroupTree, SearchBar, CommandPalette, IdleLockManager, OtpSetupDialog, CustomFieldEditor, AttachmentViewer, TagInput, BulkActionBar, PasswordStrengthBar
+- 20 pages: Vault, Entry Detail, Health, Breach, Generator, Import/Export, Sync, Emergency Access, Plugins, Settings, Welcome, Unlock, Analytics, AuditLog, Backup, VaultCompare, PasswordPolicy, Steganography, Statistics, Team, HardwareKey
+- 12 components: EntryRow, GroupTree, SearchBar, CommandPalette, IdleLockManager, OtpSetupDialog, CustomFieldEditor, AttachmentViewer, TagInput, BulkActionBar, PasswordStrengthBar, NaturalLanguageSearch
 - 4 stores: vault, settings, breach, sync
 
 **Backend (Rust/Tauri):**
 
-- 14 command modules: vault, entries, groups, generator, otp, health, clipboard, ssh, settings, import_export, breach, sync_cmd, attachments, native_messaging
+- 17 command modules: vault, entries, groups, generator, otp, health, clipboard, ssh, settings, import_export, breach, sync_cmd, attachments, hardware_key, backup, audit_log_cmd, policy_cmd, vault_compare_cmd, analytics_cmd, steg_cmd, team_cmd, search_cmd
 - SSH Agent server (Unix socket)
 - Native messaging host (browser extension)
 - System tray, global shortcuts, auto-type
@@ -136,7 +136,7 @@ React Native + Tamagui components used by both desktop and mobile.
 - Quick Settings tile
 - Home screen widget
 
-**Shared screens (14):** Vault, Entry Detail/Edit, Generator, Health, Breach, OTP, Sync, Import/Export, Settings, Plugins, Emergency Access, Unlock, Welcome
+**Shared screens (16):** Vault, Entry Detail/Edit, Generator, Health, Breach, OTP, Sync, Import/Export, Settings, Plugins, Emergency Access, Unlock, Welcome, Analytics, Sharding, BreachDetail
 
 **Shared components:** OtpCountdown, PasswordField, TagList, EmptyState, SectionHeader
 
@@ -168,7 +168,7 @@ React Native + Tamagui components used by both desktop and mobile.
 
 ### `apps/cli` — Rust CLI (`kpx`)
 
-18 commands: list, get, add, edit, delete, generate, health, otp, export, import, sync, breach, stats, template, hardware-key, compare, audit
+18 commands: list, get, add, edit, delete, generate, health, otp, export, import, sync, breach, stats, template, hardware-key, compare, audit, steg, shard
 
 ---
 
@@ -364,44 +364,56 @@ Conflict Resolution (CRDT-inspired)
 ## Test Architecture
 
 ```
-packages/core/src/tests/  (Rust, 200+ tests)
-├── vault_tests.rs         # CRUD, search, recycle bin
-├── crypto_tests.rs        # KDF, cipher, HMAC
-├── otp_tests.rs           # RFC 4226/6238 vectors
-├── generator_tests.rs     # Password generation
-├── health_tests.rs        # Audit logic
+packages/core/src/tests/  (Rust, 626 tests across 29 modules)
+├── vault_tests.rs         # CRUD, search, recycle bin, history
+├── crypto_tests.rs        # KDF, cipher, HMAC, key derivation
+├── otp_tests.rs           # RFC 4226/6238 vectors, URI parsing
+├── generator_tests.rs     # Password generation, strength scoring
+├── health_tests.rs        # Audit logic, weak/reused/expired
 ├── import_tests.rs        # Format importers (Bitwarden, Chrome, CSV)
 ├── new_import_tests.rs    # New importers (NordPass, Enpass, Dashlane, RoboForm, KeePass1)
-├── breach_tests.rs        # k-anonymity
+├── breach_tests.rs        # k-anonymity, SHA-1, offline check
 ├── passkey_tests.rs       # FIDO2 credentials
-├── emergency_access_tests.rs  # Lifecycle
-├── ssh_tests.rs           # Agent, key parsing
-├── sync_tests.rs          # Merge, diff
-├── kdbx_tests.rs          # Format, XML, round-trip
+├── emergency_access_tests.rs  # Lifecycle, revoke, manager
+├── ssh_tests.rs           # Agent, key parsing, deduplication
+├── sync_tests.rs          # Merge, diff, conflict resolution
+├── kdbx_tests.rs          # Format, XML, round-trip, KDBX 3.1
 ├── policy_tests.rs        # Password policy engine (25 tests)
 ├── backup_tests.rs        # Scheduled backup (15 tests)
 ├── compare_tests.rs       # Vault comparison (12 tests)
 ├── audit_tests.rs         # Audit log (15 tests)
+├── analytics_tests.rs     # compute_analytics(), strength distribution (11 tests)
+├── categorizer_tests.rs   # categorize_entry(), domain matching (17 tests)
+├── decoy_vault_tests.rs   # generate_decoy_vault(), fake entry quality (8 tests)
+├── expiry_engine_tests.rs # analyze_rotation(), urgency levels (15 tests)
+├── notifications_tests.rs # NotificationGenerator, all types (12 tests)
+├── scheduled_backup_tests.rs # is_backup_due(), all frequencies (11 tests)
+├── zkpv_tests.rs          # ZkpvCommitment, PasswordHint (10 tests)
+├── steg_tests.rs          # StegFormat::detect(), embed/extract (12 tests)
+├── team_tests.rs          # TeamVault, RBAC, entry overrides (16 tests)
+├── templates_tests.rs     # TemplateManager, 12 built-in templates (14 tests)
+├── plugin_tests.rs        # PluginManifest, PluginRegistry (13 tests)
+├── search_tests.rs        # vault.search(), SearchQuery (10 tests)
 └── mod.rs
 
 packages/i18n/src/__tests__/  (TypeScript)
-└── i18n.test.ts           # EN/VI parity (400+ keys)
+└── i18n.test.ts           # EN/VI parity, interpolation variable consistency, no empty values
 
 packages/ui/src/__tests__/  (TypeScript)
 ├── StrengthMeter.test.tsx
 └── components.test.tsx    # Button, Input, HealthBadge, OtpDisplay
 
 shared/utils/src/__tests__/  (TypeScript)
-└── utils.test.ts          # 13 utility functions
+└── utils.test.ts          # Utility functions (formatRelativeTime, truncate, etc.)
 
 apps/desktop/src/__tests__/  (TypeScript)
 ├── store.test.ts          # Vault + settings stores
 ├── components.test.tsx    # CustomFieldEditor, SearchBar, EntryRow
-└── pages.test.tsx         # WelcomePage, UnlockPage, GeneratorPage, etc.
+└── pages.test.tsx         # WelcomePage (dialog-based), UnlockPage, GeneratorPage, etc.
 
 apps/mobile/src/__tests__/  (TypeScript)
-└── screens.test.tsx       # VaultScreen, HealthScreen, etc.
+└── screens.test.tsx       # VaultScreen, HealthScreen, GeneratorScreen, etc.
 
 apps/browser-extension/src/__tests__/  (TypeScript)
-└── background.test.ts     # URL extraction, form detection, filling
+└── background.test.ts     # URL extraction, form detection, filling, HTML escaping
 ```

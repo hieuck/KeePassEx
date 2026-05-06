@@ -7,9 +7,11 @@ All commands are invoked from the frontend via `invoke()` from `@tauri-apps/api/
 ## Vault Commands
 
 ### `open_vault`
+
 Open an existing KDBX vault file.
 
 **Args:**
+
 ```typescript
 {
   path: string;           // Absolute path to .kdbx file
@@ -17,22 +19,27 @@ Open an existing KDBX vault file.
   key_file_data?: number[]; // Key file bytes (optional)
 }
 ```
+
 **Returns:** `VaultMetaDto`
 
 ---
 
 ### `create_vault`
+
 Create a new empty KDBX 4.x vault.
 
 **Args:**
+
 ```typescript
 { path: string; name: string; password: string; key_file_data?: number[] }
 ```
+
 **Returns:** `VaultMetaDto`
 
 ---
 
 ### `save_vault`
+
 Save the current vault to disk (atomic write).
 
 **Returns:** `void`
@@ -40,6 +47,7 @@ Save the current vault to disk (atomic write).
 ---
 
 ### `lock_vault`
+
 Lock the vault (keeps in memory, requires re-auth).
 
 **Returns:** `void`
@@ -47,6 +55,7 @@ Lock the vault (keeps in memory, requires re-auth).
 ---
 
 ### `close_vault`
+
 Close and unload the vault from memory.
 
 **Returns:** `void`
@@ -54,6 +63,7 @@ Close and unload the vault from memory.
 ---
 
 ### `change_credentials`
+
 Change the master password.
 
 **Args:** `{ old_password: string; new_password: string }`
@@ -63,6 +73,7 @@ Change the master password.
 ---
 
 ### `get_vault_meta`
+
 Get vault metadata without sensitive data.
 
 **Returns:** `VaultMetaDto`
@@ -72,6 +83,7 @@ Get vault metadata without sensitive data.
 ## Entry Commands
 
 ### `get_entries`
+
 Get entries, optionally filtered by group.
 
 **Args:** `{ group_uuid?: string }`
@@ -81,6 +93,7 @@ Get entries, optionally filtered by group.
 ---
 
 ### `get_entry`
+
 Get a single entry by UUID.
 
 **Args:** `{ uuid: string; include_password: boolean }`
@@ -90,6 +103,7 @@ Get a single entry by UUID.
 ---
 
 ### `get_entry_password`
+
 Get the password for an entry (explicit request required).
 
 **Args:** `{ uuid: string }`
@@ -99,9 +113,11 @@ Get the password for an entry (explicit request required).
 ---
 
 ### `create_entry`
+
 Create a new entry in a group.
 
 **Args:**
+
 ```typescript
 {
   group_uuid: string;
@@ -114,11 +130,13 @@ Create a new entry in a group.
   icon_id: number;
 }
 ```
+
 **Returns:** `string` (new entry UUID)
 
 ---
 
 ### `update_entry`
+
 Update an existing entry (saves history snapshot).
 
 **Args:** `UpdateEntryArgs` (same fields as create + `uuid`)
@@ -128,6 +146,7 @@ Update an existing entry (saves history snapshot).
 ---
 
 ### `delete_entry`
+
 Delete an entry (to recycle bin or permanently).
 
 **Args:** `{ uuid: string; permanent: boolean }`
@@ -137,6 +156,7 @@ Delete an entry (to recycle bin or permanently).
 ---
 
 ### `move_entry`
+
 Move entry to a different group.
 
 **Args:** `{ uuid: string; new_group_uuid: string }`
@@ -146,6 +166,7 @@ Move entry to a different group.
 ---
 
 ### `duplicate_entry`
+
 Duplicate an entry with "(copy)" suffix.
 
 **Args:** `{ uuid: string }`
@@ -155,6 +176,7 @@ Duplicate an entry with "(copy)" suffix.
 ---
 
 ### `search_entries`
+
 Full-text search across all entries.
 
 **Args:** `{ query: string }`
@@ -163,12 +185,58 @@ Full-text search across all entries.
 
 ---
 
+### `get_entry_history`
+
+Get the history snapshots for an entry, newest first.
+
+**Args:** `{ uuid: string }`
+
+**Returns:** `EntryHistoryDto[]`
+
+```typescript
+interface EntryHistoryDto {
+  uuid: string; // Synthetic: "<entry-uuid>-history-<index>"
+  modified_at: string; // ISO 8601
+  title: string;
+  username: string;
+  url: string;
+  notes: string;
+  has_password: boolean;
+}
+```
+
+---
+
+### `restore_entry_from_history`
+
+Restore an entry to a previous history snapshot. The current state is saved to history before restoring.
+
+**Args:** `{ entry_uuid: string; history_uuid: string }`
+
+**Returns:** `void`
+
+---
+
+### `clear_entry_history`
+
+Clear all history snapshots for an entry.
+
+**Args:** `{ uuid: string }`
+
+**Returns:** `void`
+
+---
+
 ## Group Commands
 
 ### `get_groups` → `GroupDto[]`
+
 ### `create_group` → `string` (UUID)
+
 ### `update_group` → `void`
+
 ### `delete_group` → `void`
+
 ### `move_group` → `void`
 
 ---
@@ -176,6 +244,7 @@ Full-text search across all entries.
 ## Generator Commands
 
 ### `generate_password`
+
 Generate a password or passphrase.
 
 **Args:** `GeneratePasswordArgs`
@@ -185,9 +254,11 @@ Generate a password or passphrase.
 ---
 
 ### `estimate_entropy`
+
 **Args:** `{ password: string }` → `number` (bits)
 
 ### `score_strength`
+
 **Args:** `{ password: string }` → `number` (0–4)
 
 ---
@@ -195,6 +266,7 @@ Generate a password or passphrase.
 ## OTP Commands
 
 ### `generate_totp`
+
 **Args:** `{ entry_uuid: string }`
 
 **Returns:** `{ code: string; remaining_seconds: number; period: number; progress: number }`
@@ -202,6 +274,7 @@ Generate a password or passphrase.
 ---
 
 ### `parse_otp_uri`
+
 **Args:** `{ uri: string }` → `OtpConfigDto`
 
 ---
@@ -209,6 +282,7 @@ Generate a password or passphrase.
 ## Health Commands
 
 ### `audit_vault`
+
 Run full health audit.
 
 **Returns:** `HealthReportDto`
@@ -218,6 +292,7 @@ Run full health audit.
 ## Breach Commands
 
 ### `check_vault_breaches`
+
 Check all vault passwords against HIBP (k-anonymity).
 
 **Args:** `{ online: boolean }`
@@ -227,6 +302,7 @@ Check all vault passwords against HIBP (k-anonymity).
 ---
 
 ### `check_password_breach`
+
 Check a single password.
 
 **Args:** `{ password: string; online: boolean }`
@@ -238,9 +314,11 @@ Check a single password.
 ## Import/Export Commands
 
 ### `import_vault`
+
 Import entries from an external file.
 
 **Args:**
+
 ```typescript
 {
   file_path: string;
@@ -248,11 +326,13 @@ Import entries from an external file.
   target_group_uuid?: string;
 }
 ```
+
 **Returns:** `ImportResultDto`
 
 ---
 
 ### `export_vault_cmd`
+
 Export vault to CSV or JSON.
 
 **Args:** `{ file_path: string; format: 'csv' | 'json' }`
@@ -262,6 +342,7 @@ Export vault to CSV or JSON.
 ---
 
 ### `detect_import_format`
+
 **Args:** `{ file_path: string }` → `string` (format name)
 
 ---
@@ -269,8 +350,11 @@ Export vault to CSV or JSON.
 ## Sync Commands
 
 ### `get_sync_status` → `SyncStatusDto`
+
 ### `configure_sync` → `void`
+
 ### `sync_now` → `SyncResultDto`
+
 ### `test_sync_connection` → `boolean`
 
 ---
@@ -278,6 +362,7 @@ Export vault to CSV or JSON.
 ## Clipboard Commands
 
 ### `copy_to_clipboard`
+
 Copy text with auto-clear.
 
 **Args:** `{ text: string; clear_after_seconds?: number }`
@@ -293,8 +378,11 @@ Copy text with auto-clear.
 ## SSH Agent Commands
 
 ### `start_ssh_agent` → `string`
+
 ### `stop_ssh_agent` → `void`
+
 ### `add_ssh_key` → `void`
+
 ### `list_ssh_keys` → `SshKeyDto[]`
 
 ---
@@ -302,6 +390,7 @@ Copy text with auto-clear.
 ## Settings Commands
 
 ### `get_settings` → `AppSettings`
+
 ### `save_settings` → `void` (persists to disk)
 
 ---

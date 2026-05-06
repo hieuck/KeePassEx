@@ -2,7 +2,7 @@
 
 ## Import
 
-KeePassEx supports importing from **11 password managers** — more than any competitor.
+KeePassEx supports importing from **12 password managers** — more than any competitor.
 
 ### Supported Import Formats
 
@@ -227,7 +227,7 @@ Configure in: Settings → Scheduled Backup
 
 | Feature            | KeePass | KeePassXC | Keepassium | KeePass2Android | **KeePassEx** |
 | ------------------ | ------- | --------- | ---------- | --------------- | ------------- |
-| Import formats     | 5       | 6         | 4          | 3               | **11**        |
+| Import formats     | 5       | 6         | 4          | 3               | **12**        |
 | Auto-detect format | ❌      | ✅        | ❌         | ❌              | ✅            |
 | Dashlane import    | ❌      | ❌        | ❌         | ❌              | ✅            |
 | NordPass import    | ❌      | ❌        | ❌         | ❌              | ✅            |

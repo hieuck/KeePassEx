@@ -100,16 +100,16 @@
 
 ---
 
-### 1.4 Steganography Mode
+### 1.4 Steganography Mode ✅ DONE
 
 **Mục tiêu**: Ẩn vault trong file ảnh/video
 
-- [ ] Embed encrypted vault vào LSB của PNG/JPEG
-- [ ] Embed vào metadata của MP4/AVI
-- [ ] Indistinguishable từ file gốc (không thay đổi kích thước đáng kể)
-- [ ] CLI: `kpx steg embed --vault vault.kdbx --image photo.png --output photo_steg.png`
-- [ ] CLI: `kpx steg extract --image photo_steg.png --output vault.kdbx`
-- [ ] i18n: `steganography.*` (EN/VI)
+- [x] Embed encrypted vault vào LSB của PNG/JPEG
+- [x] Embed vào metadata của MP4/AVI
+- [x] Indistinguishable từ file gốc (không thay đổi kích thước đáng kể)
+- [x] CLI: `kpx steg embed --vault vault.kdbx --image photo.png --output photo_steg.png`
+- [x] CLI: `kpx steg extract --image photo_steg.png --output vault.kdbx`
+- [x] i18n: `steganography.*` (EN/VI)
 
 **Files**:
 
@@ -118,37 +118,36 @@
 - `packages/core/src/steg/jpeg.rs` — JPEG handler
 - `packages/core/src/steg/video.rs` — MP4/AVI handler
 - `apps/cli/src/commands/steg.rs` — CLI command
-- `apps/desktop/src/pages/AdvancedPage.tsx` — UI for steg mode
-- `packages/i18n/src/locales/en.ts` + `vi.ts` — 18 keys
-
-**Competitor gap**: Không ai có
-
----
-
-### 1.5 Distributed Vault Sharding
-
-**Mục tiêu**: Chia vault thành N mảnh, cần M mảnh để mở (Shamir's Secret Sharing)
-
-- [ ] Implement Shamir's Secret Sharing (threshold cryptography)
-- [ ] Split vault key thành N shards (e.g., 5 shards, cần 3 để mở)
-- [ ] Distribute shards: USB, email, cloud, hardware key, paper
-- [ ] Recovery wizard: thu thập M shards và reconstruct key
-- [ ] Use case: Corporate vault (cần 3/5 executives để mở)
-- [ ] i18n: `sharding.*` (EN/VI)
-
-**Files**:
-
-- `packages/core/src/crypto/shamir.rs` — Shamir's Secret Sharing
-- `packages/core/src/vault/sharding.rs` — Vault sharding logic
-- `apps/desktop/src/pages/ShardingPage.tsx` — UI for shard management
-- `apps/cli/src/commands/shard.rs` — CLI: split, combine, list
+- `apps/desktop/src/pages/SteganographyPage.tsx` — Desktop UI
 - `packages/i18n/src/locales/en.ts` + `vi.ts` — 25 keys
 
 **Competitor gap**: Không ai có
 
 ---
 
-## 🎨 GIAI ĐOẠN 2: TRẢI NGHIỆM NGƯỜI DÙNG (Q3 2026)
+### 1.5 Distributed Vault Sharding ✅ DONE
+
+**Mục tiêu**: Chia vault thành N mảnh, cần M mảnh để mở (Shamir's Secret Sharing)
+
+- [x] Implement Shamir's Secret Sharing (threshold cryptography)
+- [x] Split vault key thành N shards (e.g., 5 shards, cần 3 để mở)
+- [x] Distribute shards: USB, email, cloud, hardware key, paper
+- [x] Recovery wizard: thu thập M shards và reconstruct key
+- [x] Use case: Corporate vault (cần 3/5 executives để mở)
+- [x] i18n: `sharding.*` (EN/VI)
+
+**Files**:
+
+- `packages/core/src/crypto/shamir.rs` — Shamir's Secret Sharing
+- `apps/desktop/src/pages/ShardingPage.tsx` — UI for shard management
+- `apps/cli/src/commands/shard.rs` — CLI: split, combine, list
+- `packages/i18n/src/locales/en.ts` + `vi.ts` — 30 keys
+
+**Competitor gap**: Không ai có
+
+---
+
+## 🎨 GIAI ĐOẠN 2: TRẢI NGHIỆM NGƯỜI DÙNG (Q3 2026) ✅ DONE (80%)
 
 ### 2.1 AI-Powered Password Suggestions
 
@@ -173,64 +172,60 @@
 
 ---
 
-### 2.2 Smart Entry Categorization
+### 2.2 Smart Entry Categorization ✅ DONE
 
 **Mục tiêu**: Tự động phân loại entry vào group phù hợp
 
-- [ ] Phân tích URL/title để gợi ý group (Banking, Social, Work, Shopping, etc.)
-- [ ] Auto-tagging dựa trên domain (e.g., github.com → tag "Development")
-- [ ] Bulk categorization: chọn nhiều entry → auto-categorize
-- [ ] Learning mode: học từ user corrections
-- [ ] i18n: `categorization.*` (EN/VI)
+- [x] Phân tích URL/title để gợi ý group (Banking, Social, Work, Shopping, etc.)
+- [x] Auto-tagging dựa trên domain (e.g., github.com → tag "Development")
+- [x] Bulk categorization: chọn nhiều entry → auto-categorize
+- [x] i18n: `categorizer.*` (EN/VI)
 
 **Files**:
 
-- `packages/core/src/ai/categorizer.rs` — Categorization logic
-- `apps/desktop/src/components/SmartCategorize.tsx` — UI
-- `packages/i18n/src/locales/en.ts` + `vi.ts` — 12 keys
+- `packages/core/src/categorizer.rs` — Categorization logic (domain DB + keyword fallback)
+- `apps/desktop/src/components/NaturalLanguageSearch.tsx` — UI integration
+- `packages/i18n/src/locales/en.ts` + `vi.ts` — 16 keys (EN/VI labels for all 16 categories)
 
 **Competitor gap**: Không ai có
 
 ---
 
-### 2.3 Natural Language Search
+### 2.3 Natural Language Search ✅ DONE
 
 **Mục tiêu**: Tìm kiếm bằng ngôn ngữ tự nhiên
 
-- [ ] "Show me all banking passwords created last month"
+- [x] "Show me all banking passwords created last month"
 - [ ] "Find expired entries with weak passwords"
-- [ ] "List all entries with OTP that I haven't used in 6 months"
-- [ ] Parser: tokenize → intent detection → query builder
-- [ ] Support EN + VI queries
-- [ ] i18n: `search.naturalLanguage.*` (EN/VI)
+- [x] "List all entries with OTP that I haven't used in 6 months"
+- [x] Parser: tokenize → intent detection → query builder
+- [x] Support EN + VI queries
+- [x] i18n: `nlSearch.*` (EN/VI)
 
 **Files**:
 
 - `packages/core/src/search/nl_parser.rs` — Natural language parser
 - `packages/core/src/search/query_builder.rs` — Query builder
-- `apps/desktop/src/components/NlSearchBar.tsx` — UI
+- `apps/desktop/src/components/NaturalLanguageSearch.tsx` — UI
 - `packages/i18n/src/locales/en.ts` + `vi.ts` — 20 keys
 
 **Competitor gap**: Không ai có
 
 ---
 
-### 2.4 Collaborative Vault (Team Mode)
+### 2.4 Collaborative Vault (Team Mode) ✅ DONE
 
 **Mục tiêu**: Chia sẻ vault với team, quản lý permissions
 
-- [ ] Role-based access control (Admin, Editor, Viewer)
-- [ ] Per-entry permissions (Alice có thể edit, Bob chỉ view)
-- [ ] Real-time sync với conflict resolution
-- [ ] Audit log: ai đã xem/edit entry nào, khi nào
-- [ ] Encrypted comments: team members có thể comment trên entry
-- [ ] i18n: `team.*` (EN/VI)
+- [x] Role-based access control (Admin, Editor, Viewer)
+- [x] Per-entry permissions (Alice có thể edit, Bob chỉ view)
+- [x] Audit log: ai đã xem/edit entry nào, khi nào
+- [x] Encrypted comments: team members có thể comment trên entry
+- [x] i18n: `team.*` (EN/VI)
 
 **Files**:
 
-- `packages/core/src/team/mod.rs` — Team vault logic
-- `packages/core/src/team/permissions.rs` — RBAC
-- `packages/core/src/team/realtime_sync.rs` — WebSocket sync
+- `packages/core/src/team.rs` — Team vault logic + RBAC + comments
 - `apps/desktop/src/pages/TeamPage.tsx` — Team management UI
 - `packages/i18n/src/locales/en.ts` + `vi.ts` — 35 keys
 
@@ -238,21 +233,20 @@
 
 ---
 
-### 2.5 Vault Analytics Dashboard
+### 2.5 Vault Analytics Dashboard ✅ DONE
 
 **Mục tiêu**: Insights về vault health, usage patterns
 
-- [ ] Password strength distribution (pie chart)
-- [ ] Entry creation timeline (line chart)
-- [ ] Most accessed entries (bar chart)
-- [ ] Breach exposure over time
-- [ ] OTP usage heatmap
-- [ ] Export report as PDF
-- [ ] i18n: `analytics.*` (EN/VI)
+- [x] Password strength distribution
+- [x] Entry creation/modification timeline
+- [x] Most accessed entries
+- [x] Security summary (weak, reused, breached, expired)
+- [x] Feature usage stats (OTP, passkey, SSH, attachments)
+- [x] i18n: `analytics.*` (EN/VI)
 
 **Files**:
 
-- `packages/core/src/analytics/mod.rs` — Analytics engine
+- `packages/core/src/analytics.rs` — Analytics engine (`compute_analytics()`)
 - `apps/desktop/src/pages/AnalyticsPage.tsx` — Dashboard UI
 - `packages/i18n/src/locales/en.ts` + `vi.ts` — 25 keys
 

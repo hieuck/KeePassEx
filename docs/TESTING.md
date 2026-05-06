@@ -3,8 +3,9 @@
 ## Overview
 
 KeePassEx has a multi-layer test strategy:
-- **Rust unit tests** — core crypto, vault, OTP, generator, health, import, breach, passkey, emergency access, SSH, sync
-- **TypeScript unit tests** — i18n parity, UI components, stores, utilities
+
+- **Rust unit tests** — core crypto, vault, OTP, generator, health, import, breach, passkey, emergency access, SSH, sync, analytics, categorizer, decoy vault, expiry engine, notifications, scheduled backup, ZKPV, steganography, team, templates, plugins, search
+- **TypeScript unit tests** — i18n parity + interpolation validation, UI components, stores, utilities
 - **Integration tests** — planned (cross-platform vault compatibility)
 
 ---
@@ -12,6 +13,7 @@ KeePassEx has a multi-layer test strategy:
 ## Running Tests
 
 ### All Tests
+
 ```bash
 make test
 # or:
@@ -19,6 +21,7 @@ pnpm test:rust && pnpm test:ts
 ```
 
 ### Rust Tests Only
+
 ```bash
 cargo test --all --all-features
 
@@ -33,6 +36,7 @@ cargo test -p keepassex-core otp_tests
 ```
 
 ### TypeScript Tests Only
+
 ```bash
 pnpm test:ts
 
@@ -52,43 +56,68 @@ pnpm --filter @keepassex/utils test
 
 ## Test Structure
 
-### Rust Tests (`packages/core/src/tests/`)
+### Rust Tests (`packages/core/src/tests/`) — 626 tests across 29 modules
 
-| File | Tests | Coverage |
-|------|-------|----------|
-| `vault_tests.rs` | 15 | CRUD, search, recycle bin, history |
-| `crypto_tests.rs` | 10 | KDF, cipher, HMAC, key derivation |
-| `otp_tests.rs` | 8 | TOTP/HOTP RFC vectors, URI parsing |
-| `generator_tests.rs` | 10 | Random, passphrase, strength scoring |
-| `health_tests.rs` | 5 | Weak, reused, expired detection |
-| `import_tests.rs` | 8 | Bitwarden, Chrome, CSV import/export |
-| `breach_tests.rs` | 6 | SHA-1, k-anonymity, offline check |
-| `passkey_tests.rs` | 8 | FIDO2 credential management |
-| `emergency_access_tests.rs` | 10 | Lifecycle, revoke, manager |
-| `ssh_tests.rs` | 8 | Agent, key parsing, deduplication |
-| `sync_tests.rs` | 6 | Merge, diff, conflict resolution |
+| File                        | Tests | Coverage                                                  |
+| --------------------------- | ----- | --------------------------------------------------------- |
+| `vault_tests.rs`            | 15    | CRUD, search, recycle bin, history                        |
+| `crypto_tests.rs`           | 10    | KDF, cipher, HMAC, key derivation                         |
+| `otp_tests.rs`              | 8     | TOTP/HOTP RFC vectors, URI parsing                        |
+| `generator_tests.rs`        | 10    | Random, passphrase, strength scoring                      |
+| `health_tests.rs`           | 5     | Weak, reused, expired detection                           |
+| `import_tests.rs`           | 8     | Bitwarden, Chrome, CSV import/export                      |
+| `new_import_tests.rs`       | 30+   | NordPass, Enpass, Dashlane, RoboForm, KeePass1            |
+| `breach_tests.rs`           | 6     | SHA-1, k-anonymity, offline check                         |
+| `passkey_tests.rs`          | 8     | FIDO2 credential management                               |
+| `emergency_access_tests.rs` | 10    | Lifecycle, revoke, manager                                |
+| `ssh_tests.rs`              | 8     | Agent, key parsing, deduplication                         |
+| `sync_tests.rs`             | 6     | Merge, diff, conflict resolution                          |
+| `kdbx_tests.rs`             | 12    | Format, XML, round-trip, KDBX 3.1                         |
+| `policy_tests.rs`           | 25    | Password policy engine, all rule types                    |
+| `backup_tests.rs`           | 15    | Scheduled backup, all frequencies                         |
+| `compare_tests.rs`          | 12    | Vault comparison, diff, merge                             |
+| `audit_tests.rs`            | 15    | Audit log, all event types                                |
+| `analytics_tests.rs`        | 11    | `compute_analytics()`, strength distribution, group stats |
+| `categorizer_tests.rs`      | 17    | `categorize_entry()`, domain matching, EN/VI labels       |
+| `decoy_vault_tests.rs`      | 8     | `generate_decoy_vault()`, fake entry quality              |
+| `expiry_engine_tests.rs`    | 15    | `analyze_rotation()`, urgency levels, EN/VI messages      |
+| `notifications_tests.rs`    | 12    | `NotificationGenerator`, all notification types           |
+| `scheduled_backup_tests.rs` | 11    | `is_backup_due()`, all frequencies, edge cases            |
+| `zkpv_tests.rs`             | 10    | `ZkpvCommitment`, `PasswordHint`, serialization           |
+| `steg_tests.rs`             | 12    | `StegFormat::detect()`, embed/extract, wrong password     |
+| `team_tests.rs`             | 16    | `TeamVault`, RBAC, entry overrides, comments              |
+| `templates_tests.rs`        | 14    | `TemplateManager`, all 12 built-in templates              |
+| `plugin_tests.rs`           | 13    | `PluginManifest`, `PluginRegistry`, capabilities          |
+| `search_tests.rs`           | 10    | `vault.search()`, `SearchQuery`, case-insensitive         |
 
-**Total: 94+ Rust tests**
+**Total: 626 Rust tests**
 
 ### TypeScript Tests
 
-| Package | File | Tests |
-|---------|------|-------|
-| `@keepassex/i18n` | `__tests__/i18n.test.ts` | EN/VI parity, interpolation |
-| `@keepassex/ui` | `__tests__/StrengthMeter.test.tsx` | Component rendering |
-| `@keepassex/utils` | `__tests__/utils.test.ts` | All 13 utility functions |
-| `@keepassex/desktop` | `__tests__/store.test.ts` | Vault + settings stores |
+| Package                        | File                               | Tests                                                                                                                                           |
+| ------------------------------ | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@keepassex/i18n`              | `__tests__/i18n.test.ts`           | EN/VI parity, interpolation variable consistency, no empty values                                                                               |
+| `@keepassex/ui`                | `__tests__/StrengthMeter.test.tsx` | Component rendering                                                                                                                             |
+| `@keepassex/ui`                | `__tests__/components.test.tsx`    | Button, Input, HealthBadge, OtpDisplay                                                                                                          |
+| `@keepassex/utils`             | `__tests__/utils.test.ts`          | All utility functions                                                                                                                           |
+| `@keepassex/desktop`           | `__tests__/store.test.ts`          | Vault + settings stores                                                                                                                         |
+| `@keepassex/desktop`           | `__tests__/components.test.tsx`    | CustomFieldEditor, SearchBar, EntryRow                                                                                                          |
+| `@keepassex/desktop`           | `__tests__/pages.test.tsx`         | WelcomePage (dialog-based), UnlockPage, GeneratorPage, SettingsPage, BreachPage, AuditLogPage, BackupPage, VaultComparePage, PasswordPolicyPage |
+| `@keepassex/mobile`            | `__tests__/screens.test.tsx`       | VaultScreen, HealthScreen, GeneratorScreen, UnlockScreen, SettingsScreen                                                                        |
+| `@keepassex/browser-extension` | `__tests__/background.test.ts`     | URL extraction, form detection, credential filling, HTML escaping                                                                               |
+
+**Total: 150 TypeScript tests**
 
 ---
 
 ## Coverage Targets
 
-| Layer | Target | Current |
-|-------|--------|---------|
-| Rust core | 80% | ~75% |
-| TypeScript utils | 90% | ~85% |
-| i18n | 100% | 100% |
-| UI components | 60% | ~20% |
+| Layer            | Target | Current                             |
+| ---------------- | ------ | ----------------------------------- |
+| Rust core        | 80%    | ~85% (29/29 modules covered)        |
+| TypeScript utils | 90%    | ~90%                                |
+| i18n             | 100%   | 100% (EN/VI parity + interpolation) |
+| UI components    | 60%    | ~60%                                |
 
 ---
 
@@ -122,6 +151,7 @@ async fn test_async_feature() {
 ```
 
 Register in `packages/core/src/tests/mod.rs`:
+
 ```rust
 #[cfg(test)]
 mod my_tests;
@@ -164,6 +194,7 @@ For tests involving cryptographic operations:
 4. **Zeroize test secrets** after use
 
 Example:
+
 ```rust
 #[test]
 fn test_kdf_fast() {
@@ -189,12 +220,14 @@ fn test_kdf_fast() {
 ## CI/CD Integration
 
 Tests run automatically on:
+
 - Every push to `main` or `develop`
 - Every pull request
 
 See `.github/workflows/ci.yml` for the full pipeline.
 
 ### Local Pre-commit Check
+
 ```bash
 make check  # lint + typecheck + fmt-check
 make test   # all tests
@@ -205,19 +238,23 @@ make test   # all tests
 ## Troubleshooting Tests
 
 **Rust tests fail with "cannot find crate"**
+
 ```bash
 cargo build -p keepassex-core  # Build first
 cargo test --all
 ```
 
 **TypeScript tests fail with "Cannot find module"**
+
 ```bash
 pnpm install  # Install dependencies
 pnpm build --filter='./packages/*'  # Build packages first
 ```
 
 **i18n parity test fails**
+
 ```
 Error: missingInVi: ["emergencyAccess.newKey"]
 ```
+
 Add the missing key to `packages/i18n/src/locales/vi.ts`.

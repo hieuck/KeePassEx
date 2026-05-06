@@ -13,7 +13,8 @@ jobs:
     name: Create Release
     runs-on: ubuntu-latest
     outputs:
-      release-id: ${{ steps.create-release.outputs.id }}
+      release-id: ${{ steps.create-release.outputs.result }}
+      upload-url: ${{ steps.get-upload-url.outputs.upload_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -21,6 +22,7 @@ jobs:
         id: create-release
         uses: actions/github-script@v7
         with:
+          result-encoding: string
           script: |
             const { data } = await github.rest.repos.createRelease({
               owner: context.repo.owner,
@@ -31,7 +33,21 @@ jobs:
               prerelease: false,
               generate_release_notes: true,
             });
-            return data.id;
+            return String(data.id);
+
+      - name: Get upload URL
+        id: get-upload-url
+        uses: actions/github-script@v7
+        with:
+          result-encoding: string
+          script: |
+            const { data } = await github.rest.repos.getRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: ${{ steps.create-release.outputs.result }},
+            });
+            core.setOutput('upload_url', data.upload_url);
+            return data.upload_url;
 
   # ─── Desktop Release ────────────────────────────────────────────────────────
   desktop-release:
@@ -134,14 +150,21 @@ jobs:
           cp target/${{ matrix.target }}/release/kpx${EXT} ${{ matrix.artifact }}
 
       - name: Upload to release
-        uses: actions/upload-release-asset@v1
+        uses: actions/github-script@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.create-release.outputs.upload-url }}
-          asset_path: ${{ matrix.artifact }}
-          asset_name: ${{ matrix.artifact }}
-          asset_content_type: application/octet-stream
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const artifact = '${{ matrix.artifact }}';
+            await github.rest.repos.uploadReleaseAsset({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: ${{ needs.create-release.outputs.release-id }},
+              name: artifact,
+              data: fs.readFileSync(path.resolve(artifact)),
+            });
 
   # ─── Publish Release ────────────────────────────────────────────────────────
   publish-release:

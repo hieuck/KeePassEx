@@ -67,7 +67,7 @@
 
 ### i18n
 
-- [x] English (400+ keys)
+- [x] English (900+ keys)
 - [x] Vietnamese (full parity)
 
 ---
@@ -169,6 +169,10 @@
 - [x] **Audit tests** — 15 unit tests covering all event types
 - [x] **New import tests** — NordPass, Enpass, Dashlane, RoboForm (30+ tests)
 - [x] **Desktop page tests** — AuditLogPage, BackupPage, VaultComparePage, PasswordPolicyPage
+- [x] **12 new Rust test modules** — analytics, categorizer, decoy_vault, expiry_engine, notifications, scheduled_backup, zkpv, steg, team, templates, plugin, search (all previously untested modules now covered)
+- [x] **i18n interpolation parity test** — validates `{{variable}}` placeholders match between EN and VI
+- [x] **WelcomePage dialog tests** — tests for the new modal-based vault open/create flow
+- [x] **Total: 626 Rust tests + 150 TypeScript tests**
 
 ---
 
@@ -229,39 +233,39 @@
 
 ## Feature Comparison vs Competitors
 
-| Feature              | KeePass | KeePassXC | Keepassium | KeePass2Android | **KeePassEx** |
-| -------------------- | ------- | --------- | ---------- | --------------- | ------------- |
-| Native Windows       | ✅      | ✅        | ❌         | ❌              | ✅            |
-| Native macOS         | ❌      | ✅        | ✅         | ❌              | ✅            |
-| Native Linux         | ❌      | ✅        | ❌         | ❌              | ✅            |
-| Native iOS           | ❌      | ❌        | ✅         | ❌              | ✅            |
-| Native Android       | ❌      | ❌        | ❌         | ✅              | ✅            |
-| Native watchOS       | ❌      | ❌        | ❌         | ❌              | ✅            |
-| Native WearOS        | ❌      | ❌        | ❌         | ❌              | ✅            |
-| YubiKey              | ✅      | ✅        | ❌         | ❌              | ✅            |
-| Passkey (FIDO2)      | ❌      | ✅        | ❌         | ❌              | ✅            |
-| SSH Agent            | ❌      | ✅        | ❌         | ❌              | ✅            |
-| Breach Monitor       | ❌      | ✅        | ❌         | ❌              | ✅            |
-| Emergency Access     | ❌      | ❌        | ❌         | ❌              | ✅            |
-| Plugin System        | ✅      | ❌        | ❌         | ❌              | ✅            |
-| Entry Templates      | ✅      | ❌        | ❌         | ❌              | ✅            |
-| Audit Log            | ❌      | ❌        | ❌         | ❌              | ✅            |
-| Decoy Vault          | ✅      | ❌        | ❌         | ❌              | ✅            |
-| Vault Compare        | ❌      | ❌        | ❌         | ❌              | ✅            |
-| Scheduled Backup     | ❌      | ❌        | ❌         | ❌              | ✅            |
-| Password Policies    | ❌      | ❌        | ❌         | ❌              | ✅            |
-| Browser Extension    | ❌      | ✅        | ❌         | ❌              | ✅            |
-| iOS AutoFill         | ❌      | ❌        | ✅         | ❌              | ✅            |
-| Android AutoFill     | ❌      | ❌        | ❌         | ✅              | ✅            |
-| iOS Widget           | ❌      | ❌        | ❌         | ❌              | ✅            |
-| Android Widget       | ❌      | ❌        | ❌         | ❌              | ✅            |
-| Watch Complications  | ❌      | ❌        | ❌         | ❌              | ✅            |
-| Command Palette      | ❌      | ❌        | ❌         | ❌              | ✅            |
-| CLI                  | ❌      | ✅        | ❌         | ❌              | ✅            |
-| Vietnamese i18n      | ❌      | ❌        | ❌         | ❌              | ✅            |
-| Sync (8 providers)   | ❌      | ✅        | ✅         | ✅              | ✅            |
-| Import (10+ formats) | ✅      | ✅        | ✅         | ✅              | ✅            |
-| Open Source          | ✅      | ✅        | ❌         | ✅              | ✅            |
+| Feature             | KeePass | KeePassXC | Keepassium | KeePass2Android | **KeePassEx** |
+| ------------------- | ------- | --------- | ---------- | --------------- | ------------- |
+| Native Windows      | ✅      | ✅        | ❌         | ❌              | ✅            |
+| Native macOS        | ❌      | ✅        | ✅         | ❌              | ✅            |
+| Native Linux        | ❌      | ✅        | ❌         | ❌              | ✅            |
+| Native iOS          | ❌      | ❌        | ✅         | ❌              | ✅            |
+| Native Android      | ❌      | ❌        | ❌         | ✅              | ✅            |
+| Native watchOS      | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Native WearOS       | ❌      | ❌        | ❌         | ❌              | ✅            |
+| YubiKey             | ✅      | ✅        | ❌         | ❌              | ✅            |
+| Passkey (FIDO2)     | ❌      | ✅        | ❌         | ❌              | ✅            |
+| SSH Agent           | ❌      | ✅        | ❌         | ❌              | ✅            |
+| Breach Monitor      | ❌      | ✅        | ❌         | ❌              | ✅            |
+| Emergency Access    | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Plugin System       | ✅      | ❌        | ❌         | ❌              | ✅            |
+| Entry Templates     | ✅      | ❌        | ❌         | ❌              | ✅            |
+| Audit Log           | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Decoy Vault         | ✅      | ❌        | ❌         | ❌              | ✅            |
+| Vault Compare       | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Scheduled Backup    | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Password Policies   | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Browser Extension   | ❌      | ✅        | ❌         | ❌              | ✅            |
+| iOS AutoFill        | ❌      | ❌        | ✅         | ❌              | ✅            |
+| Android AutoFill    | ❌      | ❌        | ❌         | ✅              | ✅            |
+| iOS Widget          | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Android Widget      | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Watch Complications | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Command Palette     | ❌      | ❌        | ❌         | ❌              | ✅            |
+| CLI                 | ❌      | ✅        | ❌         | ❌              | ✅            |
+| Vietnamese i18n     | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Sync (8 providers)  | ❌      | ✅        | ✅         | ✅              | ✅            |
+| Import (12 formats) | ✅      | ✅        | ✅         | ✅              | ✅            |
+| Open Source         | ✅      | ✅        | ❌         | ✅              | ✅            |
 
 **KeePassEx is the only password manager with ALL of the above features.**
 

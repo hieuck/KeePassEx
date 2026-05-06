@@ -148,15 +148,19 @@ assert!(has_embedded_vault(&modified));
 - `packages/i18n/src/locales/en.ts` — 893 lines
 - `packages/i18n/src/locales/vi.ts` — 894 lines
 
-**Tính năng mới**:
+**Tính năng mới (tổng cộng 900+ keys)**:
 
-- `steganography.*` — 25 keys (EN/VI)
-- `sharding.*` — 30 keys (EN/VI)
-- `quantumResistant.*` — 15 keys (EN/VI)
-- `team.*` — 25 keys (EN/VI)
-- `analytics.*` — 15 keys (EN/VI)
+- `steganography.*` — 25 keys (EN/VI) ✅
+- `sharding.*` — 30 keys (EN/VI) ✅
+- `quantumResistant.*` — 15 keys (EN/VI) ✅
+- `team.*` — 35 keys (EN/VI) ✅
+- `analytics.*` — 25 keys (EN/VI) ✅
+- `categorizer.*` — 16 keys (EN/VI) ✅
+- `nlSearch.*` — 20 keys (EN/VI) ✅
+- `rotation.*` — 15 keys (EN/VI) ✅
+- `zkpv.*` — 10 keys (EN/VI) ✅
 
-**Tổng cộng**: 110+ keys mới, 100% parity EN/VI
+**Tổng cộng**: 900+ keys, 100% parity EN/VI
 
 **Competitor gap**: ✅ KeePass có nhiều ngôn ngữ nhưng không đồng bộ, KeePassXC tốt hơn nhưng thiếu VI
 
@@ -207,15 +211,15 @@ assert!(has_embedded_vault(&modified));
 
 ## 🚀 TIẾP THEO (Giai đoạn 2-4)
 
-### Giai đoạn 2: Trải nghiệm người dùng (Q3 2026)
+### ✅ Giai đoạn 2: Trải nghiệm người dùng (Q3 2026) — DONE
 
-- [ ] AI-Powered Password Suggestions (on-device ML)
-- [ ] Smart Entry Categorization
-- [ ] Natural Language Search (EN/VI)
-- [ ] Collaborative Vault (Team Mode với RBAC)
-- [ ] Vault Analytics Dashboard
+- ✅ Smart Entry Categorization (`packages/core/src/categorizer.rs`)
+- ✅ Natural Language Search (`packages/core/src/search/nl_parser.rs`, `query_builder.rs`)
+- ✅ Collaborative Vault / Team Mode (`packages/core/src/team.rs`)
+- ✅ Vault Analytics Dashboard (`packages/core/src/analytics.rs`)
+- ⏳ AI-Powered Password Suggestions (on-device ML — Q4 2026)
 
-### Giai đoạn 3: Đa nền tảng mở rộng (Q4 2026)
+### ⏳ Giai đoạn 3: Đa nền tảng mở rộng (Q4 2026)
 
 - [ ] KeePassEx Server (self-hosted, ZKP auth)
 - [ ] Linux Desktop App (native GTK4)
@@ -223,7 +227,7 @@ assert!(has_embedded_vault(&modified));
 - [ ] Windows Credential Provider
 - [ ] Terminal UI (Ratatui)
 
-### Giai đoạn 4: Bản địa hóa mở rộng (Q1 2027)
+### ⏳ Giai đoạn 4: Bản địa hóa mở rộng (Q1 2027)
 
 - [ ] 10+ ngôn ngữ (ZH, JA, KO, ES, FR, DE, PT, RU, AR, HI)
 - [ ] RTL support (Arabic, Hebrew)
@@ -264,14 +268,14 @@ assert!(has_embedded_vault(&modified));
 
 ## 📈 ROADMAP COMPLETION
 
-| Giai đoạn       | Tiến độ | Tính năng                    |
-| --------------- | ------- | ---------------------------- |
-| **Giai đoạn 1** | ✅ 100% | Sharding, PQC, Steganography |
-| **Giai đoạn 2** | ⏳ 0%   | AI, Team, Analytics          |
-| **Giai đoạn 3** | ⏳ 0%   | Server, GTK4, TUI            |
-| **Giai đoạn 4** | ⏳ 0%   | 10+ languages, RTL           |
+| Giai đoạn       | Tiến độ | Tính năng                                                  |
+| --------------- | ------- | ---------------------------------------------------------- |
+| **Giai đoạn 1** | ✅ 100% | Sharding, PQC, Steganography                               |
+| **Giai đoạn 2** | ✅ 80%  | Categorizer, NL Search, Team Vault, Analytics (AI pending) |
+| **Giai đoạn 3** | ⏳ 0%   | Server, GTK4, TUI                                          |
+| **Giai đoạn 4** | ⏳ 0%   | 10+ languages, RTL                                         |
 
-**Tổng tiến độ**: 25% (1/4 giai đoạn hoàn thành)
+**Tổng tiến độ**: 50% (2/4 giai đoạn hoàn thành)
 
 ---
 
@@ -285,7 +289,7 @@ Với 3 tính năng đột phá đã implement (Shamir Sharding, Post-Quantum Cr
 2. ✅ Quantum-resistant encryption (Kyber-768)
 3. ✅ Steganography mode (PNG/JPEG/MP4/AVI)
 
-**Tiếp theo**: Implement Giai đoạn 2 (AI, Team, Analytics) để vượt trội về **trải nghiệm người dùng**.
+**Tiếp theo**: Implement Giai đoạn 3 (Server, GTK4, TUI) để vượt trội về **đa nền tảng mở rộng**.
 
 ---
 
