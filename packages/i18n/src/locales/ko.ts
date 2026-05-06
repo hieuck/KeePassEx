@@ -453,6 +453,43 @@ export const ko = {
     shortcut: '단축키: ⌘⇧K',
     uniqueFeature: 'KeePassEx 고유 기능 — 경쟁사에는 없음',
   },
+
+  // ─── KeePassEx Server ──────────────────────────────────────────────────────
+  server: {
+    title: 'KeePassEx 서버',
+    subtitle: '자체 호스팅 동기화 서버 — 제로 지식, 종단간 암호화',
+    description:
+      '자체 동기화 서버를 호스팅하세요. 서버는 비밀번호나 볼트 내용을 볼 수 없습니다 — 모든 암호화는 기기에서 이루어집니다.',
+    connect: '서버 연결',
+    disconnect: '연결 해제',
+    serverUrl: '서버 URL',
+    serverUrlPlaceholder: 'https://your-server.example.com',
+    register: '계정 만들기',
+    login: '로그인',
+    logout: '로그아웃',
+    email: '이메일',
+    password: '비밀번호',
+    confirmPassword: '비밀번호 확인',
+    connected: '{{url}}에 연결됨',
+    disconnected: '연결되지 않음',
+    syncing: '동기화 중...',
+    lastSync: '마지막 동기화: {{time}}',
+    syncNow: '지금 동기화',
+    syncSuccess: '동기화 성공 (버전 {{version}})',
+    syncError: '동기화 실패: {{error}}',
+    vaultVersion: '볼트 버전: {{version}}',
+    storageUsed: '저장소: {{used}}',
+    history: '동기화 기록',
+    historyVersion: '버전 {{version}}',
+    restoreVersion: '이 버전 복원',
+    noHistory: '동기화 기록 없음',
+    selfHosted: '자체 호스팅',
+    selfHostedDesc: '데이터가 내 서버에 저장됩니다. 타사 클라우드 없음.',
+    zeroKnowledge: '제로 지식',
+    zeroKnowledgeDesc:
+      '서버는 볼트를 읽을 수 없습니다. 모든 암호화는 클라이언트 측에서 이루어집니다.',
+    uniqueFeature: 'KeePassEx 고유 기능 — 자체 호스팅 동기화를 제공하는 경쟁사 없음',
+  },
 } as const;
 
 export type TranslationKo = typeof ko;

@@ -454,6 +454,45 @@ export const pt = {
     shortcut: 'Atalho: ⌘⇧K',
     uniqueFeature: 'Recurso exclusivo do KeePassEx — nenhum concorrente tem isso',
   },
+
+  // ─── KeePassEx Server ──────────────────────────────────────────────────────
+  server: {
+    title: 'Servidor KeePassEx',
+    subtitle:
+      'Servidor de sincronização auto-hospedado — conhecimento zero, criptografia de ponta a ponta',
+    description:
+      'Hospede seu próprio servidor de sincronização. O servidor nunca vê suas senhas ou o conteúdo do cofre — toda a criptografia acontece no seu dispositivo.',
+    connect: 'Conectar ao servidor',
+    disconnect: 'Desconectar',
+    serverUrl: 'URL do servidor',
+    serverUrlPlaceholder: 'https://seu-servidor.exemplo.com',
+    register: 'Criar conta',
+    login: 'Entrar',
+    logout: 'Sair',
+    email: 'E-mail',
+    password: 'Senha',
+    confirmPassword: 'Confirmar senha',
+    connected: 'Conectado a {{url}}',
+    disconnected: 'Não conectado',
+    syncing: 'Sincronizando...',
+    lastSync: 'Última sincronização: {{time}}',
+    syncNow: 'Sincronizar agora',
+    syncSuccess: 'Sincronização bem-sucedida (versão {{version}})',
+    syncError: 'Falha na sincronização: {{error}}',
+    vaultVersion: 'Versão do cofre: {{version}}',
+    storageUsed: 'Armazenamento: {{used}}',
+    history: 'Histórico de sincronização',
+    historyVersion: 'Versão {{version}}',
+    restoreVersion: 'Restaurar esta versão',
+    noHistory: 'Sem histórico de sincronização',
+    selfHosted: 'Auto-hospedado',
+    selfHostedDesc: 'Seus dados ficam no seu servidor. Sem nuvem de terceiros.',
+    zeroKnowledge: 'Conhecimento zero',
+    zeroKnowledgeDesc:
+      'O servidor não pode ler seu cofre. Toda a criptografia é do lado do cliente.',
+    uniqueFeature:
+      'Recurso exclusivo do KeePassEx — nenhum concorrente oferece sincronização auto-hospedada',
+  },
 } as const;
 
 export type TranslationPt = typeof pt;

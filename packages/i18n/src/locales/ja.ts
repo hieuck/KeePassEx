@@ -454,6 +454,43 @@ export const ja = {
     shortcut: 'ショートカット：⌘⇧K',
     uniqueFeature: 'KeePassEx独自機能 — 競合他社にはない',
   },
+
+  // ─── KeePassEx Server ──────────────────────────────────────────────────────
+  server: {
+    title: 'KeePassExサーバー',
+    subtitle: 'セルフホスト型同期サーバー — ゼロ知識、エンドツーエンド暗号化',
+    description:
+      '独自の同期サーバーをホストします。サーバーはパスワードやボルトの内容を見ることができません — すべての暗号化はデバイス上で行われます。',
+    connect: 'サーバーに接続',
+    disconnect: '切断',
+    serverUrl: 'サーバーURL',
+    serverUrlPlaceholder: 'https://your-server.example.com',
+    register: 'アカウント作成',
+    login: 'サインイン',
+    logout: 'サインアウト',
+    email: 'メール',
+    password: 'パスワード',
+    confirmPassword: 'パスワードの確認',
+    connected: '{{url}} に接続済み',
+    disconnected: '未接続',
+    syncing: '同期中...',
+    lastSync: '最終同期：{{time}}',
+    syncNow: '今すぐ同期',
+    syncSuccess: '同期成功（バージョン {{version}}）',
+    syncError: '同期失敗：{{error}}',
+    vaultVersion: 'ボルトバージョン：{{version}}',
+    storageUsed: 'ストレージ：{{used}}',
+    history: '同期履歴',
+    historyVersion: 'バージョン {{version}}',
+    restoreVersion: 'このバージョンを復元',
+    noHistory: '同期履歴なし',
+    selfHosted: 'セルフホスト',
+    selfHostedDesc: 'データはあなたのサーバーに保存されます。サードパーティのクラウドなし。',
+    zeroKnowledge: 'ゼロ知識',
+    zeroKnowledgeDesc:
+      'サーバーはボルトを読み取れません。すべての暗号化はクライアント側で行われます。',
+    uniqueFeature: 'KeePassEx独自機能 — セルフホスト同期を提供する競合他社はない',
+  },
 } as const;
 
 export type TranslationJa = typeof ja;

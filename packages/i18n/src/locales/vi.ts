@@ -1293,6 +1293,42 @@ export const vi = {
     shortcut: 'Phím tắt: ⌘⇧K',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx — không đối thủ nào có',
   },
+
+  // ─── KeePassEx Server ──────────────────────────────────────────────────────
+  server: {
+    title: 'KeePassEx Server',
+    subtitle: 'Máy chủ đồng bộ tự lưu trữ — không tiết lộ, mã hóa đầu cuối',
+    description:
+      'Tự lưu trữ máy chủ đồng bộ. Máy chủ không bao giờ thấy mật khẩu hay nội dung kho — tất cả mã hóa diễn ra trên thiết bị của bạn.',
+    connect: 'Kết nối máy chủ',
+    disconnect: 'Ngắt kết nối',
+    serverUrl: 'URL máy chủ',
+    serverUrlPlaceholder: 'https://may-chu-cua-ban.vd.com',
+    register: 'Tạo tài khoản',
+    login: 'Đăng nhập',
+    logout: 'Đăng xuất',
+    email: 'Email',
+    password: 'Mật khẩu',
+    confirmPassword: 'Xác nhận mật khẩu',
+    connected: 'Đã kết nối với {{url}}',
+    disconnected: 'Chưa kết nối',
+    syncing: 'Đang đồng bộ...',
+    lastSync: 'Đồng bộ lần cuối: {{time}}',
+    syncNow: 'Đồng bộ ngay',
+    syncSuccess: 'Đồng bộ thành công (phiên bản {{version}})',
+    syncError: 'Đồng bộ thất bại: {{error}}',
+    vaultVersion: 'Phiên bản kho: {{version}}',
+    storageUsed: 'Dung lượng: {{used}}',
+    history: 'Lịch sử đồng bộ',
+    historyVersion: 'Phiên bản {{version}}',
+    restoreVersion: 'Khôi phục phiên bản này',
+    noHistory: 'Không có lịch sử đồng bộ',
+    selfHosted: 'Tự lưu trữ',
+    selfHostedDesc: 'Dữ liệu của bạn ở trên máy chủ của bạn. Không có đám mây bên thứ ba.',
+    zeroKnowledge: 'Không tiết lộ',
+    zeroKnowledgeDesc: 'Máy chủ không thể đọc kho của bạn. Tất cả mã hóa ở phía máy khách.',
+    uniqueFeature: 'Tính năng độc quyền của KeePassEx — không đối thủ nào có đồng bộ tự lưu trữ',
+  },
 } as const;
 
 export type TranslationVi = typeof vi;

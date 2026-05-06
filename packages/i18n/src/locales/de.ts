@@ -455,6 +455,44 @@ export const de = {
     shortcut: 'Tastenkürzel: ⌘⇧K',
     uniqueFeature: 'Exklusives KeePassEx-Feature — kein Konkurrent hat dies',
   },
+
+  // ─── KeePassEx Server ──────────────────────────────────────────────────────
+  server: {
+    title: 'KeePassEx-Server',
+    subtitle: 'Selbst gehosteter Sync-Server — Zero-Knowledge, Ende-zu-Ende-verschlüsselt',
+    description:
+      'Hosten Sie Ihren eigenen Sync-Server. Der Server sieht niemals Ihre Passwörter oder Tresorinhalte — die gesamte Verschlüsselung erfolgt auf Ihrem Gerät.',
+    connect: 'Mit Server verbinden',
+    disconnect: 'Trennen',
+    serverUrl: 'Server-URL',
+    serverUrlPlaceholder: 'https://ihr-server.beispiel.de',
+    register: 'Konto erstellen',
+    login: 'Anmelden',
+    logout: 'Abmelden',
+    email: 'E-Mail',
+    password: 'Passwort',
+    confirmPassword: 'Passwort bestätigen',
+    connected: 'Verbunden mit {{url}}',
+    disconnected: 'Nicht verbunden',
+    syncing: 'Synchronisierung...',
+    lastSync: 'Letzte Synchronisierung: {{time}}',
+    syncNow: 'Jetzt synchronisieren',
+    syncSuccess: 'Synchronisierung erfolgreich (Version {{version}})',
+    syncError: 'Synchronisierung fehlgeschlagen: {{error}}',
+    vaultVersion: 'Tresor-Version: {{version}}',
+    storageUsed: 'Speicher: {{used}}',
+    history: 'Synchronisierungsverlauf',
+    historyVersion: 'Version {{version}}',
+    restoreVersion: 'Diese Version wiederherstellen',
+    noHistory: 'Kein Synchronisierungsverlauf',
+    selfHosted: 'Selbst gehostet',
+    selfHostedDesc: 'Ihre Daten bleiben auf Ihrem Server. Kein Drittanbieter-Cloud.',
+    zeroKnowledge: 'Zero-Knowledge',
+    zeroKnowledgeDesc:
+      'Der Server kann Ihren Tresor nicht lesen. Die gesamte Verschlüsselung erfolgt clientseitig.',
+    uniqueFeature:
+      'Exklusives KeePassEx-Feature — kein Konkurrent bietet selbst gehostete Synchronisierung',
+  },
 } as const;
 
 export type TranslationDe = typeof de;

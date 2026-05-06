@@ -455,6 +455,45 @@ export const es = {
     shortcut: 'Atajo: ⌘⇧K',
     uniqueFeature: 'Función exclusiva de KeePassEx — ningún competidor la tiene',
   },
+
+  // ─── KeePassEx Server ──────────────────────────────────────────────────────
+  server: {
+    title: 'Servidor KeePassEx',
+    subtitle:
+      'Servidor de sincronización autoalojado — conocimiento cero, cifrado de extremo a extremo',
+    description:
+      'Aloja tu propio servidor de sincronización. El servidor nunca ve tus contraseñas ni el contenido de la bóveda — todo el cifrado ocurre en tu dispositivo.',
+    connect: 'Conectar al servidor',
+    disconnect: 'Desconectar',
+    serverUrl: 'URL del servidor',
+    serverUrlPlaceholder: 'https://tu-servidor.ejemplo.com',
+    register: 'Crear cuenta',
+    login: 'Iniciar sesión',
+    logout: 'Cerrar sesión',
+    email: 'Correo electrónico',
+    password: 'Contraseña',
+    confirmPassword: 'Confirmar contraseña',
+    connected: 'Conectado a {{url}}',
+    disconnected: 'No conectado',
+    syncing: 'Sincronizando...',
+    lastSync: 'Última sincronización: {{time}}',
+    syncNow: 'Sincronizar ahora',
+    syncSuccess: 'Sincronización exitosa (versión {{version}})',
+    syncError: 'Error de sincronización: {{error}}',
+    vaultVersion: 'Versión de bóveda: {{version}}',
+    storageUsed: 'Almacenamiento: {{used}}',
+    history: 'Historial de sincronización',
+    historyVersion: 'Versión {{version}}',
+    restoreVersion: 'Restaurar esta versión',
+    noHistory: 'Sin historial de sincronización',
+    selfHosted: 'Autoalojado',
+    selfHostedDesc: 'Tus datos permanecen en tu servidor. Sin nube de terceros.',
+    zeroKnowledge: 'Conocimiento cero',
+    zeroKnowledgeDesc:
+      'El servidor no puede leer tu bóveda. Todo el cifrado es del lado del cliente.',
+    uniqueFeature:
+      'Función exclusiva de KeePassEx — ningún competidor ofrece sincronización autoalojada',
+  },
 } as const;
 
 export type TranslationEs = typeof es;

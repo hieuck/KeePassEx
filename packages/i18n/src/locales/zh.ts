@@ -453,6 +453,42 @@ export const zh = {
     shortcut: '快捷键：⌘⇧K',
     uniqueFeature: 'KeePassEx 独有功能 — 无竞争对手拥有',
   },
+
+  // ─── KeePassEx Server ──────────────────────────────────────────────────────
+  server: {
+    title: 'KeePassEx 服务器',
+    subtitle: '自托管同步服务器 — 零知识，端对端加密',
+    description:
+      '托管您自己的同步服务器。服务器永远看不到您的密码或密码库内容 — 所有加密在您的设备上进行。',
+    connect: '连接服务器',
+    disconnect: '断开连接',
+    serverUrl: '服务器 URL',
+    serverUrlPlaceholder: 'https://your-server.example.com',
+    register: '创建账户',
+    login: '登录',
+    logout: '退出登录',
+    email: '邮箱',
+    password: '密码',
+    confirmPassword: '确认密码',
+    connected: '已连接到 {{url}}',
+    disconnected: '未连接',
+    syncing: '同步中...',
+    lastSync: '上次同步：{{time}}',
+    syncNow: '立即同步',
+    syncSuccess: '同步成功（版本 {{version}}）',
+    syncError: '同步失败：{{error}}',
+    vaultVersion: '密码库版本：{{version}}',
+    storageUsed: '存储：{{used}}',
+    history: '同步历史',
+    historyVersion: '版本 {{version}}',
+    restoreVersion: '恢复此版本',
+    noHistory: '没有同步历史',
+    selfHosted: '自托管',
+    selfHostedDesc: '您的数据保存在您的服务器上。没有第三方云。',
+    zeroKnowledge: '零知识',
+    zeroKnowledgeDesc: '服务器无法读取您的密码库。所有加密在客户端进行。',
+    uniqueFeature: 'KeePassEx 独有功能 — 无竞争对手提供自托管同步',
+  },
 } as const;
 
 export type TranslationZh = typeof zh;

@@ -1293,6 +1293,42 @@ export const en = {
     shortcut: 'Shortcut: ⌘⇧K',
     uniqueFeature: 'Exclusive KeePassEx feature — no competitor has this',
   },
+
+  // ─── KeePassEx Server ──────────────────────────────────────────────────────
+  server: {
+    title: 'KeePassEx Server',
+    subtitle: 'Self-hosted sync server — zero-knowledge, end-to-end encrypted',
+    description:
+      'Host your own sync server. The server never sees your passwords or vault contents — all encryption happens on your device.',
+    connect: 'Connect to Server',
+    disconnect: 'Disconnect',
+    serverUrl: 'Server URL',
+    serverUrlPlaceholder: 'https://your-server.example.com',
+    register: 'Create Account',
+    login: 'Sign In',
+    logout: 'Sign Out',
+    email: 'Email',
+    password: 'Password',
+    confirmPassword: 'Confirm Password',
+    connected: 'Connected to {{url}}',
+    disconnected: 'Not connected',
+    syncing: 'Syncing...',
+    lastSync: 'Last sync: {{time}}',
+    syncNow: 'Sync Now',
+    syncSuccess: 'Sync successful (version {{version}})',
+    syncError: 'Sync failed: {{error}}',
+    vaultVersion: 'Vault version: {{version}}',
+    storageUsed: 'Storage: {{used}}',
+    history: 'Sync History',
+    historyVersion: 'Version {{version}}',
+    restoreVersion: 'Restore this version',
+    noHistory: 'No sync history',
+    selfHosted: 'Self-hosted',
+    selfHostedDesc: 'Your data stays on your server. No third-party cloud.',
+    zeroKnowledge: 'Zero-knowledge',
+    zeroKnowledgeDesc: 'The server cannot read your vault. All encryption is client-side.',
+    uniqueFeature: 'Exclusive KeePassEx feature — no competitor offers self-hosted sync',
+  },
 } as const;
 
 export type TranslationEn = typeof en;

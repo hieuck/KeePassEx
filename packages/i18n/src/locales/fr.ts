@@ -455,6 +455,45 @@ export const fr = {
     shortcut: 'Raccourci : ⌘⇧K',
     uniqueFeature: "Fonctionnalité exclusive KeePassEx — aucun concurrent ne l'a",
   },
+
+  // ─── KeePassEx Server ──────────────────────────────────────────────────────
+  server: {
+    title: 'Serveur KeePassEx',
+    subtitle:
+      'Serveur de synchronisation auto-hébergé — zéro connaissance, chiffrement de bout en bout',
+    description:
+      'Hébergez votre propre serveur de synchronisation. Le serveur ne voit jamais vos mots de passe ni le contenu du coffre — tout le chiffrement se fait sur votre appareil.',
+    connect: 'Se connecter au serveur',
+    disconnect: 'Se déconnecter',
+    serverUrl: 'URL du serveur',
+    serverUrlPlaceholder: 'https://votre-serveur.exemple.com',
+    register: 'Créer un compte',
+    login: 'Se connecter',
+    logout: 'Se déconnecter',
+    email: 'E-mail',
+    password: 'Mot de passe',
+    confirmPassword: 'Confirmer le mot de passe',
+    connected: 'Connecté à {{url}}',
+    disconnected: 'Non connecté',
+    syncing: 'Synchronisation...',
+    lastSync: 'Dernière synchronisation : {{time}}',
+    syncNow: 'Synchroniser maintenant',
+    syncSuccess: 'Synchronisation réussie (version {{version}})',
+    syncError: 'Échec de la synchronisation : {{error}}',
+    vaultVersion: 'Version du coffre : {{version}}',
+    storageUsed: 'Stockage : {{used}}',
+    history: 'Historique de synchronisation',
+    historyVersion: 'Version {{version}}',
+    restoreVersion: 'Restaurer cette version',
+    noHistory: 'Aucun historique de synchronisation',
+    selfHosted: 'Auto-hébergé',
+    selfHostedDesc: 'Vos données restent sur votre serveur. Pas de cloud tiers.',
+    zeroKnowledge: 'Zéro connaissance',
+    zeroKnowledgeDesc:
+      'Le serveur ne peut pas lire votre coffre. Tout le chiffrement est côté client.',
+    uniqueFeature:
+      'Fonctionnalité exclusive KeePassEx — aucun concurrent ne propose de synchronisation auto-hébergée',
+  },
 } as const;
 
 export type TranslationFr = typeof fr;
