@@ -1,0 +1,39 @@
+{
+  "name": "@keepassex/browser-extension",
+  "version": "1.0.0",
+  "private": true,
+  "description": "KeePassEx Browser Extension — Chrome, Firefox, Edge, Safari",
+  "scripts": {
+    "dev:chrome": "vite build --watch --mode chrome",
+    "dev:firefox": "vite build --watch --mode firefox",
+    "build:chrome": "vite build --mode chrome",
+    "build:firefox": "vite build --mode firefox",
+    "build:all": "pnpm build:chrome && pnpm build:firefox",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx",
+    "test": "vitest run --config vitest.config.ts",
+    "test:watch": "vitest --config vitest.config.ts"
+  },
+  "dependencies": {
+    "@keepassex/i18n": "workspace:*",
+    "@keepassex/types": "workspace:*",
+    "@keepassex/constants": "workspace:*",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zustand": "^5.0.3",
+    "webextension-polyfill": "^0.12.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.287",
+    "@types/firefox-webext-browser": "^120.0.4",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/webextension-polyfill": "^0.12.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7",
+    "vitest": "^2.1.8",
+    "jsdom": "^25.0.1",
+    "@testing-library/jest-dom": "^6.6.3"
+  }
+}

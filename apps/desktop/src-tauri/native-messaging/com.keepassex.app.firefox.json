@@ -1,0 +1,9 @@
+{
+  "name": "com.keepassex.app",
+  "description": "KeePassEx native messaging host",
+  "path": "KEEPASSEX_BINARY_PATH",
+  "type": "stdio",
+  "allowed_extensions": [
+    "keepassex@keepassex.app"
+  ]
+}

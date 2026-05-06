@@ -1,0 +1,20 @@
+[package]
+name = "keepassex-tui"
+version = "1.0.0"
+edition = "2021"
+description = "KeePassEx TUI — Full-featured terminal interface"
+
+[[bin]]
+name = "kpx-tui"
+path = "src/main.rs"
+
+[dependencies]
+keepassex-core = { path = "../../packages/core" }
+ratatui = "0.26"
+crossterm = "0.27"
+tokio = { version = "1", features = ["full"] }
+anyhow = "1"
+clap = { version = "4", features = ["derive", "env"] }
+rpassword = "7"
+open = "5"
+zeroize = "1"

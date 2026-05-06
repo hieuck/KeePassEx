@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">KeePassEx</string>
+    <string name="tile_label">KeePassEx</string>
+    <string name="complication_label">KeePassEx Lock Status</string>
+    <string name="vault_locked">Vault Locked</string>
+    <string name="vault_unlocked">Vault Open</string>
+    <string name="tap_to_unlock">Tap to unlock</string>
+    <string name="tap_to_open">Tap to open</string>
+</resources>

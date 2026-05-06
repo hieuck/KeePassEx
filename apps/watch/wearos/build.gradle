@@ -1,0 +1,28 @@
+// KeePassEx WearOS — Root build configuration
+buildscript {
+    ext {
+        kotlin_version = '1.9.24'
+        compose_version = '1.5.4'
+        wear_compose_version = '1.3.0'
+        horologist_version = '0.6.6'
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.3.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

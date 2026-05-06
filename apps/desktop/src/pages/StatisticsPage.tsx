@@ -1,0 +1,311 @@
+/**
+ * Vault Statistics page — detailed metrics about the vault
+ */
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { invoke } from '@tauri-apps/api/core';
+import { useSettingsStore } from '../store/settings';
+import type { VaultStatistics } from '@keepassex/types';
+
+export function StatisticsPage() {
+  const navigate = useNavigate();
+  const { settings } = useSettingsStore();
+  const isVi = settings.language === 'vi';
+
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ['vault-statistics'],
+    queryFn: () => invoke<VaultStatistics>('get_vault_statistics'),
+    staleTime: 30_000,
+  });
+
+  const formatBytes = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const strengthLabel = (score: number) => {
+    if (score >= 4) return isVi ? 'Rất mạnh' : 'Very Strong';
+    if (score >= 3) return isVi ? 'Mạnh' : 'Strong';
+    if (score >= 2) return isVi ? 'Trung bình' : 'Fair';
+    if (score >= 1) return isVi ? 'Yếu' : 'Weak';
+    return isVi ? 'Rất yếu' : 'Very Weak';
+  };
+
+  const strengthColor = (score: number) => {
+    if (score >= 4) return '#22c55e';
+    if (score >= 3) return '#84cc16';
+    if (score >= 2) return '#f59e0b';
+    if (score >= 1) return '#f97316';
+    return '#ef4444';
+  };
+
+  return (
+    <div className="stats-page">
+      <div className="stats-header">
+        <button className="btn-back" onClick={() => navigate('/settings')}>
+          ← {isVi ? 'Cài đặt' : 'Settings'}
+        </button>
+        <h2>{isVi ? '📊 Thống kê kho' : '📊 Vault Statistics'}</h2>
+      </div>
+
+      <div className="stats-content">
+        {isLoading ? (
+          <div className="stats-loading">
+            <span className="animate-pulse">⏳</span>
+            <p>{isVi ? 'Đang tải...' : 'Loading...'}</p>
+          </div>
+        ) : stats ? (
+          <>
+            {/* Overview grid */}
+            <div className="stats-grid">
+              <StatCard
+                icon="🔑"
+                value={stats.totalEntries}
+                label={isVi ? 'Tổng mục' : 'Total Entries'}
+                color="var(--color-primary)"
+              />
+              <StatCard
+                icon="📁"
+                value={stats.totalGroups}
+                label={isVi ? 'Nhóm' : 'Groups'}
+                color="#8b5cf6"
+              />
+              <StatCard
+                icon="📎"
+                value={stats.totalAttachments}
+                label={isVi ? 'Đính kèm' : 'Attachments'}
+                color="#f59e0b"
+                subtitle={formatBytes(stats.totalAttachmentSize)}
+              />
+              <StatCard
+                icon="⏱"
+                value={stats.entriesWithOtp}
+                label="OTP"
+                color="#06b6d4"
+              />
+              <StatCard
+                icon="🛡️"
+                value={stats.entriesWithPasskey}
+                label="Passkey"
+                color="#10b981"
+              />
+              <StatCard
+                icon="🔐"
+                value={stats.entriesWithSshKey}
+                label="SSH"
+                color="#6366f1"
+              />
+            </div>
+
+            {/* Password strength */}
+            <div className="stats-section">
+              <h3>{isVi ? 'Độ mạnh mật khẩu trung bình' : 'Average Password Strength'}</h3>
+              <div className="stats-strength">
+                <div className="stats-strength-bar-wrap">
+                  <div
+                    className="stats-strength-bar"
+                    style={{
+                      width: `${(stats.averagePasswordStrength / 4) * 100}%`,
+                      background: strengthColor(stats.averagePasswordStrength),
+                    }}
+                  />
+                </div>
+                <span
+                  className="stats-strength-label"
+                  style={{ color: strengthColor(stats.averagePasswordStrength) }}
+                >
+                  {strengthLabel(stats.averagePasswordStrength)}
+                  {' '}({stats.averagePasswordStrength.toFixed(1)}/4)
+                </span>
+              </div>
+            </div>
+
+            {/* Expiry */}
+            <div className="stats-section">
+              <h3>{isVi ? 'Hết hạn' : 'Expiry'}</h3>
+              <div className="stats-row-list">
+                <StatsRow
+                  label={isVi ? 'Mục có ngày hết hạn' : 'Entries with expiry'}
+                  value={stats.entriesWithExpiry}
+                  total={stats.totalEntries}
+                />
+                <StatsRow
+                  label={isVi ? 'Đã hết hạn' : 'Expired'}
+                  value={stats.entriesExpired}
+                  total={stats.totalEntries}
+                  danger={stats.entriesExpired > 0}
+                />
+                <StatsRow
+                  label={isVi ? 'Sắp hết hạn (30 ngày)' : 'Expiring soon (30 days)'}
+                  value={stats.entriesExpiringSoon}
+                  total={stats.totalEntries}
+                  warn={stats.entriesExpiringSoon > 0}
+                />
+              </div>
+            </div>
+
+            {/* Notable entries */}
+            {(stats.mostUsedEntry || stats.oldestEntry || stats.newestEntry) && (
+              <div className="stats-section">
+                <h3>{isVi ? 'Đáng chú ý' : 'Notable'}</h3>
+                <div className="stats-notable">
+                  {stats.mostUsedEntry && (
+                    <div className="stats-notable-row">
+                      <span className="stats-notable-icon">🏆</span>
+                      <div>
+                        <p className="stats-notable-label">
+                          {isVi ? 'Dùng nhiều nhất' : 'Most used'}
+                        </p>
+                        <p className="stats-notable-value">{stats.mostUsedEntry.title}</p>
+                      </div>
+                    </div>
+                  )}
+                  {stats.oldestEntry && (
+                    <div className="stats-notable-row">
+                      <span className="stats-notable-icon">📅</span>
+                      <div>
+                        <p className="stats-notable-label">
+                          {isVi ? 'Mục cũ nhất' : 'Oldest entry'}
+                        </p>
+                        <p className="stats-notable-value">
+                          {new Date(stats.oldestEntry).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {stats.newestEntry && (
+                    <div className="stats-notable-row">
+                      <span className="stats-notable-icon">🆕</span>
+                      <div>
+                        <p className="stats-notable-label">
+                          {isVi ? 'Mục mới nhất' : 'Newest entry'}
+                        </p>
+                        <p className="stats-notable-value">
+                          {new Date(stats.newestEntry).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="stats-loading">
+            <span>📊</span>
+            <p>{isVi ? 'Không có dữ liệu' : 'No data available'}</p>
+          </div>
+        )}
+      </div>
+
+      <style>{`
+        .stats-page { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+        .stats-header {
+          display: flex; align-items: center; gap: var(--space-md);
+          padding: var(--space-md) var(--space-xl);
+          border-bottom: 1px solid var(--color-border); flex-shrink: 0;
+        }
+        .stats-header h2 { font-size: 16px; font-weight: 600; }
+        .btn-back {
+          background: none; border: none; cursor: pointer; font-size: 13px;
+          color: var(--color-primary); padding: var(--space-xs) var(--space-sm);
+          border-radius: var(--radius-sm);
+        }
+        .btn-back:hover { background: var(--color-bg-secondary); }
+        .stats-content {
+          flex: 1; overflow-y: auto; padding: var(--space-xl);
+          display: flex; flex-direction: column; gap: var(--space-xl);
+          max-width: 600px;
+        }
+        .stats-loading {
+          display: flex; flex-direction: column; align-items: center;
+          gap: var(--space-md); padding: var(--space-2xl);
+          color: var(--color-text-secondary); font-size: 13px;
+        }
+        .stats-loading span { font-size: 32px; }
+        .stats-grid {
+          display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md);
+        }
+        .stat-card {
+          display: flex; flex-direction: column; align-items: center; gap: 4px;
+          padding: var(--space-md); background: var(--color-bg-secondary);
+          border-radius: var(--radius-md); border: 1px solid var(--color-border);
+          text-align: center;
+        }
+        .stat-card-icon { font-size: 20px; }
+        .stat-card-value { font-size: 24px; font-weight: 700; }
+        .stat-card-label { font-size: 11px; color: var(--color-text-secondary); }
+        .stat-card-subtitle { font-size: 10px; color: var(--color-text-tertiary); }
+        .stats-section {
+          background: var(--color-bg-secondary); border-radius: var(--radius-md);
+          padding: var(--space-lg); display: flex; flex-direction: column; gap: var(--space-md);
+        }
+        .stats-section h3 { font-size: 14px; font-weight: 600; }
+        .stats-strength { display: flex; flex-direction: column; gap: var(--space-sm); }
+        .stats-strength-bar-wrap {
+          height: 8px; background: var(--color-border); border-radius: 4px; overflow: hidden;
+        }
+        .stats-strength-bar { height: 100%; border-radius: 4px; transition: width 0.5s; }
+        .stats-strength-label { font-size: 13px; font-weight: 600; }
+        .stats-row-list { display: flex; flex-direction: column; gap: var(--space-sm); }
+        .stats-row {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: var(--space-sm) var(--space-md);
+          background: var(--color-bg); border-radius: var(--radius-sm);
+        }
+        .stats-row-label { font-size: 13px; color: var(--color-text); }
+        .stats-row-value { font-size: 13px; font-weight: 600; }
+        .stats-row-bar-wrap {
+          flex: 1; height: 4px; background: var(--color-border);
+          border-radius: 2px; overflow: hidden; margin: 0 var(--space-md);
+        }
+        .stats-row-bar { height: 100%; border-radius: 2px; }
+        .stats-notable { display: flex; flex-direction: column; gap: var(--space-sm); }
+        .stats-notable-row {
+          display: flex; align-items: center; gap: var(--space-md);
+          padding: var(--space-sm) var(--space-md);
+          background: var(--color-bg); border-radius: var(--radius-sm);
+        }
+        .stats-notable-icon { font-size: 20px; }
+        .stats-notable-label { font-size: 11px; color: var(--color-text-secondary); }
+        .stats-notable-value { font-size: 13px; font-weight: 500; }
+      `}</style>
+    </div>
+  );
+}
+
+function StatCard({ icon, value, label, color, subtitle }: {
+  icon: string; value: number; label: string; color: string; subtitle?: string;
+}) {
+  return (
+    <div className="stat-card">
+      <span className="stat-card-icon">{icon}</span>
+      <span className="stat-card-value" style={{ color }}>{value.toLocaleString()}</span>
+      <span className="stat-card-label">{label}</span>
+      {subtitle && <span className="stat-card-subtitle">{subtitle}</span>}
+    </div>
+  );
+}
+
+function StatsRow({ label, value, total, danger, warn }: {
+  label: string; value: number; total: number;
+  danger?: boolean; warn?: boolean;
+}) {
+  const pct = total > 0 ? (value / total) * 100 : 0;
+  const color = danger ? '#ef4444' : warn ? '#f59e0b' : 'var(--color-primary)';
+
+  return (
+    <div className="stats-row">
+      <span className="stats-row-label">{label}</span>
+      <div className="stats-row-bar-wrap">
+        <div
+          className="stats-row-bar"
+          style={{ width: `${pct}%`, background: color }}
+        />
+      </div>
+      <span className="stats-row-value" style={{ color }}>{value}</span>
+    </div>
+  );
+}

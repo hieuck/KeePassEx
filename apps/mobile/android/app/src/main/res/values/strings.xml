@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">KeePassEx</string>
+    <string name="autofill_service_label">KeePassEx AutoFill</string>
+    <string name="tile_label">KeePassEx</string>
+    <string name="vault_locked">Vault locked</string>
+    <string name="vault_unlocked">Vault unlocked</string>
+    <string name="unlock_vault">Unlock vault</string>
+    <string name="biometric_prompt_title">KeePassEx</string>
+    <string name="biometric_prompt_subtitle">Unlock vault to fill credentials</string>
+    <string name="biometric_negative_button">Use Password</string>
+</resources>
