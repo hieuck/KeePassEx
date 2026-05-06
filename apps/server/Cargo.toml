@@ -1,0 +1,56 @@
+[package]
+name = "keepassex-server"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "KeePassEx Server — self-hosted sync server with ZKP authentication"
+
+[[bin]]
+name = "keepassex-server"
+path = "src/main.rs"
+
+[dependencies]
+keepassex-core = { path = "../../packages/core" }
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+zeroize.workspace = true
+sha2.workspace = true
+hmac.workspace = true
+rand.workspace = true
+base64.workspace = true
+hex.workspace = true
+
+# Web framework
+axum = { version = "0.7", features = ["ws", "multipart"] }
+axum-extra = { version = "0.9", features = ["typed-header"] }
+tower = { version = "0.4", features = ["full"] }
+tower-http = { version = "0.5", features = ["cors", "trace", "compression-gzip"] }
+
+# WebSocket
+tokio-tungstenite = "0.21"
+
+# Database (SQLite — no external DB required for self-hosting)
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "chrono", "uuid"] }
+
+# Authentication
+argon2.workspace = true
+jsonwebtoken = "9"
+
+# Config
+config = "0.14"
+dotenvy = "0.15"
+
+# CLI
+clap = { version = "4", features = ["derive", "env"] }
+
+[dev-dependencies]
+tokio = { version = "1.42", features = ["full", "test-util"] }
+axum-test = "14"
