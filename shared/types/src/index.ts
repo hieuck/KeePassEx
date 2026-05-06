@@ -561,7 +561,15 @@ export interface AppNotification {
 // ─── App Settings ─────────────────────────────────────────────────────────────
 
 export type ThemeMode = 'light' | 'dark' | 'oled' | 'system';
-export type Language = 'en' | 'vi';
+export type Language = 'en' | 'vi' | 'zh' | 'ja' | 'ko' | 'es' | 'fr';
+
+/** Mobile biometric security level */
+export type BiometricSecurityLevel =
+  | 'SecureEnclave' // iOS: hardware-backed, keys never leave chip
+  | 'StrongBox' // Android: dedicated HSM (Pixel 3+, Galaxy S10+)
+  | 'TEE' // Android: Trusted Execution Environment
+  | 'Software' // Software-only (not recommended)
+  | 'None'; // Not available
 
 export interface AppSettings {
   language: Language;

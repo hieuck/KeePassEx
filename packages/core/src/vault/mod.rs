@@ -1,6 +1,7 @@
 //! Vault — the main in-memory representation of an open KDBX database
 
 pub mod operations;
+pub mod pqc_migration;
 pub mod search;
 
 use crate::error::{KeePassExError, Result};

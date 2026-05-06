@@ -1,9 +1,10 @@
 //! KDBX 4.x file format reader/writer
 //! Also supports reading KDBX 3.1 and KDB (legacy)
 
+pub mod header;
+pub mod pqc_header;
 pub mod reader;
 pub mod writer;
-pub mod header;
 pub mod xml;
 
 pub use reader::KdbxReader;

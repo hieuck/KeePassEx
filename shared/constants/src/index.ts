@@ -29,7 +29,7 @@ export const DEFAULT_MAINTENANCE_HISTORY_DAYS = 365;
 
 // ─── Argon2id KDF defaults ────────────────────────────────────────────────────
 
-export const DEFAULT_ARGON2_MEMORY_KB = 65536;   // 64 MB
+export const DEFAULT_ARGON2_MEMORY_KB = 65536; // 64 MB
 export const DEFAULT_ARGON2_ITERATIONS = 2;
 export const DEFAULT_ARGON2_PARALLELISM = 1;
 
@@ -127,6 +127,11 @@ export const MAX_KEY_FILE_SIZE_KB = 1024;
 export const SUPPORTED_LOCALES: Record<string, string> = {
   en: 'English',
   vi: 'Tiếng Việt',
+  zh: '简体中文',
+  ja: '日本語',
+  ko: '한국어',
+  es: 'Español',
+  fr: 'Français',
 };
 
 // ─── Import formats ───────────────────────────────────────────────────────────
@@ -262,13 +267,13 @@ export const SYNC_PROVIDERS: SyncProviderDef[] = [
   {
     id: 'webdav',
     name: 'WebDAV',
-    icon: '���',
+    icon: '���',
     description: 'Any WebDAV-compatible server (Nextcloud, ownCloud, etc.)',
   },
   {
     id: 'gdrive',
     name: 'Google Drive',
-    icon: '���',
+    icon: '���',
     description: 'Sync via Google Drive (OAuth2)',
   },
   {
@@ -280,31 +285,31 @@ export const SYNC_PROVIDERS: SyncProviderDef[] = [
   {
     id: 'dropbox',
     name: 'Dropbox',
-    icon: '���',
+    icon: '���',
     description: 'Sync via Dropbox API v2',
   },
   {
     id: 's3',
     name: 'Amazon S3',
-    icon: '���',
+    icon: '���',
     description: 'AWS S3 or any S3-compatible storage (MinIO, Backblaze B2)',
   },
   {
     id: 'sftp',
     name: 'SFTP',
-    icon: '���',
+    icon: '���',
     description: 'SSH File Transfer Protocol',
   },
   {
     id: 'icloud',
     name: 'iCloud Drive',
-    icon: '���',
+    icon: '���',
     description: 'iCloud Drive (iOS and macOS only)',
   },
   {
     id: 'local',
     name: 'Local Folder',
-    icon: '���',
+    icon: '���',
     description: 'Sync to a local or network-mounted folder',
   },
 ];
@@ -336,21 +341,26 @@ export interface KeyboardShortcutDef {
 }
 
 export const KEYBOARD_SHORTCUTS: KeyboardShortcutDef[] = [
-  { id: 'lock-vault',        action: 'Lock Vault',              defaultKeys: 'Ctrl+L',       scope: 'global' },
-  { id: 'new-entry',         action: 'New Entry',               defaultKeys: 'Ctrl+N',       scope: 'vault' },
-  { id: 'new-group',         action: 'New Group',               defaultKeys: 'Ctrl+G',       scope: 'vault' },
-  { id: 'search',            action: 'Focus Search',            defaultKeys: 'Ctrl+F',       scope: 'vault' },
-  { id: 'copy-password',     action: 'Copy Password',           defaultKeys: 'Ctrl+C',       scope: 'entry' },
-  { id: 'copy-username',     action: 'Copy Username',           defaultKeys: 'Ctrl+B',       scope: 'entry' },
-  { id: 'copy-url',          action: 'Copy URL',                defaultKeys: 'Ctrl+U',       scope: 'entry' },
-  { id: 'copy-otp',          action: 'Copy OTP',                defaultKeys: 'Ctrl+T',       scope: 'entry' },
-  { id: 'open-url',          action: 'Open URL',                defaultKeys: 'Ctrl+Shift+U', scope: 'entry' },
-  { id: 'edit-entry',        action: 'Edit Entry',              defaultKeys: 'Enter',        scope: 'entry' },
-  { id: 'delete-entry',      action: 'Delete Entry',            defaultKeys: 'Delete',       scope: 'entry' },
-  { id: 'autotype',          action: 'Auto-Type',               defaultKeys: 'Ctrl+Shift+A', scope: 'global' },
-  { id: 'generate-password', action: 'Open Generator',          defaultKeys: 'Ctrl+Shift+G', scope: 'global' },
-  { id: 'save-vault',        action: 'Save Vault',              defaultKeys: 'Ctrl+S',       scope: 'global' },
-  { id: 'open-vault',        action: 'Open Vault',              defaultKeys: 'Ctrl+O',       scope: 'global' },
-  { id: 'settings',          action: 'Open Settings',           defaultKeys: 'Ctrl+,',       scope: 'global' },
-  { id: 'browser-fill',      action: 'Fill in Browser',         defaultKeys: 'Ctrl+Shift+F', scope: 'global' },
+  { id: 'lock-vault', action: 'Lock Vault', defaultKeys: 'Ctrl+L', scope: 'global' },
+  { id: 'new-entry', action: 'New Entry', defaultKeys: 'Ctrl+N', scope: 'vault' },
+  { id: 'new-group', action: 'New Group', defaultKeys: 'Ctrl+G', scope: 'vault' },
+  { id: 'search', action: 'Focus Search', defaultKeys: 'Ctrl+F', scope: 'vault' },
+  { id: 'copy-password', action: 'Copy Password', defaultKeys: 'Ctrl+C', scope: 'entry' },
+  { id: 'copy-username', action: 'Copy Username', defaultKeys: 'Ctrl+B', scope: 'entry' },
+  { id: 'copy-url', action: 'Copy URL', defaultKeys: 'Ctrl+U', scope: 'entry' },
+  { id: 'copy-otp', action: 'Copy OTP', defaultKeys: 'Ctrl+T', scope: 'entry' },
+  { id: 'open-url', action: 'Open URL', defaultKeys: 'Ctrl+Shift+U', scope: 'entry' },
+  { id: 'edit-entry', action: 'Edit Entry', defaultKeys: 'Enter', scope: 'entry' },
+  { id: 'delete-entry', action: 'Delete Entry', defaultKeys: 'Delete', scope: 'entry' },
+  { id: 'autotype', action: 'Auto-Type', defaultKeys: 'Ctrl+Shift+A', scope: 'global' },
+  {
+    id: 'generate-password',
+    action: 'Open Generator',
+    defaultKeys: 'Ctrl+Shift+G',
+    scope: 'global',
+  },
+  { id: 'save-vault', action: 'Save Vault', defaultKeys: 'Ctrl+S', scope: 'global' },
+  { id: 'open-vault', action: 'Open Vault', defaultKeys: 'Ctrl+O', scope: 'global' },
+  { id: 'settings', action: 'Open Settings', defaultKeys: 'Ctrl+,', scope: 'global' },
+  { id: 'browser-fill', action: 'Fill in Browser', defaultKeys: 'Ctrl+Shift+F', scope: 'global' },
 ];
