@@ -82,6 +82,8 @@ pub enum SyncProviderType {
     S3,
     SftpServer,
     LocalFolder,
+    /// KeePassEx self-hosted server (zero-knowledge, end-to-end encrypted)
+    KeePassExServer,
 }
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]

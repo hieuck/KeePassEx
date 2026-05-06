@@ -2107,6 +2107,237 @@ pub fn create_provider(config: &SyncConfig) -> Result<Box<dyn SyncProvider>> {
         SyncProviderType::ICloudDrive => Ok(Box::new(ICloudDriveProvider {
             container_path: config.remote_path.clone(),
         })),
+
+        SyncProviderType::KeePassExServer => {
+            let server_url = config.remote_path.clone();
+            let access_token = creds
+                .and_then(|c| c.token.as_deref())
+                .ok_or_else(|| {
+                    KeePassExError::SyncProviderError(
+                        "KeePassEx Server requires an access token — please log in first"
+                            .to_string(),
+                    )
+                })?
+                .to_string();
+            Ok(Box::new(KeePassExServerProvider {
+                server_url,
+                access_token,
+            }))
+        }
+    }
+}
+
+// ─── KeePassEx Server Provider ───────────────────────────────────────────────
+
+/// KeePassEx self-hosted server sync provider.
+///
+/// Connects to a KeePassEx Server instance for zero-knowledge,
+/// end-to-end encrypted vault synchronization.
+///
+/// The server stores only encrypted vault blobs — it cannot decrypt them.
+/// Authentication uses JWT tokens obtained via the server's auth API.
+pub struct KeePassExServerProvider {
+    /// Base URL of the KeePassEx server (e.g. "https://sync.example.com")
+    pub server_url: String,
+    /// JWT access token obtained from POST /api/v1/auth/login
+    pub access_token: String,
+}
+
+#[async_trait]
+impl SyncProvider for KeePassExServerProvider {
+    fn name(&self) -> &str {
+        "KeePassEx Server"
+    }
+
+    async fn upload(&self, _path: &str, data: &[u8]) -> Result<SyncMetadata> {
+        let client = build_http_client()?;
+        let url = format!("{}/api/v1/vault", self.server_url.trim_end_matches('/'));
+
+        // Compute SHA-256 hash of the vault data for integrity verification
+        use sha2::{Digest, Sha256};
+        let hash = hex::encode(Sha256::digest(data));
+
+        let response = client
+            .put(&url)
+            .header("Authorization", format!("Bearer {}", self.access_token))
+            .header("Content-Type", "application/octet-stream")
+            .header("X-Vault-Hash", &hash)
+            .body(data.to_vec())
+            .send()
+            .await
+            .map_err(|e| KeePassExError::SyncProviderError(e.to_string()))?;
+
+        if !response.status().is_success() {
+            let status = response.status();
+            let body = response.text().await.unwrap_or_default();
+            return Err(KeePassExError::SyncProviderError(format!(
+                "KeePassEx Server upload failed: HTTP {} — {}",
+                status, body
+            )));
+        }
+
+        let meta: serde_json::Value = response
+            .json()
+            .await
+            .map_err(|e| KeePassExError::SyncProviderError(e.to_string()))?;
+
+        let version = meta["version"].as_u64().unwrap_or(1);
+        let uploaded_at = meta["uploaded_at"]
+            .as_str()
+            .and_then(|s| s.parse::<chrono::DateTime<chrono::Utc>>().ok())
+            .unwrap_or_else(chrono::Utc::now);
+
+        Ok(SyncMetadata {
+            path: "/vault.kdbx".to_string(),
+            size: data.len() as u64,
+            modified_at: uploaded_at,
+            etag: Some(hash),
+            revision: Some(version.to_string()),
+        })
+    }
+
+    async fn download(&self, _path: &str) -> Result<(Vec<u8>, SyncMetadata)> {
+        let client = build_http_client()?;
+        let url = format!(
+            "{}/api/v1/vault/download",
+            self.server_url.trim_end_matches('/')
+        );
+
+        let response = client
+            .get(&url)
+            .header("Authorization", format!("Bearer {}", self.access_token))
+            .send()
+            .await
+            .map_err(|e| KeePassExError::SyncProviderError(e.to_string()))?;
+
+        if response.status() == reqwest::StatusCode::NOT_FOUND {
+            return Err(KeePassExError::SyncProviderError(
+                "No vault found on server".to_string(),
+            ));
+        }
+
+        if !response.status().is_success() {
+            return Err(KeePassExError::SyncProviderError(format!(
+                "KeePassEx Server download failed: HTTP {}",
+                response.status()
+            )));
+        }
+
+        let data = response
+            .bytes()
+            .await
+            .map_err(|e| KeePassExError::SyncProviderError(e.to_string()))?
+            .to_vec();
+
+        let meta = SyncMetadata {
+            path: "/vault.kdbx".to_string(),
+            size: data.len() as u64,
+            modified_at: chrono::Utc::now(),
+            etag: None,
+            revision: None,
+        };
+
+        Ok((data, meta))
+    }
+
+    async fn get_metadata(&self, _path: &str) -> Result<SyncMetadata> {
+        let client = build_http_client()?;
+        let url = format!("{}/api/v1/vault", self.server_url.trim_end_matches('/'));
+
+        let response = client
+            .get(&url)
+            .header("Authorization", format!("Bearer {}", self.access_token))
+            .send()
+            .await
+            .map_err(|e| KeePassExError::SyncProviderError(e.to_string()))?;
+
+        if response.status() == reqwest::StatusCode::NOT_FOUND {
+            return Err(KeePassExError::SyncProviderError(
+                "No vault found on server".to_string(),
+            ));
+        }
+
+        if !response.status().is_success() {
+            return Err(KeePassExError::SyncProviderError(format!(
+                "KeePassEx Server metadata failed: HTTP {}",
+                response.status()
+            )));
+        }
+
+        let meta: serde_json::Value = response
+            .json()
+            .await
+            .map_err(|e| KeePassExError::SyncProviderError(e.to_string()))?;
+
+        let version = meta["version"].as_u64().unwrap_or(0);
+        let size = meta["size_bytes"].as_u64().unwrap_or(0);
+        let modified_at = meta["uploaded_at"]
+            .as_str()
+            .and_then(|s| s.parse::<chrono::DateTime<chrono::Utc>>().ok())
+            .unwrap_or_else(chrono::Utc::now);
+        let client_hash = meta["client_hash"].as_str().map(String::from);
+
+        Ok(SyncMetadata {
+            path: "/vault.kdbx".to_string(),
+            size,
+            modified_at,
+            etag: client_hash,
+            revision: Some(version.to_string()),
+        })
+    }
+
+    async fn list(&self, _path: &str) -> Result<Vec<SyncEntry>> {
+        // KeePassEx Server stores one vault per user — return it as a single entry
+        match self.get_metadata("/vault.kdbx").await {
+            Ok(meta) => Ok(vec![SyncEntry {
+                name: "vault.kdbx".to_string(),
+                path: "/vault.kdbx".to_string(),
+                is_directory: false,
+                metadata: Some(meta),
+            }]),
+            Err(_) => Ok(vec![]), // No vault yet
+        }
+    }
+
+    async fn delete(&self, _path: &str) -> Result<()> {
+        // Vault deletion is not supported via the sync API
+        // (use the server admin API or account deletion instead)
+        Err(KeePassExError::SyncProviderError(
+            "Vault deletion is not supported via sync API".to_string(),
+        ))
+    }
+
+    async fn test_connection(&self) -> Result<()> {
+        let client = build_http_client()?;
+        let url = format!("{}/health", self.server_url.trim_end_matches('/'));
+
+        let response = client.get(&url).send().await.map_err(|e| {
+            KeePassExError::SyncProviderError(format!("Cannot reach server: {}", e))
+        })?;
+
+        if !response.status().is_success() {
+            return Err(KeePassExError::SyncProviderError(format!(
+                "Server health check failed: HTTP {}",
+                response.status()
+            )));
+        }
+
+        // Also verify the token is valid
+        let auth_url = format!("{}/api/v1/vault", self.server_url.trim_end_matches('/'));
+        let auth_response = client
+            .get(&auth_url)
+            .header("Authorization", format!("Bearer {}", self.access_token))
+            .send()
+            .await
+            .map_err(|e| KeePassExError::SyncProviderError(e.to_string()))?;
+
+        if auth_response.status() == reqwest::StatusCode::UNAUTHORIZED {
+            return Err(KeePassExError::SyncProviderError(
+                "Invalid or expired access token — please log in again".to_string(),
+            ));
+        }
+
+        Ok(())
     }
 }
 
