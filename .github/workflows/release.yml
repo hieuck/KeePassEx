@@ -58,17 +58,43 @@ jobs:
             const version = process.env.RELEASE_VERSION;
             const prerelease = process.env.RELEASE_PRERELEASE === 'true';
             const notes = process.env.RELEASE_NOTES || 'See CHANGELOG.md for details.';
+            const tagName = context.ref.replace('refs/tags/', '');
 
-            const { data } = await github.rest.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: context.ref.replace('refs/tags/', ''),
-              name: `KeePassEx v${version}`,
-              body: notes,
-              draft: false,
-              prerelease,
-            });
-            core.setOutput('release_id', String(data.id));
+            // Try to get existing release first (re-run scenario)
+            let releaseId;
+            try {
+              const { data: existing } = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: tagName,
+              });
+              console.log(`Found existing release ${existing.id}, updating...`);
+              const { data: updated } = await github.rest.repos.updateRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: existing.id,
+                name: `KeePassEx v${version}`,
+                body: notes,
+                draft: false,
+                prerelease,
+              });
+              releaseId = updated.id;
+            } catch (e) {
+              if (e.status !== 404) throw e;
+              // Release doesn't exist yet — create it
+              console.log('Creating new release...');
+              const { data } = await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: tagName,
+                name: `KeePassEx v${version}`,
+                body: notes,
+                draft: false,
+                prerelease,
+              });
+              releaseId = data.id;
+            }
+            core.setOutput('release_id', String(releaseId));
 
   # ─── Build Desktop — Windows x64 ─────────────────────────────────────────────
   build-desktop-windows:
