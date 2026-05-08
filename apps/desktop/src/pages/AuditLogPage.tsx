@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
 import { useTranslation } from 'react-i18next';
+import { useVaultStore } from '../store/vault';
 
 interface AuditEvent {
   id: string;
@@ -96,6 +97,7 @@ export function AuditLogPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
+  const { isOpen, isLocked } = useVaultStore();
 
   const [filter, setFilter] = useState<FilterType>('all');
   const [search, setSearch] = useState('');
@@ -104,8 +106,28 @@ export function AuditLogPage() {
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['audit-log', limit],
     queryFn: () => invoke<AuditEvent[]>('get_audit_log', { limit }),
+    enabled: isOpen && !isLocked,
     staleTime: 5_000,
   });
+
+  if (!isOpen) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%',
+          gap: 16,
+          color: 'var(--color-text-secondary)',
+        }}
+      >
+        <span style={{ fontSize: 48 }}>🔐</span>
+        <p>Mở kho mật khẩu để xem trang này</p>
+      </div>
+    );
+  }
 
   const clearMutation = useMutation({
     mutationFn: () => invoke('clear_audit_log'),

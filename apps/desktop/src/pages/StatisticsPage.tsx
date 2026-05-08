@@ -7,16 +7,38 @@ import { useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
 import { useTranslation } from 'react-i18next';
 import type { VaultStatistics } from '@keepassex/types';
+import { useVaultStore } from '../store/vault';
 
 export function StatisticsPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { isOpen, isLocked } = useVaultStore();
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ['vault-statistics'],
     queryFn: () => invoke<VaultStatistics>('get_vault_statistics'),
+    enabled: isOpen && !isLocked,
     staleTime: 30_000,
   });
+
+  if (!isOpen) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%',
+          gap: 16,
+          color: 'var(--color-text-secondary)',
+        }}
+      >
+        <span style={{ fontSize: 48 }}>🔐</span>
+        <p>Mở kho mật khẩu để xem trang này</p>
+      </div>
+    );
+  }
 
   const formatBytes = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;

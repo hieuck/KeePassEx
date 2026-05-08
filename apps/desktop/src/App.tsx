@@ -4,9 +4,12 @@
 import { useEffect, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { I18nextProvider } from 'react-i18next';
+import i18next from 'i18next';
 import { useVaultStore } from './store/vault';
 import { useSettingsStore } from './store/settings';
 import { useTabsStore } from './store/tabs';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { WelcomePage } from './pages/WelcomePage';
 import { UnlockPage } from './pages/UnlockPage';
 import { MainLayout } from './layouts/MainLayout';
@@ -76,73 +79,83 @@ export function App() {
   const showTabBar = tabs.length > 1;
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <HashRouter>
-        {/* Global managers (no UI) */}
-        <IdleLockManager />
+    <I18nextProvider i18n={i18next}>
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <HashRouter>
+            {/* Global managers (no UI) */}
+            <IdleLockManager />
 
-        {/* Multi-vault tab bar — shown when more than one vault is open */}
-        {showTabBar && isOpen && !isLocked && (
-          <VaultTabBar
-            onOpenNewVault={() => {
-              /* navigate to welcome to open another vault */
-            }}
-          />
-        )}
+            {/* Multi-vault tab bar — shown when more than one vault is open */}
+            {showTabBar && isOpen && !isLocked && (
+              <VaultTabBar
+                onOpenNewVault={() => {
+                  /* navigate to welcome to open another vault */
+                }}
+              />
+            )}
 
-        {/* Command palette */}
-        <CommandPalette
-          open={paletteOpen && isOpen && !isLocked}
-          onClose={() => setPaletteOpen(false)}
-        />
+            {/* Command palette */}
+            <CommandPalette
+              open={paletteOpen && isOpen && !isLocked}
+              onClose={() => setPaletteOpen(false)}
+            />
 
-        <Routes>
-          {/* Welcome / Open vault */}
-          {!isOpen && (
-            <>
-              <Route path="/" element={<WelcomePage />} />
-              <Route path="/unlock" element={<UnlockPage />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </>
-          )}
+            <Routes>
+              {/* Welcome / Open vault */}
+              {!isOpen && (
+                <>
+                  <Route path="/" element={<WelcomePage />} />
+                  <Route path="/unlock" element={<UnlockPage />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </>
+              )}
 
-          {/* Locked vault */}
-          {isOpen && isLocked && (
-            <>
-              <Route path="/unlock" element={<UnlockPage />} />
-              <Route path="*" element={<Navigate to="/unlock" replace />} />
-            </>
-          )}
+              {/* Locked vault */}
+              {isOpen && isLocked && (
+                <>
+                  <Route path="/unlock" element={<UnlockPage />} />
+                  <Route path="*" element={<Navigate to="/unlock" replace />} />
+                </>
+              )}
 
-          {/* Open vault */}
-          {isOpen && !isLocked && (
-            <Route element={<MainLayout onOpenPalette={() => setPaletteOpen(true)} />}>
-              <Route path="/" element={<Navigate to="/vault" replace />} />
-              <Route path="/vault" element={<VaultPage />} />
-              <Route path="/vault/entry/:uuid" element={<EntryDetailPage />} />
-              <Route path="/health" element={<HealthPage />} />
-              <Route path="/breach" element={<BreachPage />} />
-              <Route path="/generator" element={<GeneratorPage />} />
-              <Route path="/import-export" element={<ImportExportPage />} />
-              <Route path="/sync" element={<SyncPage />} />
-              <Route path="/emergency-access" element={<EmergencyAccessPage />} />
-              <Route path="/plugins" element={<PluginsPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/settings/security" element={<SecurityPage />} />
-              <Route path="/settings/hardware-key" element={<HardwareKeyPage />} />
-              <Route path="/settings/statistics" element={<StatisticsPage />} />
-              <Route path="/settings/audit-log" element={<AuditLogPage />} />
-              <Route path="/settings/password-policy" element={<PasswordPolicyPage />} />
-              <Route path="/settings/backup" element={<BackupPage />} />
-              <Route path="/vault/compare" element={<VaultComparePage />} />
-              <Route path="/settings/steganography" element={<SteganographyPage />} />
-              <Route path="/settings/analytics" element={<AnalyticsPage />} />
-              <Route path="/team" element={<TeamPage />} />
-              <Route path="*" element={<Navigate to="/vault" replace />} />
-            </Route>
-          )}
-        </Routes>
-      </HashRouter>
-    </QueryClientProvider>
+              {/* Open vault */}
+              {isOpen && !isLocked && (
+                <Route
+                  element={
+                    <ErrorBoundary>
+                      <MainLayout onOpenPalette={() => setPaletteOpen(true)} />
+                    </ErrorBoundary>
+                  }
+                >
+                  <Route path="/" element={<Navigate to="/vault" replace />} />
+                  <Route path="/vault" element={<VaultPage />} />
+                  <Route path="/vault/entry/:uuid" element={<EntryDetailPage />} />
+                  <Route path="/health" element={<HealthPage />} />
+                  <Route path="/breach" element={<BreachPage />} />
+                  <Route path="/generator" element={<GeneratorPage />} />
+                  <Route path="/import-export" element={<ImportExportPage />} />
+                  <Route path="/sync" element={<SyncPage />} />
+                  <Route path="/emergency-access" element={<EmergencyAccessPage />} />
+                  <Route path="/plugins" element={<PluginsPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/settings/security" element={<SecurityPage />} />
+                  <Route path="/settings/hardware-key" element={<HardwareKeyPage />} />
+                  <Route path="/settings/statistics" element={<StatisticsPage />} />
+                  <Route path="/settings/audit-log" element={<AuditLogPage />} />
+                  <Route path="/settings/password-policy" element={<PasswordPolicyPage />} />
+                  <Route path="/settings/backup" element={<BackupPage />} />
+                  <Route path="/vault/compare" element={<VaultComparePage />} />
+                  <Route path="/settings/steganography" element={<SteganographyPage />} />
+                  <Route path="/settings/analytics" element={<AnalyticsPage />} />
+                  <Route path="/team" element={<TeamPage />} />
+                  <Route path="*" element={<Navigate to="/vault" replace />} />
+                </Route>
+              )}
+            </Routes>
+          </HashRouter>
+        </QueryClientProvider>
+      </ErrorBoundary>
+    </I18nextProvider>
   );
 }

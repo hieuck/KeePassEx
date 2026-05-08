@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
 import { useTranslation } from 'react-i18next';
+import { useVaultStore } from '../store/vault';
 
 interface PolicyEvaluation {
   policy_id: string;
@@ -28,6 +29,7 @@ export function PasswordPolicyPage() {
   const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
   const isVi = i18n.language === 'vi';
+  const { isOpen, isLocked } = useVaultStore();
 
   const [testPassword, setTestPassword] = useState('');
   const [testResults, setTestResults] = useState<PolicyEvaluation[]>([]);
@@ -36,7 +38,27 @@ export function PasswordPolicyPage() {
   const { data: policies = [], isLoading } = useQuery({
     queryKey: ['password-policies'],
     queryFn: () => invoke<PasswordPolicy[]>('get_password_policies'),
+    enabled: isOpen && !isLocked,
   });
+
+  if (!isOpen) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%',
+          gap: 16,
+          color: 'var(--color-text-secondary)',
+        }}
+      >
+        <span style={{ fontSize: 48 }}>🔐</span>
+        <p>Mở kho mật khẩu để xem trang này</p>
+      </div>
+    );
+  }
 
   const toggleMutation = useMutation({
     mutationFn: ({ id, enabled }: { id: string; enabled: boolean }) =>

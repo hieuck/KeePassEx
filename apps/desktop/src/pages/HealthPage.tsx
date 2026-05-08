@@ -7,6 +7,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useBreachStore } from '../store/breach';
+import { useVaultStore } from '../store/vault';
 
 interface HealthReport {
   totalEntries: number;
@@ -37,6 +38,7 @@ export function HealthPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { checkVault: checkBreaches, report: breachReport } = useBreachStore();
+  const { isOpen, isLocked } = useVaultStore();
 
   const {
     data: report,
@@ -45,8 +47,28 @@ export function HealthPage() {
   } = useQuery({
     queryKey: ['health'],
     queryFn: () => invoke<HealthReport>('audit_vault'),
+    enabled: isOpen && !isLocked,
     staleTime: 60_000,
   });
+
+  if (!isOpen) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%',
+          gap: 16,
+          color: 'var(--color-text-secondary)',
+        }}
+      >
+        <span style={{ fontSize: 48 }}>🔐</span>
+        <p>Mở kho mật khẩu để xem trang này</p>
+      </div>
+    );
+  }
 
   const scoreColor = !report
     ? '#9CA3AF'

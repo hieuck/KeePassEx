@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 import { useTranslation } from 'react-i18next';
+import { useVaultStore } from '../store/vault';
 
 interface BackupConfig {
   enabled: boolean;
@@ -28,6 +29,7 @@ export function BackupPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
+  const { isOpen, isLocked } = useVaultStore();
 
   const [config, setConfig] = useState<BackupConfig>({
     enabled: false,
@@ -40,17 +42,38 @@ export function BackupPage() {
   const { data: backups = [], isLoading: backupsLoading } = useQuery({
     queryKey: ['backups'],
     queryFn: () => invoke<BackupRecord[]>('list_backups'),
+    enabled: isOpen && !isLocked,
   });
 
   const { data: backupConfig } = useQuery({
     queryKey: ['backup-config'],
     queryFn: () => invoke<BackupConfig>('get_backup_config'),
+    enabled: isOpen && !isLocked,
   });
 
   // Sync config from query result
   useEffect(() => {
     if (backupConfig) setConfig(backupConfig);
   }, [backupConfig]);
+
+  if (!isOpen) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%',
+          gap: 16,
+          color: 'var(--color-text-secondary)',
+        }}
+      >
+        <span style={{ fontSize: 48 }}>🔐</span>
+        <p>Mở kho mật khẩu để xem trang này</p>
+      </div>
+    );
+  }
 
   const saveMutation = useMutation({
     mutationFn: (cfg: BackupConfig) => invoke('save_backup_config', { config: cfg }),

@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next';
 import { useVaultStore } from '../store/vault';
 import { useSettingsStore } from '../store/settings';
 import { formatRelativeTime } from '@keepassex/utils';
-import type { RecentVault } from '@keepassex/types';
 
 export function WelcomePage() {
   const { openVault, createVault } = useVaultStore();
@@ -16,7 +15,7 @@ export function WelcomePage() {
   const { t, i18n } = useTranslation();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [recentVaults, setRecentVaults] = useState<RecentVault[]>(settings.recentVaults ?? []);
+  const recentVaults = settings.recentVaults ?? [];
 
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [selectedVaultPath, setSelectedVaultPath] = useState<string | null>(null);
