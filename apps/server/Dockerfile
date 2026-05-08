@@ -16,26 +16,38 @@ RUN apt-get update && apt-get install -y \
 # Copy workspace manifest and lock file first (for layer caching)
 COPY Cargo.toml Cargo.lock ./
 
-# Copy all workspace members (needed for Cargo workspace resolution)
-# Core library
+# Copy only the crates needed for the server
 COPY packages/core ./packages/core
-
-# Server app
 COPY apps/server ./apps/server
 
-# Stub out other workspace members so Cargo doesn't fail on missing paths
-# These are not needed for the server build but must exist in the workspace
-RUN mkdir -p apps/cli/src apps/tui/src apps/desktop/src-tauri/src apps/windows-credprov/src && \
-    echo '[package]\nname = "keepassex-cli"\nversion = "0.1.0"\nedition = "2021"\n[[bin]]\nname = "kpx"\npath = "src/main.rs"' > apps/cli/Cargo.toml && \
-    echo 'fn main() {}' > apps/cli/src/main.rs && \
-    echo '[package]\nname = "keepassex-tui"\nversion = "0.1.0"\nedition = "2021"\n[[bin]]\nname = "kpx-tui"\npath = "src/main.rs"' > apps/tui/Cargo.toml && \
-    echo 'fn main() {}' > apps/tui/src/main.rs && \
-    echo '[package]\nname = "keepassex-desktop"\nversion = "0.1.0"\nedition = "2021"\n[lib]\nname = "keepassex_desktop_lib"\ncrate-type = ["cdylib","staticlib"]' > apps/desktop/src-tauri/Cargo.toml && \
-    echo 'pub fn run() {}' > apps/desktop/src-tauri/src/lib.rs && \
-    echo '[package]\nname = "keepassex-credprov"\nversion = "0.1.0"\nedition = "2021"\n[lib]\ncrate-type = ["cdylib"]' > apps/windows-credprov/Cargo.toml && \
-    echo 'pub fn init() {}' > apps/windows-credprov/src/lib.rs
+# Stub out other workspace members so Cargo workspace resolution doesn't fail.
+# These crates are not compiled — only their Cargo.toml manifests are needed.
+RUN mkdir -p apps/cli/src \
+             apps/tui/src \
+             apps/desktop/src-tauri/src \
+             apps/windows-credprov/src
 
-# Build only the server (not the whole workspace)
+# apps/cli stub
+RUN printf '[package]\nname = "keepassex-cli"\nversion = "0.1.0"\nedition = "2021"\n[[bin]]\nname = "kpx"\npath = "src/main.rs"\n' \
+    > apps/cli/Cargo.toml && \
+    printf 'fn main() {}\n' > apps/cli/src/main.rs
+
+# apps/tui stub
+RUN printf '[package]\nname = "keepassex-tui"\nversion = "0.1.0"\nedition = "2021"\n[[bin]]\nname = "kpx-tui"\npath = "src/main.rs"\n' \
+    > apps/tui/Cargo.toml && \
+    printf 'fn main() {}\n' > apps/tui/src/main.rs
+
+# apps/desktop/src-tauri stub
+RUN printf '[package]\nname = "keepassex-desktop"\nversion = "0.1.0"\nedition = "2021"\n[lib]\nname = "keepassex_desktop_lib"\ncrate-type = ["cdylib","staticlib"]\n' \
+    > apps/desktop/src-tauri/Cargo.toml && \
+    printf 'pub fn run() {}\n' > apps/desktop/src-tauri/src/lib.rs
+
+# apps/windows-credprov stub
+RUN printf '[package]\nname = "keepassex-credprov"\nversion = "0.1.0"\nedition = "2021"\n[lib]\ncrate-type = ["cdylib"]\n' \
+    > apps/windows-credprov/Cargo.toml && \
+    printf 'pub fn init() {}\n' > apps/windows-credprov/src/lib.rs
+
+# Build only the server binary
 RUN cargo build --release -p keepassex-server
 
 # ─── Stage 2: Runtime ─────────────────────────────────────────────────────────
@@ -58,7 +70,6 @@ RUN mkdir -p /data && chown keepassex:keepassex /data
 USER keepassex
 WORKDIR /data
 
-# Default environment
 ENV KPX_PORT=8080
 ENV KPX_HOST=0.0.0.0
 ENV KPX_DB=/data/keepassex.db
