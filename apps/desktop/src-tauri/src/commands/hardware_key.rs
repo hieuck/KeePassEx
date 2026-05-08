@@ -4,13 +4,13 @@
 //! The actual HID/NFC communication is handled by the core library's
 //! platform bridge (called from here).
 
+use crate::state::AppState;
 use keepassex_core::hardware_key::{
-    HardwareKeyConfig, HardwareKeyInfo, HardwareKeyType, YubikeySlot,
-    list_hardware_keys, test_hardware_key,
+    list_hardware_keys, test_hardware_key, HardwareKeyConfig, HardwareKeyInfo, HardwareKeyType,
+    YubikeySlot,
 };
 use serde::{Deserialize, Serialize};
 use tauri::State;
-use crate::state::AppState;
 
 // ─── DTOs ─────────────────────────────────────────────────────────────────────
 
@@ -54,9 +54,7 @@ pub struct ConfigureHardwareKeyArgs {
 /// List all connected hardware keys
 #[tauri::command]
 pub async fn list_hardware_keys_cmd() -> Result<Vec<HardwareKeyInfoDto>, String> {
-    let keys = list_hardware_keys()
-        .await
-        .map_err(|e| e.to_string())?;
+    let keys = list_hardware_keys().await.map_err(|e| e.to_string())?;
     Ok(keys.into_iter().map(HardwareKeyInfoDto::from).collect())
 }
 
@@ -78,10 +76,13 @@ pub async fn configure_hardware_key(
     let mut vault_lock = state.vault.write().unwrap();
     let open_vault = vault_lock.as_mut().ok_or("No vault open")?;
 
-    // Store hardware key config in vault metadata
-    // In production this serializes to the vault's custom data section
-    open_vault.vault.meta.hardware_key_config = Some(serde_json::to_string(&config)
-        .map_err(|e| e.to_string())?);
+    // Store hardware key config in vault metadata custom_data
+    let config_json = serde_json::to_string(&config).map_err(|e| e.to_string())?;
+    open_vault
+        .vault
+        .meta
+        .custom_data
+        .insert("hardware_key_config".to_string(), config_json);
     open_vault.vault.dirty = true;
 
     Ok(())
@@ -92,7 +93,11 @@ pub async fn configure_hardware_key(
 pub fn remove_hardware_key(state: State<'_, AppState>) -> Result<(), String> {
     let mut vault_lock = state.vault.write().unwrap();
     let open_vault = vault_lock.as_mut().ok_or("No vault open")?;
-    open_vault.vault.meta.hardware_key_config = None;
+    open_vault
+        .vault
+        .meta
+        .custom_data
+        .remove("hardware_key_config");
     open_vault.vault.dirty = true;
     Ok(())
 }
@@ -102,7 +107,12 @@ pub fn remove_hardware_key(state: State<'_, AppState>) -> Result<(), String> {
 pub fn get_hardware_key_config(state: State<'_, AppState>) -> Result<Option<String>, String> {
     let vault_lock = state.vault.read().unwrap();
     let open_vault = vault_lock.as_ref().ok_or("No vault open")?;
-    Ok(open_vault.vault.meta.hardware_key_config.clone())
+    Ok(open_vault
+        .vault
+        .meta
+        .custom_data
+        .get("hardware_key_config")
+        .cloned())
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

@@ -2,7 +2,9 @@
 
 use crate::state::{AppState, OpenVault};
 use keepassex_core::{
-    vault::operations::{open_vault as core_open_vault, save_vault as core_save_vault, VaultCredentials},
+    vault::operations::{
+        open_vault as core_open_vault, save_vault as core_save_vault, VaultCredentials,
+    },
     Vault,
 };
 use serde::{Deserialize, Serialize};
@@ -94,7 +96,7 @@ pub async fn create_vault(
     state: State<'_, AppState>,
 ) -> Result<VaultMetaDto, String> {
     let vault = Vault::new(&args.name);
-    let path = std::path::Path::new(&args.path);
+    let path = std::path::PathBuf::from(&args.path);
 
     let credentials = VaultCredentials {
         password: Some(args.password),
@@ -102,7 +104,7 @@ pub async fn create_vault(
         hardware_key_response: None,
     };
 
-    core_save_vault(&vault, path, &credentials)
+    core_save_vault(&vault, &path, &credentials)
         .await
         .map_err(|e| e.to_string())?;
 
@@ -122,7 +124,7 @@ pub async fn create_vault(
     let mut vault_lock = state.vault.write().unwrap();
     *vault_lock = Some(OpenVault {
         vault,
-        path: path.to_path_buf(),
+        path,
         master_key_hash: raw_key,
         locked: false,
     });
@@ -141,58 +143,38 @@ pub fn close_vault(state: State<'_, AppState>) -> Result<(), String> {
 /// Save the current vault using the stored master key
 #[tauri::command]
 pub async fn save_vault(state: State<'_, AppState>) -> Result<(), String> {
-    // Read vault data and path without holding the lock during async I/O
-    let (vault_snapshot, path, master_key_hash) = {
+    // Collect all data BEFORE any await — avoids Send issues with RwLock
+    let (vault_data, path, master_key_hash) = {
         let vault_lock = state.vault.read().unwrap();
         let open_vault = vault_lock.as_ref().ok_or("No vault open")?;
         if open_vault.locked {
             return Err("Vault is locked".into());
         }
+        use keepassex_core::kdbx::KdbxWriter;
+        let writer = KdbxWriter::new();
+        let data = writer
+            .write(&open_vault.vault, &open_vault.master_key_hash)
+            .map_err(|e| e.to_string())?;
         (
-            // We need to serialize the vault — clone the relevant data
-            open_vault.vault.meta.name.clone(),
+            data,
             open_vault.path.clone(),
             open_vault.master_key_hash.clone(),
         )
     };
+    // State lock released — safe to await
 
-    // Use the stored composite key hash directly to re-save
-    // The master_key_hash IS the raw composite key (SHA-256 of password components)
-    // We pass it through a dummy VaultCredentials that uses it directly
-    let vault_lock = state.vault.read().unwrap();
-    let open_vault = vault_lock.as_ref().ok_or("No vault open")?;
-
-    // Build credentials from stored key — use a special "raw key" path
-    // In production this would use OS keychain; here we use the stored hash
-    let credentials = VaultCredentials {
-        password: None,
-        key_file_data: None,
-        hardware_key_response: None,
-    };
-
-    // Write vault using the raw key directly
-    use keepassex_core::kdbx::KdbxWriter;
-    use keepassex_core::crypto::kdf::{KdfParams, ArgonParams, derive_master_key};
-    use keepassex_core::crypto::keys::MasterKey;
-    use keepassex_core::crypto::cipher::{Cipher, CipherAlgorithm};
-    use keepassex_core::crypto::hmac::compute_header_hmac;
-    use rand::RngCore;
-
-    let writer = KdbxWriter::new();
-    let data = writer.write(&open_vault.vault, &master_key_hash)
+    let tmp = path.with_extension("kdbx.tmp");
+    tokio::fs::write(&tmp, &vault_data)
+        .await
+        .map_err(|e| e.to_string())?;
+    tokio::fs::rename(&tmp, &path)
+        .await
         .map_err(|e| e.to_string())?;
 
-    // Atomic write
-    let tmp = path.with_extension("kdbx.tmp");
-    tokio::fs::write(&tmp, &data).await.map_err(|e| e.to_string())?;
-    tokio::fs::rename(&tmp, &path).await.map_err(|e| e.to_string())?;
-
     // Clear dirty flag
-    drop(vault_lock);
     if let Some(ref mut ov) = *state.vault.write().unwrap() {
         ov.vault.dirty = false;
     }
-
     Ok(())
 }
 
@@ -216,20 +198,37 @@ pub async fn change_credentials(
     new_password: String,
     state: State<'_, AppState>,
 ) -> Result<(), String> {
-    let vault_lock = state.vault.read().unwrap();
-    let open_vault = vault_lock.as_ref().ok_or("No vault open")?;
+    // Collect path BEFORE any await
+    let path = {
+        let vault_lock = state.vault.read().unwrap();
+        let open_vault = vault_lock.as_ref().ok_or("No vault open")?;
+        open_vault.path.clone()
+    };
 
     let old_creds = VaultCredentials::password_only(old_password);
     let new_creds = VaultCredentials::password_only(new_password);
 
-    keepassex_core::vault::operations::change_credentials(
-        &open_vault.vault,
-        &open_vault.path,
-        &old_creds,
-        &new_creds,
-    )
-    .await
-    .map_err(|e| e.to_string())
+    // Re-open vault to verify old credentials, then save with new ones
+    let vault = core_open_vault(&path, &old_creds)
+        .await
+        .map_err(|e| format!("Wrong current password: {}", e))?;
+
+    core_save_vault(&vault, &path, &new_creds)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    // Update stored key hash
+    let new_key = new_creds
+        .build_composite_key()
+        .map_err(|e| e.to_string())?
+        .build()
+        .map_err(|e| e.to_string())?;
+
+    if let Some(ref mut ov) = *state.vault.write().unwrap() {
+        ov.master_key_hash = new_key;
+    }
+
+    Ok(())
 }
 
 /// Get vault metadata

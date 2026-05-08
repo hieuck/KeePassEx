@@ -128,24 +128,23 @@ export function BreachScreen() {
                 <Text
                   style={[
                     styles.summaryTitle,
-                    {
-                      color: report.breachedCount === 0 ? '#166534' : '#991B1B',
-                    },
+                    { color: report.breachedCount === 0 ? '#166534' : '#991B1B' },
                   ]}
                 >
                   {report.breachedCount === 0
-                    ? 'No breaches found!'
-                    : `${report.breachedCount} breached password${report.breachedCount !== 1 ? 's' : ''}!`}
+                    ? t('breach.noBreaches')
+                    : t('breach.breachesFound', {
+                        count: report.breachedCount,
+                        plural: report.breachedCount !== 1 ? 's' : '',
+                      })}
                 </Text>
                 <Text
                   style={[
                     styles.summaryDesc,
-                    {
-                      color: report.breachedCount === 0 ? '#166534' : '#991B1B',
-                    },
+                    { color: report.breachedCount === 0 ? '#166534' : '#991B1B' },
                   ]}
                 >
-                  Checked {report.totalChecked} passwords
+                  {t('breach.noBreachesDesc', { count: report.totalChecked })}
                 </Text>
               </View>
             </View>
@@ -154,7 +153,7 @@ export function BreachScreen() {
             {report.results.length > 0 && (
               <>
                 <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
-                  BREACHED PASSWORDS
+                  {t('breach.breachedPasswords').toUpperCase()}
                 </Text>
                 {report.results.map(r => (
                   <TouchableOpacity
@@ -165,17 +164,19 @@ export function BreachScreen() {
                     ]}
                     onPress={() => navigation.navigate('EntryDetail', { uuid: r.entryUuid })}
                     accessibilityRole="button"
-                    accessibilityLabel={`${r.entryTitle} - breached`}
+                    accessibilityLabel={`${r.entryTitle} - ${t('breach.title')}`}
                   >
                     <View style={styles.breachItemInfo}>
-                      <Text style={styles.breachIcon}>⚠️</Text>
+                      <Text style={styles.breachIcon} accessibilityHidden>
+                        ⚠️
+                      </Text>
                       <View>
                         <Text style={[styles.breachTitle, { color: theme.text }]}>
                           {r.entryTitle}
                         </Text>
                         {r.breachCount > 0 && (
                           <Text style={styles.breachCount}>
-                            Found {r.breachCount.toLocaleString()} times in breaches
+                            {t('breach.foundInBreaches', { count: r.breachCount.toLocaleString() })}
                           </Text>
                         )}
                       </View>
@@ -189,14 +190,16 @@ export function BreachScreen() {
             {report.breachedCount === 0 && (
               <EmptyState
                 icon="✅"
-                title="No breaches found!"
-                description={`Checked ${report.totalChecked} passwords — all clear.`}
+                title={t('breach.noBreaches')}
+                description={t('breach.noBreachesDesc', { count: report.totalChecked })}
                 theme={theme}
               />
             )}
 
             <Text style={[styles.footerNote, { color: theme.textTertiary }]}>
-              {report.usedOnline ? '🌐 Checked against HIBP (online)' : '📴 Checked offline'}
+              {report.usedOnline
+                ? `🌐 ${t('breach.checkedOnline')}`
+                : `📴 ${t('breach.checkedOffline')}`}
             </Text>
           </>
         )}

@@ -1,7 +1,7 @@
 /**
  * Vault health audit page
  */
-import React from 'react';
+
 import { useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
 import { useNavigate } from 'react-router-dom';
@@ -93,15 +93,15 @@ export function HealthPage() {
             <div className="score-info">
               <h3 className="score-title">
                 {report.score >= 90
-                  ? '✅ Excellent vault health'
+                  ? `✅ ${t('health.score')} — ${t('health.noIssues').split('!')[0]}`
                   : report.score >= 70
-                    ? '👍 Good vault health'
+                    ? `👍 ${t('health.score')}: ${report.score}/100`
                     : report.score >= 50
-                      ? '⚠️ Needs improvement'
-                      : '🚨 Needs attention'}
+                      ? `⚠️ ${t('health.score')}: ${report.score}/100`
+                      : `🚨 ${t('health.score')}: ${report.score}/100`}
               </h3>
               <p className="score-desc">
-                {report.totalEntries} {t('health.lastChecked', { time: '' }).split(':')[0]}
+                {t('vault.statistics_entries', { count: report.totalEntries })}
               </p>
             </div>
           </div>

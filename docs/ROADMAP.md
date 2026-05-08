@@ -5,6 +5,254 @@
 ### Core Engine (Rust)
 
 - [x] KDBX 4.x read/write (Argon2id + ChaCha20-Poly1305)
+- [x] KDBX 3.1 compatibility (read + write)
+- [x] Composite key: password + key file + hardware key
+- [x] HMAC-SHA256 block authentication (tamper detection)
+- [x] Full vault CRUD with history and recycle bin
+- [x] Full-text search with filters
+- [x] TOTP/HOTP (RFC 6238/4226) with SHA-1/256/512
+- [x] Password generator (random, passphrase, pronounceable)
+- [x] Vault health audit (weak, reused, expired, old)
+- [x] HIBP breach monitor (k-anonymity, offline mode)
+- [x] Import: Bitwarden, LastPass, Chrome, Firefox, 1Password, Dashlane, NordPass, Enpass, RoboForm, KeePass1, CSV (11 formats)
+- [x] Export: CSV, JSON, HTML, KDBX
+- [x] Emergency access (trusted contact with waiting period, X25519 ECDH)
+- [x] Plugin system (WASM sandbox, wasmtime)
+- [x] SSH key management + agent protocol
+- [x] Passkey (FIDO2/WebAuthn) storage + verification
+- [x] Entry templates (12 built-in types)
+- [x] Audit log (24 event types, ring buffer)
+- [x] Password policies (4 built-in + custom rules, 14 rule types)
+- [x] Scheduled backup (OnSave/Daily/Weekly/Monthly + retention)
+- [x] Vault comparison (UUID-based diff + CRDT merge)
+- [x] Decoy vault (10 realistic fake entries)
+- [x] Analytics engine (strength distribution, timeline, usage)
+- [x] Smart categorizer (16 categories, domain DB + keyword fallback)
+- [x] Natural language search (EN/VI, intent detection)
+- [x] Team vault (RBAC: Admin/Editor/Viewer, per-entry permissions, comments)
+- [x] Steganography (PNG LSB, JPEG EXIF, MP4/AVI metadata)
+- [x] Shamir's Secret Sharing (vault key sharding, GF(256))
+- [x] Post-quantum crypto (X25519 + Kyber-768 hybrid, KDBX header extension)
+- [x] Zero-knowledge password verification (ZKPV commitment)
+- [x] Password rotation engine (urgency levels by category)
+- [x] Context-aware password advisor
+- [x] Field references ({REF:F@I:uuid} KeePass-compatible)
+- [x] Favicon auto-fetch (privacy-safe, domain only)
+- [x] Expiry engine (rotation schedules by category)
+- [x] Notification system (expiry, breach, sync, emergency access)
+- [x] Entry cache (LRU, 500 entries, no passwords cached)
+
+### Desktop (Tauri v2)
+
+- [x] Windows, macOS, Linux native
+- [x] System tray with lock/unlock
+- [x] Global shortcuts (Ctrl+Alt+K)
+- [x] Command palette (Ctrl+K)
+- [x] Auto-lock on idle / screen lock
+- [x] Clipboard auto-clear (default 10s)
+- [x] Browser extension native messaging
+- [x] Multi-vault tabs (open multiple vaults simultaneously)
+- [x] 22 pages: Vault, Health, Breach, Generator, Import/Export, Sync, Emergency Access, Plugins, Settings, Security, Welcome, Unlock, Analytics, AuditLog, Backup, VaultCompare, PasswordPolicy, Steganography, Statistics, Team, HardwareKey, EntryDetail
+- [x] Sync wired to real providers (WebDAV, Local, Google Drive, OneDrive)
+- [x] Sync config persisted in AppSettings
+
+### Mobile (React Native)
+
+- [x] iOS 15+ and Android 8.0+
+- [x] Biometric unlock (Face ID, Touch ID, Fingerprint)
+- [x] iOS AutoFill Extension
+- [x] Android AutoFill Service
+- [x] iOS WidgetKit (small, medium, large, lock screen)
+- [x] Android home screen widget + Quick Settings tile
+- [x] Screen capture protection
+- [x] iOS Secure Enclave / Android StrongBox key storage
+- [x] 16 screens
+
+### Watch
+
+- [x] watchOS (SwiftUI + WatchConnectivity + Complications + haptics)
+- [x] WearOS (Jetpack Compose + Wearable Data Layer + Tiles + haptics)
+
+### Browser Extension
+
+- [x] Chrome/Edge (Manifest V3)
+- [x] Firefox (Manifest V2)
+- [x] Form detection and credential filling
+- [x] Native messaging with desktop app
+- [x] OTP inline display with countdown
+- [x] Password save detection
+- [x] Smart URL matching (exact/domain/subdomain)
+- [x] Dark mode + i18n (EN/VI)
+
+### CLI (`kpx`)
+
+- [x] All CRUD commands (list, get, add, edit, delete)
+- [x] Password generator
+- [x] Health check
+- [x] OTP with countdown (watch mode)
+- [x] Import/Export
+- [x] Sync (WebDAV + local)
+- [x] Breach check (HIBP)
+- [x] Stats, compare, audit
+- [x] Template management
+- [x] Hardware key management
+- [x] Server commands (status/login/register/history)
+- [x] Steganography (embed/extract)
+- [x] Vault sharding (split/combine)
+
+### TUI (`kpx-tui`)
+
+- [x] Full ratatui event loop
+- [x] Vim-style keybindings (j/k/h/l/y/u/n/e/d//)
+- [x] Command mode (:)
+- [x] 5 themes (dark, light, solarized, nord, gruvbox)
+- [x] Mouse support
+
+### Server
+
+- [x] Axum + SQLite + JWT
+- [x] Zero-knowledge design
+- [x] WebSocket real-time sync
+- [x] Vault version history
+- [x] Admin API
+- [x] Docker + Helm chart
+
+### macOS Menu Bar
+
+- [x] SwiftUI popover (320px)
+- [x] Search, entry list, OTP badges
+- [x] Hover actions (copy password/username/OTP)
+- [x] Status indicator
+
+### Windows Credential Provider
+
+- [x] ICredentialProvider COM interface
+- [x] ZKPV pre-check (no full vault decryption at login)
+- [x] DLL registration/unregistration
+
+### i18n
+
+- [x] 10 languages: EN, VI, ZH, JA, KO, ES, FR, DE, PT, RU
+- [x] ~900 keys per language, 100% parity
+- [x] Automated parity tests
+
+---
+
+## Version 1.2 (Q3 2025) 🚧
+
+> **Note**: v0.1.0 là phiên bản đầu tiên buildable (May 2026). Roadmap v1.2 sẽ được thực hiện sau khi v0.1.0 được test thực tế.
+
+### Security
+
+- [ ] **Memory encryption** — encrypt vault in memory between operations (mlock + custom allocator)
+- [ ] **Key file rotation** — generate new key file, re-encrypt vault
+- [ ] **Master password change UI** — desktop + mobile (currently CLI only)
+- [ ] **Argon2id parameter tuning UI** — let users adjust memory/iterations
+
+### New Features
+
+- [ ] **Vault sharing** — share specific entries/groups (E2EE, not full vault)
+- [ ] **Secure notes** — rich text with markdown support
+- [ ] **Duplicate entry detection** — find and merge duplicates
+- [x] **AI password suggestions** — on-device, no network (`packages/core/src/ai/`)
+- [ ] **Offline breach database** — bundled top-1M breached passwords
+
+### Platform
+
+- [ ] **Safari extension** — native Safari Web Extension (macOS/iOS)
+- [ ] **Firefox for Android** — mobile browser extension
+- [ ] **Linux Wayland** — proper Wayland auto-type support
+- [ ] **iPadOS split view** — optimized iPad layout
+- [ ] **Linux GTK4 native app** — gtk-rs + libadwaita (GNOME-native)
+
+### CLI
+
+- [ ] **Interactive mode** — `kpx shell` for interactive session
+- [ ] **Config file** — `~/.config/kpx/config.toml`
+- [ ] **Pipe support** — `echo "password" | kpx add --title GitHub`
+
+### i18n
+
+- [ ] **Arabic (AR)** — RTL support
+- [ ] **Hindi (HI)** — Devanagari script
+- [ ] **RTL layout** — mirror UI for AR/HE
+
+---
+
+## Version 2.0 (2026)
+
+### Architecture
+
+- [ ] **Rust mobile core** — native Rust + Swift/Kotlin UI (no React Native)
+- [ ] **Distributed vault** — CRDTs for true multi-device sync without server
+
+### Enterprise
+
+- [ ] **LDAP/Active Directory** — enterprise authentication
+- [ ] **SSO integration** — SAML/OIDC support
+- [ ] **Compliance reports** — SOC2, HIPAA, PCI-DSS
+- [ ] **Admin console** — web-based team management
+
+---
+
+## Feature Comparison vs Competitors
+
+| Feature                  | KeePass | KeePassXC | Keepassium | KeePass2Android | **KeePassEx** |
+| ------------------------ | ------- | --------- | ---------- | --------------- | ------------- |
+| Native Windows           | ✅      | ✅        | ❌         | ❌              | ✅            |
+| Native macOS             | ❌      | ✅        | ✅         | ❌              | ✅            |
+| Native Linux             | ❌      | ✅        | ❌         | ❌              | ✅            |
+| Native iOS               | ❌      | ❌        | ✅         | ❌              | ✅            |
+| Native Android           | ❌      | ❌        | ❌         | ✅              | ✅            |
+| watchOS                  | ❌      | ❌        | ❌         | ❌              | ✅            |
+| WearOS                   | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Browser Extension        | ❌      | ✅        | ❌         | ❌              | ✅            |
+| CLI                      | ❌      | ✅        | ❌         | ❌              | ✅            |
+| TUI                      | ❌      | ❌        | ❌         | ❌              | ✅            |
+| macOS Menu Bar           | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Windows CredProvider     | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Self-hosted Server       | ❌      | ❌        | ❌         | ❌              | ✅            |
+| YubiKey                  | ✅      | ✅        | ❌         | ❌              | ✅            |
+| Passkey (FIDO2)          | ❌      | ✅        | ❌         | ❌              | ✅            |
+| SSH Agent                | ❌      | ✅        | ❌         | ❌              | ✅            |
+| Breach Monitor           | ❌      | ✅        | ❌         | ❌              | ✅            |
+| Emergency Access         | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Plugin System            | ✅      | ❌        | ❌         | ❌              | ✅            |
+| Entry Templates          | ✅      | ❌        | ❌         | ❌              | ✅            |
+| Audit Log                | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Decoy Vault              | ✅      | ❌        | ❌         | ❌              | ✅            |
+| Vault Compare            | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Scheduled Backup         | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Password Policies        | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Steganography            | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Vault Sharding           | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Post-Quantum Crypto      | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Team Vault (RBAC)        | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Analytics Dashboard      | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Natural Language Search  | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Smart Categorizer        | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Password Rotation Engine | ❌      | ❌        | ❌         | ❌              | ✅            |
+| ZKPV                     | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Multi-vault Tabs         | ❌      | ✅        | ❌         | ❌              | ✅            |
+| Field References         | ✅      | ✅        | ❌         | ❌              | ✅            |
+| Favicon Auto-fetch       | ❌      | ✅        | ✅         | ❌              | ✅            |
+| iOS AutoFill             | ❌      | ❌        | ✅         | ❌              | ✅            |
+| Android AutoFill         | ❌      | ❌        | ❌         | ✅              | ✅            |
+| iOS Widget               | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Android Widget           | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Watch Complications      | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Command Palette          | ❌      | ❌        | ❌         | ❌              | ✅            |
+| 10 Languages             | ❌      | ✅        | ✅         | ✅              | ✅            |
+| Vietnamese i18n          | ❌      | ❌        | ❌         | ❌              | ✅            |
+| Open Source              | ✅      | ✅        | ❌         | ✅              | ✅            |
+
+**KeePassEx has 20+ exclusive features no competitor offers.**
+
+## Version 1.0 (Released) ✅
+
+### Core Engine (Rust)
+
+- [x] KDBX 4.x read/write (Argon2id + ChaCha20-Poly1305)
 - [x] KDBX 3.1 compatibility (read)
 - [x] Composite key: password + key file + hardware key
 - [x] HMAC-SHA256 block authentication (tamper detection)
@@ -172,7 +420,7 @@
 - [x] **12 new Rust test modules** — analytics, categorizer, decoy_vault, expiry_engine, notifications, scheduled_backup, zkpv, steg, team, templates, plugin, search (all previously untested modules now covered)
 - [x] **i18n interpolation parity test** — validates `{{variable}}` placeholders match between EN and VI
 - [x] **WelcomePage dialog tests** — tests for the new modal-based vault open/create flow
-- [x] **Total: 626 Rust tests + 150 TypeScript tests**
+- [x] **Total: 650+ Rust tests + 156 TypeScript tests**
 
 ---
 

@@ -117,12 +117,12 @@ export function AnalyticsScreen() {
               <Text style={[styles.healthMax, { color: theme.textTertiary }]}>/100</Text>
             </View>
             <View style={styles.healthInfo}>
-              <Text style={[styles.cardTitle, { color: theme.text }]}>Vault Health Score</Text>
+              <Text style={[styles.cardTitle, { color: theme.text }]}>{t('health.score')}</Text>
               <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>
                 {data.total_entries} {t('statistics.totalEntries').toLowerCase()}
               </Text>
               <Text style={[styles.cardSubtitle, { color: theme.textSecondary }]}>
-                {pctStrong}% strong passwords
+                {pctStrong}% {t('analytics.strengthStrong').toLowerCase()}
               </Text>
             </View>
           </View>
@@ -154,21 +154,21 @@ export function AnalyticsScreen() {
           />
           <IssueCard
             icon="🚨"
-            label="Breached"
+            label={t('health.breachCheck')}
             count={ss.breached_count}
             color={ss.breached_count === 0 ? '#16a34a' : '#dc2626'}
             theme={theme}
           />
           <IssueCard
             icon="🔑"
-            label="No Password"
+            label={t('health.noPassword')}
             count={ss.no_password_count}
             color={ss.no_password_count === 0 ? '#16a34a' : '#f97316'}
             theme={theme}
           />
           <IssueCard
             icon="⚠️"
-            label="Expiring Soon"
+            label={t('health.expiringSoon')}
             count={ss.expiring_soon_count}
             color={ss.expiring_soon_count === 0 ? '#16a34a' : '#d97706'}
             theme={theme}
@@ -186,7 +186,7 @@ export function AnalyticsScreen() {
             { label: t('analytics.strengthFair'), count: sd.fair, color: '#eab308' },
             { label: t('analytics.strengthStrong'), count: sd.strong, color: '#22c55e' },
             { label: t('analytics.strengthVeryStrong'), count: sd.very_strong, color: '#16a34a' },
-            { label: 'No Password', count: sd.no_password, color: '#6b7280' },
+            { label: t('health.noPassword'), count: sd.no_password, color: '#6b7280' },
           ].map(({ label, count, color }) => {
             const pct = data.total_entries > 0 ? Math.round((count / data.total_entries) * 100) : 0;
             return (
@@ -212,35 +212,35 @@ export function AnalyticsScreen() {
         <View style={styles.featureGrid}>
           <FeatureCard
             icon="🔐"
-            label="OTP / 2FA"
+            label={t('otp.title')}
             count={fu.with_otp}
             total={data.total_entries}
             theme={theme}
           />
           <FeatureCard
             icon="🗝️"
-            label="Passkeys"
+            label={t('passkey.title')}
             count={fu.with_passkey}
             total={data.total_entries}
             theme={theme}
           />
           <FeatureCard
             icon="🖥️"
-            label="SSH Keys"
+            label={t('ssh.title')}
             count={fu.with_ssh_key}
             total={data.total_entries}
             theme={theme}
           />
           <FeatureCard
             icon="📎"
-            label="Attachments"
+            label={t('entry.attachments')}
             count={fu.with_attachment}
             total={data.total_entries}
             theme={theme}
           />
           <FeatureCard
             icon="⭐"
-            label="Favorites"
+            label={t('vaultFilter.favorites')}
             count={fu.favorites}
             total={data.total_entries}
             theme={theme}
@@ -252,17 +252,19 @@ export function AnalyticsScreen() {
         <View style={[styles.card, { backgroundColor: theme.surface }]}>
           <View style={styles.ageRow}>
             <AgeItem
-              label="Average"
+              label={t('analytics.averageAge', { days: '' }).split('{{')[0].trim() || 'Average'}
               value={`${Math.round(data.password_age.average_days)}d`}
               theme={theme}
             />
             <AgeItem
-              label="> 1 year"
+              label={`> 1 ${t('common.unknown').toLowerCase()}`}
               value={String(data.password_age.older_than_1_year)}
               theme={theme}
             />
             <AgeItem
-              label="Changed 30d"
+              label={
+                t('analytics.entriesModified', { count: '' }).split('{{')[0].trim() || 'Changed 30d'
+              }
               value={String(data.password_age.changed_last_30_days)}
               theme={theme}
             />

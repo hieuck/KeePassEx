@@ -28,12 +28,13 @@ pub fn generate_totp(
     let otp_config = entry.otp.as_ref().ok_or("Entry has no OTP configured")?;
 
     let code = otp::generate_totp(otp_config).map_err(|e| e.to_string())?;
+    let progress = code.progress();
 
     Ok(OtpCodeDto {
         code: code.code,
         remaining_seconds: code.remaining_seconds,
         period: code.period,
-        progress: code.progress(),
+        progress,
         issuer: code.issuer,
         account: code.account,
     })

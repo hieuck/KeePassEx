@@ -30,6 +30,15 @@ pub enum ServerError {
 
     #[error("Internal error: {0}")]
     Internal(String),
+
+    #[error("Anyhow error: {0}")]
+    Anyhow(String),
+}
+
+impl From<anyhow::Error> for ServerError {
+    fn from(e: anyhow::Error) -> Self {
+        ServerError::Anyhow(e.to_string())
+    }
 }
 
 impl IntoResponse for ServerError {
@@ -52,6 +61,13 @@ impl IntoResponse for ServerError {
             }
             Self::Internal(msg) => {
                 tracing::error!("Internal error: {}", msg);
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Internal error".to_string(),
+                )
+            }
+            Self::Anyhow(msg) => {
+                tracing::error!("Error: {}", msg);
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "Internal error".to_string(),

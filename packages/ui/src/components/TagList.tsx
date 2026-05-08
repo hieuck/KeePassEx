@@ -1,7 +1,7 @@
 /**
  * TagList — shared tag display component (React Native)
  */
-import React from 'react';
+
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { tokens } from '../tokens';
 

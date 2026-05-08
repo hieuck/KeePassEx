@@ -73,6 +73,18 @@ tui: ## Run TUI (pass args with ARGS="--vault path")
 build-tui: ## Build TUI for current platform
 	cargo build --release -p keepassex-tui
 
+build-server: ## Build self-hosted sync server
+	cargo build --release -p keepassex-server
+
+build-credprov: ## Build Windows Credential Provider DLL (Windows only)
+	cargo build --release -p keepassex-credprov --target x86_64-pc-windows-msvc
+
+server: ## Run self-hosted sync server (dev)
+	cargo run -p keepassex-server -- --port 8080
+
+server-docker: ## Run server with Docker Compose
+	docker compose -f apps/server/docker-compose.yml up -d
+
 extension-dev: ## Watch browser extension (Chrome)
 	pnpm --filter @keepassex/browser-extension dev:chrome
 

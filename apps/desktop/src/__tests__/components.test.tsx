@@ -1,7 +1,7 @@
 /**
  * Desktop component tests
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CustomFieldEditor } from '../components/CustomFieldEditor';
 import { SearchBar } from '../components/SearchBar';
@@ -23,9 +23,7 @@ vi.mock('@tauri-apps/api/core', () => ({
 
 describe('CustomFieldEditor', () => {
   it('renders empty state in read-only mode', () => {
-    const { container } = render(
-      <CustomFieldEditor fields={[]} onChange={() => {}} readOnly />
-    );
+    const { container } = render(<CustomFieldEditor fields={[]} onChange={() => {}} readOnly />);
     // Empty read-only should render nothing
     expect(container.firstChild).toBeNull();
   });
@@ -51,9 +49,7 @@ describe('CustomFieldEditor', () => {
 
     fireEvent.click(screen.getByText(/Add Custom Field/i));
     expect(onChange).toHaveBeenCalledWith(
-      expect.arrayContaining([
-        expect.objectContaining({ key: expect.stringContaining('Field') }),
-      ])
+      expect.arrayContaining([expect.objectContaining({ key: expect.stringContaining('Field') })])
     );
   });
 
@@ -128,51 +124,27 @@ describe('EntryRow', () => {
   };
 
   it('renders entry title and username', () => {
-    render(
-      <EntryRow
-        entry={mockEntry}
-        onPress={() => {}}
-        onCopyPassword={() => {}}
-      />
-    );
+    render(<EntryRow entry={mockEntry} onPress={() => {}} onCopyPassword={() => {}} />);
     expect(screen.getByText('GitHub')).toBeTruthy();
     expect(screen.getByText('user@example.com')).toBeTruthy();
   });
 
   it('calls onPress when clicked', () => {
     const onPress = vi.fn();
-    render(
-      <EntryRow
-        entry={mockEntry}
-        onPress={onPress}
-        onCopyPassword={() => {}}
-      />
-    );
+    render(<EntryRow entry={mockEntry} onPress={onPress} onCopyPassword={() => {}} />);
     fireEvent.click(screen.getByRole('button', { name: /GitHub/i }));
     expect(onPress).toHaveBeenCalledWith(mockEntry.uuid);
   });
 
   it('shows OTP badge when entry has OTP', () => {
     const entryWithOtp = { ...mockEntry, hasOtp: true };
-    render(
-      <EntryRow
-        entry={entryWithOtp}
-        onPress={() => {}}
-        onCopyPassword={() => {}}
-      />
-    );
+    render(<EntryRow entry={entryWithOtp} onPress={() => {}} onCopyPassword={() => {}} />);
     expect(screen.getByText('OTP')).toBeTruthy();
   });
 
   it('shows expired styling for expired entries', () => {
     const expiredEntry = { ...mockEntry, isExpired: true };
-    render(
-      <EntryRow
-        entry={expiredEntry}
-        onPress={() => {}}
-        onCopyPassword={() => {}}
-      />
-    );
+    render(<EntryRow entry={expiredEntry} onPress={() => {}} onCopyPassword={() => {}} />);
     const title = screen.getByText('GitHub');
     expect(title.className).toContain('expired');
   });

@@ -43,6 +43,11 @@ futures = "0.3"
 [dev-dependencies]
 tokio = { version = "1.42", features = ["full", "test-util"] }
 tempfile = "3.14"
+anyhow = "1.0"
+
+[[example]]
+name = "e2e_test"
+path = "examples/e2e_test.rs"
 
 [features]
 default = []

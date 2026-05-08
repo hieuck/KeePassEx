@@ -3,7 +3,7 @@
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Windows credentials retrieved from the KeePassEx vault
-#[derive(ZeroizeOnDrop)]
+#[derive(Zeroize, ZeroizeOnDrop)]
 pub struct WindowsCredential {
     /// Windows username (domain\user or just user)
     pub username: String,
@@ -32,16 +32,6 @@ impl WindowsCredential {
         match &self.domain {
             Some(d) => format!("{}\\{}", d, self.username),
             None => self.username.clone(),
-        }
-    }
-}
-
-impl Drop for WindowsCredential {
-    fn drop(&mut self) {
-        self.username.zeroize();
-        self.password.zeroize();
-        if let Some(ref mut d) = self.domain {
-            d.zeroize();
         }
     }
 }

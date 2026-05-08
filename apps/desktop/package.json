@@ -1,6 +1,6 @@
 {
   "name": "@keepassex/desktop",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "KeePassEx Desktop — Windows, macOS, Linux (Tauri v2)",
   "scripts": {
@@ -27,6 +27,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.1.1",
+    "react-i18next": "^15.1.3",
+    "i18next": "^23.16.8",
     "zustand": "^5.0.3",
     "@tanstack/react-query": "^5.62.16",
     "lucide-react": "^0.468.0",

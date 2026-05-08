@@ -1,7 +1,7 @@
 /**
  * Custom Field Editor — add/edit/delete custom fields on an entry
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export interface CustomField {

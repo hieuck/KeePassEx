@@ -1,7 +1,7 @@
 //! Settings Tauri commands — with disk persistence
 
 use crate::state::{AppSettings, AppState};
-use tauri::State;
+use tauri::{Manager, State};
 
 /// Settings file path relative to app data dir
 const SETTINGS_FILE: &str = "keepassex-settings.json";
@@ -23,18 +23,14 @@ pub async fn save_settings(
     *state.settings.write().unwrap() = settings.clone();
 
     // Persist to disk in app data directory
-    let app_dir = app
-        .path()
-        .app_data_dir()
-        .map_err(|e| e.to_string())?;
+    let app_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
 
     tokio::fs::create_dir_all(&app_dir)
         .await
         .map_err(|e| e.to_string())?;
 
     let settings_path = app_dir.join(SETTINGS_FILE);
-    let json = serde_json::to_string_pretty(&settings)
-        .map_err(|e| e.to_string())?;
+    let json = serde_json::to_string_pretty(&settings).map_err(|e| e.to_string())?;
 
     tokio::fs::write(&settings_path, json)
         .await

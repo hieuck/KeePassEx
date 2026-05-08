@@ -1,6 +1,8 @@
 //! Integration tests for keepassex-core
 
 #[cfg(test)]
+mod ai_tests;
+#[cfg(test)]
 mod analytics_tests;
 #[cfg(test)]
 mod audit_tests;

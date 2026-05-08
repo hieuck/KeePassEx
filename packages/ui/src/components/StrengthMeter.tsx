@@ -2,7 +2,7 @@
  * Password Strength Meter component
  * Shows visual strength indicator with label
  */
-import React from 'react';
+
 import { View, Text, StyleSheet } from 'react-native';
 import { tokens } from '../tokens';
 

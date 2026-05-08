@@ -1,7 +1,7 @@
 /**
  * Breach monitor page — desktop
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useBreachStore } from '../store/breach';
@@ -105,7 +105,7 @@ export function BreachPage() {
                         <p className="breach-item-title">{r.entryTitle}</p>
                         {r.breachCount > 0 && (
                           <p className="breach-item-count">
-                            {t('breach.foundInBreaches', { count: r.breachCount.toLocaleString() })}
+                            {t('breach.foundInBreaches', { count: r.breachCount })}
                           </p>
                         )}
                       </div>

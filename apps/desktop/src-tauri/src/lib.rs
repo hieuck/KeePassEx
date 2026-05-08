@@ -144,6 +144,8 @@ pub fn run() {
             commands::team_cmd::set_entry_permission,
             // Password advisor commands
             commands::password_advisor_cmd::advise_password_strength,
+            // AI password suggestion commands
+            commands::ai_cmd::suggest_passwords_cmd,
             // Field reference commands
             commands::field_references::resolve_entry_refs,
             commands::field_references::resolve_ref_string,
@@ -157,6 +159,9 @@ pub fn run() {
             commands::pqc_cmd::migrate_to_pqc,
             commands::pqc_cmd::downgrade_from_pqc,
             commands::pqc_cmd::check_pqc_status,
+            // Updater commands
+            commands::updater_cmd::check_for_updates,
+            commands::updater_cmd::get_app_version,
         ])
         .setup(|app| {
             // Load persisted settings

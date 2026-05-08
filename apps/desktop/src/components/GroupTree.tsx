@@ -1,9 +1,10 @@
 /**
- * Group tree sidebar component
+ * Group tree sidebar component — full i18n
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
+import { useTranslation } from 'react-i18next';
 import { useVaultStore } from '../store/vault';
 
 interface GroupDto {
@@ -18,25 +19,28 @@ interface GroupDto {
 
 export function GroupTree() {
   const { selectedGroupUuid, setSelectedGroup } = useVaultStore();
+  const { t } = useTranslation();
 
   const { data: groups = [] } = useQuery({
     queryKey: ['groups'],
     queryFn: () => invoke<GroupDto[]>('get_groups'),
   });
 
-  // Build tree structure
   const rootGroups = groups.filter(g => !g.parentUuid);
+  const totalEntries = groups.reduce((sum, g) => sum + g.entryCount, 0);
 
   return (
-    <div className="group-tree" role="tree" aria-label="Vault groups">
+    <div className="group-tree" role="tree" aria-label={t('group.allEntries')}>
       {/* All entries */}
       <GroupItem
-        label="All Entries"
+        label={t('group.allEntries')}
         icon="🔑"
-        count={groups.reduce((sum, g) => sum + g.entryCount, 0)}
+        count={totalEntries}
         selected={selectedGroupUuid === null}
         onSelect={() => setSelectedGroup(null)}
         depth={0}
+        collapseLabel={t('common.close')}
+        expandLabel={t('common.ok')}
       />
 
       {/* Group tree */}
@@ -48,6 +52,8 @@ export function GroupTree() {
           selectedUuid={selectedGroupUuid}
           onSelect={setSelectedGroup}
           depth={0}
+          collapseLabel={t('common.close')}
+          expandLabel={t('common.ok')}
         />
       ))}
 
@@ -66,12 +72,16 @@ function GroupNode({
   selectedUuid,
   onSelect,
   depth,
+  collapseLabel,
+  expandLabel,
 }: {
   group: GroupDto;
   allGroups: GroupDto[];
   selectedUuid: string | null;
   onSelect: (uuid: string) => void;
   depth: number;
+  collapseLabel: string;
+  expandLabel: string;
 }) {
   const [expanded, setExpanded] = useState(group.isExpanded);
   const children = allGroups.filter(g => g.parentUuid === group.uuid);
@@ -89,6 +99,8 @@ function GroupNode({
         expanded={expanded}
         hasChildren={hasChildren}
         depth={depth}
+        collapseLabel={collapseLabel}
+        expandLabel={expandLabel}
       />
 
       {expanded && hasChildren && (
@@ -101,6 +113,8 @@ function GroupNode({
               selectedUuid={selectedUuid}
               onSelect={onSelect}
               depth={depth + 1}
+              collapseLabel={collapseLabel}
+              expandLabel={expandLabel}
             />
           ))}
         </div>
@@ -119,6 +133,8 @@ function GroupItem({
   expanded,
   hasChildren,
   depth,
+  collapseLabel,
+  expandLabel,
 }: {
   label: string;
   icon: string;
@@ -129,6 +145,8 @@ function GroupItem({
   expanded?: boolean;
   hasChildren?: boolean;
   depth: number;
+  collapseLabel: string;
+  expandLabel: string;
 }) {
   return (
     <div
@@ -139,13 +157,16 @@ function GroupItem({
       tabIndex={0}
       role="button"
       aria-pressed={selected}
-      aria-label={`${label}, ${count} entries`}
+      aria-label={`${label}, ${count}`}
     >
       {hasChildren && (
         <button
           className="group-expand"
-          onClick={e => { e.stopPropagation(); onToggle?.(); }}
-          aria-label={expanded ? 'Collapse' : 'Expand'}
+          onClick={e => {
+            e.stopPropagation();
+            onToggle?.();
+          }}
+          aria-label={expanded ? collapseLabel : expandLabel}
           tabIndex={-1}
         >
           {expanded ? '▾' : '▸'}
@@ -153,10 +174,14 @@ function GroupItem({
       )}
       {!hasChildren && <span className="group-expand-placeholder" />}
 
-      <span className="group-icon" aria-hidden="true">{icon}</span>
+      <span className="group-icon" aria-hidden="true">
+        {icon}
+      </span>
       <span className="group-name">{label}</span>
       {count > 0 && (
-        <span className="group-count" aria-label={`${count} entries`}>{count}</span>
+        <span className="group-count" aria-label={String(count)}>
+          {count}
+        </span>
       )}
 
       <style>{`
@@ -217,7 +242,9 @@ function GroupItem({
 
 function getGroupIcon(iconId: number): string {
   const map: Record<number, string> = {
-    48: '📁', 49: '📂', 43: '🗑️',
+    48: '📁',
+    49: '📂',
+    43: '🗑️',
   };
   return map[iconId] ?? '📁';
 }

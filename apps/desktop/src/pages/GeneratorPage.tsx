@@ -1,8 +1,8 @@
 /**
- * Password generator page
+ * Password generator page — with AI suggestions integration
  */
-import React, { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
 import { useTranslation } from 'react-i18next';
 import { useSettingsStore } from '../store/settings';
@@ -13,6 +13,15 @@ interface GenerateResult {
   entropy: number;
   strengthScore: number;
   strengthLabel: string;
+}
+
+interface AiSuggestion {
+  password: string;
+  entropy: number;
+  strength_score: number;
+  rationale_en: string;
+  rationale_vi: string;
+  strategy: string;
 }
 
 const STRENGTH_COLORS = ['#DC2626', '#EA580C', '#D97706', '#16A34A', '#059669'];
@@ -33,6 +42,8 @@ export function GeneratorPage() {
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [copied, setCopied] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
+  const [showAiSuggestions, setShowAiSuggestions] = useState(false);
+  const [aiContext, setAiContext] = useState({ url: '', title: '', category: 'general' });
 
   const generateMutation = useMutation({
     mutationFn: () =>
@@ -61,6 +72,22 @@ export function GeneratorPage() {
       setResult(data);
       setHistory(prev => [data.password, ...prev.slice(0, 9)]);
     },
+  });
+
+  // AI suggestions query
+  const aiSuggestionsQuery = useQuery({
+    queryKey: ['ai-suggestions', aiContext],
+    queryFn: () =>
+      invoke<AiSuggestion[]>('suggest_passwords_cmd', {
+        args: {
+          url: aiContext.url,
+          title: aiContext.title,
+          category: aiContext.category,
+          count: 5,
+        },
+      }),
+    enabled: showAiSuggestions,
+    staleTime: 30_000,
   });
 
   const handleCopy = async () => {
@@ -242,7 +269,7 @@ export function GeneratorPage() {
                 <button
                   className="btn-icon"
                   onClick={() => invoke('copy_to_clipboard', { text: pw, clearAfterSeconds: 10 })}
-                  aria-label="Copy"
+                  aria-label={t('common.copy')}
                 >
                   ⎘
                 </button>
@@ -250,6 +277,98 @@ export function GeneratorPage() {
             ))}
           </div>
         )}
+
+        {/* AI Suggestions */}
+        <div className="ai-suggestions-section">
+          <div className="ai-suggestions-header">
+            <h3 className="history-title">🤖 {t('passwordAdvisor.title')}</h3>
+            <button
+              className={`btn btn-secondary btn-sm ${showAiSuggestions ? 'active' : ''}`}
+              onClick={() => setShowAiSuggestions(v => !v)}
+              aria-expanded={showAiSuggestions}
+            >
+              {showAiSuggestions ? t('common.close') : t('generator.generate')}
+            </button>
+          </div>
+
+          {showAiSuggestions && (
+            <>
+              {/* Context inputs */}
+              <div className="ai-context-row">
+                <input
+                  type="url"
+                  className="form-input"
+                  placeholder="https://example.com"
+                  value={aiContext.url}
+                  onChange={e => setAiContext(c => ({ ...c, url: e.target.value }))}
+                  aria-label={t('entry.url')}
+                />
+                <select
+                  className="form-input"
+                  value={aiContext.category}
+                  onChange={e => setAiContext(c => ({ ...c, category: e.target.value }))}
+                  aria-label={t('categorizer.title')}
+                  style={{ width: 140 }}
+                >
+                  {[
+                    'general',
+                    'banking',
+                    'email',
+                    'social',
+                    'development',
+                    'security',
+                    'shopping',
+                    'gaming',
+                  ].map(cat => (
+                    <option key={cat} value={cat}>
+                      {t(`categorizer.categories.${cat}`) || cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Suggestions list */}
+              {aiSuggestionsQuery.isLoading && <p className="ai-loading">{t('common.loading')}</p>}
+              {aiSuggestionsQuery.data?.map((s, i) => (
+                <div key={i} className="ai-suggestion-item">
+                  <div className="ai-suggestion-top">
+                    <span className="ai-suggestion-password">{s.password}</span>
+                    <div className="ai-suggestion-actions">
+                      <span className="ai-suggestion-entropy">{s.entropy.toFixed(0)}b</span>
+                      <button
+                        className="btn-icon"
+                        onClick={() => {
+                          setResult({
+                            password: s.password,
+                            entropy: s.entropy,
+                            strengthScore: s.strength_score,
+                            strengthLabel: '',
+                          });
+                          setHistory(prev => [s.password, ...prev.slice(0, 9)]);
+                        }}
+                        title={t('generator.usePassword')}
+                        aria-label={t('generator.usePassword')}
+                      >
+                        ↑
+                      </button>
+                      <button
+                        className="btn-icon"
+                        onClick={() =>
+                          invoke('copy_to_clipboard', { text: s.password, clearAfterSeconds: 10 })
+                        }
+                        aria-label={t('common.copy')}
+                      >
+                        ⎘
+                      </button>
+                    </div>
+                  </div>
+                  <p className="ai-suggestion-rationale">{s.rationale_en}</p>
+                  <span className="ai-suggestion-strategy">{s.strategy}</span>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
       </div>
 
       <style>{`
@@ -276,6 +395,19 @@ export function GeneratorPage() {
         .history-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); }
         .history-item { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); background: var(--color-bg-secondary); border-radius: var(--radius-sm); }
         .history-password { flex: 1; font-family: 'SF Mono', 'Consolas', monospace; font-size: 13px; color: var(--color-text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        /* AI Suggestions */
+        .ai-suggestions-section { display: flex; flex-direction: column; gap: var(--space-md); }
+        .ai-suggestions-header { display: flex; align-items: center; justify-content: space-between; }
+        .ai-context-row { display: flex; gap: var(--space-sm); }
+        .ai-loading { font-size: 13px; color: var(--color-text-tertiary); }
+        .ai-suggestion-item { background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); display: flex; flex-direction: column; gap: 4px; }
+        .ai-suggestion-top { display: flex; align-items: center; gap: var(--space-sm); }
+        .ai-suggestion-password { flex: 1; font-family: 'SF Mono', 'Consolas', monospace; font-size: 13px; font-weight: 600; color: var(--color-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ai-suggestion-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+        .ai-suggestion-entropy { font-size: 11px; color: var(--color-text-tertiary); padding: 0 4px; }
+        .ai-suggestion-rationale { font-size: 12px; color: var(--color-text-secondary); line-height: 1.4; }
+        .ai-suggestion-strategy { font-size: 10px; color: var(--color-text-tertiary); background: var(--color-bg-tertiary); padding: 1px 6px; border-radius: var(--radius-full); align-self: flex-start; }
+        .btn-sm { font-size: 12px; padding: 3px 10px; }
       `}</style>
     </div>
   );

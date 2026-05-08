@@ -273,7 +273,7 @@ export function SettingsScreen() {
         </View>
 
         {/* ── Tools ── */}
-        <SectionHeader title="Tools" theme={theme} />
+        <SectionHeader title={t('settings.advanced')} theme={theme} />
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           {[
             { icon: '🔄', key: 'sync.title', screen: 'Sync' as const },

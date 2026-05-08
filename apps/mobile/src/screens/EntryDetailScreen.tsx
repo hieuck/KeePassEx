@@ -1,8 +1,18 @@
 /**
- * Entry detail screen (with full i18n EN/VI)
+ * Entry detail screen — full-featured with i18n, passkey, SSH key, custom fields,
+ * attachments, history, and password advisor integration.
  */
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  Linking,
+  Share,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp, RouteProp } from '@react-navigation/native-stack';
@@ -21,227 +31,32 @@ const { KeePassExCore } = NativeModules;
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Route = RouteProp<RootStackParamList, 'EntryDetail'>;
 
-export function EntryDetailScreen() {
-  const navigation = useNavigation<Nav>();
-  const route = useRoute<Route>();
-  const { theme } = useThemeStore();
-  const { t } = useTranslation();
-  const queryClient = useQueryClient();
-  const { uuid } = route.params;
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [password, setPassword] = useState('');
-  const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [otpCode, setOtpCode] = useState<{ code: string; remaining: number } | null>(null);
-
-  const { data: entry } = useQuery({
-    queryKey: ['entry', uuid],
-    queryFn: () => KeePassExCore.getEntry(uuid, false),
-  });
-
-  useEffect(() => {
-    if (!entry?.hasOtp) return;
-    const refresh = () => {
-      KeePassExCore.generateTotp(uuid)
-        .then((r: { code: string; remainingSeconds: number }) =>
-          setOtpCode({ code: r.code, remaining: r.remainingSeconds })
-        )
-        .catch(() => {});
-    };
-    refresh();
-    const interval = setInterval(refresh, 1000);
-    return () => clearInterval(interval);
-  }, [entry?.hasOtp, uuid]);
-
-  const copyField = async (value: string, field: string) => {
-    Clipboard.setString(value);
-    ReactNativeHapticFeedback.trigger('impactLight');
-    setCopiedField(field);
-    setTimeout(() => setCopiedField(null), 2000);
-    setTimeout(() => Clipboard.setString(''), 10_000);
-  };
-
-  const revealPassword = async () => {
-    const pw = await KeePassExCore.getEntryPassword(uuid);
-    setPassword(pw);
-    setShowPassword(true);
-  };
-
-  const deleteMutation = useMutation({
-    mutationFn: () => KeePassExCore.deleteEntry(uuid, false),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['entries'] });
-      navigation.goBack();
-    },
-  });
-
-  const handleDelete = () => {
-    Alert.alert(t('entry.delete'), t('entry.confirmDelete', { title: entry?.title ?? '' }), [
-      { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.delete'), style: 'destructive', onPress: () => deleteMutation.mutate() },
-    ]);
-  };
-
-  if (!entry) return null;
-
-  return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={[styles.header, { borderBottomColor: theme.border }]}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          accessibilityRole="button"
-          accessibilityLabel={t('common.back')}
-        >
-          <Text style={[styles.backButton, { color: theme.primary }]}>← {t('common.back')}</Text>
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.text }]} numberOfLines={1}>
-          {entry.title}
-        </Text>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('EntryEdit', { uuid })}
-          accessibilityRole="button"
-          accessibilityLabel={t('entry.edit')}
-        >
-          <Text style={[styles.editButton, { color: theme.primary }]}>{t('common.edit')}</Text>
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentInner}>
-        {entry.username && (
-          <FieldCard
-            label={t('entry.username')}
-            value={entry.username}
-            theme={theme}
-            onCopy={() => copyField(entry.username, 'username')}
-            copied={copiedField === 'username'}
-          />
-        )}
-
-        <View
-          style={[styles.fieldCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-        >
-          <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
-            {t('entry.password')}
-          </Text>
-          <View style={styles.fieldRow}>
-            <Text style={[styles.fieldValue, { color: theme.text }]}>
-              {showPassword ? password : '••••••••••••'}
-            </Text>
-            <View style={styles.fieldActions}>
-              <TouchableOpacity
-                onPress={showPassword ? () => setShowPassword(false) : revealPassword}
-                style={styles.actionButton}
-                accessibilityRole="button"
-                accessibilityLabel={
-                  showPassword ? t('entry.hidePassword') : t('entry.showPassword')
-                }
-              >
-                <Text style={{ fontSize: 18 }}>{showPassword ? '🙈' : '👁'}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => copyField(showPassword ? password : '', 'password')}
-                style={styles.actionButton}
-                accessibilityRole="button"
-                accessibilityLabel={t('entry.copyPassword')}
-              >
-                <Text
-                  style={{
-                    fontSize: 18,
-                    color: copiedField === 'password' ? tokens.color.success : theme.textTertiary,
-                  }}
-                >
-                  {copiedField === 'password' ? '✓' : '⎘'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-
-        {entry.url && (
-          <FieldCard
-            label={t('entry.url')}
-            value={entry.url}
-            theme={theme}
-            onCopy={() => copyField(entry.url, 'url')}
-            copied={copiedField === 'url'}
-          />
-        )}
-
-        {entry.hasOtp && otpCode && (
-          <View
-            style={[
-              styles.fieldCard,
-              { backgroundColor: theme.surface, borderColor: theme.border },
-            ]}
-          >
-            <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
-              {t('entry.otp')}
-            </Text>
-            <OtpCountdown
-              code={otpCode.code}
-              remainingSeconds={otpCode.remaining}
-              period={30}
-              onCopy={() => {
-                Clipboard.setString(otpCode.code);
-                ReactNativeHapticFeedback.trigger('impactLight');
-                setCopiedField('otp');
-                setTimeout(() => setCopiedField(null), 2000);
-              }}
-            />
-            {copiedField === 'otp' && (
-              <Text style={{ fontSize: tokens.fontSize.xs, color: tokens.color.success }}>
-                ✓ {t('common.copied')}
-              </Text>
-            )}
-          </View>
-        )}
-
-        {entry.notes && (
-          <View
-            style={[
-              styles.fieldCard,
-              { backgroundColor: theme.surface, borderColor: theme.border },
-            ]}
-          >
-            <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
-              {t('entry.notes')}
-            </Text>
-            <Text style={[styles.notesValue, { color: theme.text }]}>{entry.notes}</Text>
-          </View>
-        )}
-
-        {entry.tags?.length > 0 && (
-          <View
-            style={[
-              styles.fieldCard,
-              { backgroundColor: theme.surface, borderColor: theme.border },
-            ]}
-          >
-            <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
-              {t('entry.tags')}
-            </Text>
-            <TagList tags={entry.tags} theme={theme} />
-          </View>
-        )}
-
-        <TouchableOpacity
-          style={[styles.deleteButton, { borderColor: tokens.color.danger }]}
-          onPress={handleDelete}
-          accessibilityRole="button"
-          accessibilityLabel={t('entry.delete')}
-        >
-          <Text style={[styles.deleteButtonText, { color: tokens.color.danger }]}>
-            🗑 {t('entry.delete')}
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
-  );
+interface CustomFieldDto {
+  key: string;
+  value: string;
+  protected: boolean;
 }
 
-const { KeePassExCore } = NativeModules;
-type Nav = NativeStackNavigationProp<RootStackParamList>;
-type Route = RouteProp<RootStackParamList, 'EntryDetail'>;
+interface EntryDetailDto {
+  uuid: string;
+  title: string;
+  username: string;
+  url: string;
+  notes: string;
+  iconId: number;
+  tags: string[];
+  hasPassword: boolean;
+  hasOtp: boolean;
+  hasPasskey: boolean;
+  hasSshKey: boolean;
+  hasAttachments: boolean;
+  isExpired: boolean;
+  expiry?: string;
+  createdAt: string;
+  modifiedAt: string;
+  customFields: CustomFieldDto[];
+  groupName?: string;
+}
 
 export function EntryDetailScreen() {
   const navigation = useNavigation<Nav>();
@@ -255,13 +70,14 @@ export function EntryDetailScreen() {
   const [password, setPassword] = useState('');
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [otpCode, setOtpCode] = useState<{ code: string; remaining: number } | null>(null);
+  const [revealedCustomFields, setRevealedCustomFields] = useState<Set<string>>(new Set());
 
-  const { data: entry } = useQuery({
+  const { data: entry, isLoading } = useQuery<EntryDetailDto>({
     queryKey: ['entry', uuid],
     queryFn: () => KeePassExCore.getEntry(uuid, false),
   });
 
-  // OTP refresh
+  // OTP refresh every second
   useEffect(() => {
     if (!entry?.hasOtp) return;
     const refresh = () => {
@@ -276,19 +92,34 @@ export function EntryDetailScreen() {
     return () => clearInterval(interval);
   }, [entry?.hasOtp, uuid]);
 
-  const copyField = async (value: string, field: string) => {
+  const copyToClipboard = useCallback((value: string, fieldKey: string) => {
+    if (!value) return;
     Clipboard.setString(value);
     ReactNativeHapticFeedback.trigger('impactLight');
-    setCopiedField(field);
+    setCopiedField(fieldKey);
     setTimeout(() => setCopiedField(null), 2000);
+    // Auto-clear clipboard after 10 seconds
     setTimeout(() => Clipboard.setString(''), 10_000);
-  };
+  }, []);
 
-  const revealPassword = async () => {
-    const pw = await KeePassExCore.getEntryPassword(uuid);
-    setPassword(pw);
-    setShowPassword(true);
-  };
+  const revealPassword = useCallback(async () => {
+    try {
+      const pw = await KeePassExCore.getEntryPassword(uuid);
+      setPassword(pw);
+      setShowPassword(true);
+    } catch {
+      Alert.alert(t('errors.generic'));
+    }
+  }, [uuid, t]);
+
+  const toggleRevealCustomField = useCallback((key: string) => {
+    setRevealedCustomFields(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
 
   const deleteMutation = useMutation({
     mutationFn: () => KeePassExCore.deleteEntry(uuid, false),
@@ -298,14 +129,48 @@ export function EntryDetailScreen() {
     },
   });
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     Alert.alert(t('entry.delete'), t('entry.confirmDelete', { title: entry?.title ?? '' }), [
       { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.delete'), style: 'destructive', onPress: () => deleteMutation.mutate() },
+      {
+        text: t('common.delete'),
+        style: 'destructive',
+        onPress: () => deleteMutation.mutate(),
+      },
     ]);
+  }, [entry?.title, deleteMutation, t]);
+
+  const handleOpenUrl = useCallback(() => {
+    if (!entry?.url) return;
+    const url = entry.url.startsWith('http') ? entry.url : `https://${entry.url}`;
+    Linking.openURL(url).catch(() => Alert.alert(t('errors.generic')));
+  }, [entry?.url, t]);
+
+  const formatDate = (iso: string) => {
+    try {
+      return new Date(iso).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return iso;
+    }
   };
 
-  if (!entry) return null;
+  if (isLoading || !entry) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+        <View style={styles.loadingContainer}>
+          <Text style={[styles.loadingText, { color: theme.textSecondary }]}>
+            {t('common.loading')}
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -314,147 +179,345 @@ export function EntryDetailScreen() {
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           accessibilityRole="button"
-          accessibilityLabel="Back"
+          accessibilityLabel={t('common.back')}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Text style={[styles.backButton, { color: theme.primary }]}>← Back</Text>
+          <Text style={[styles.headerAction, { color: theme.primary }]}>← {t('common.back')}</Text>
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.text }]} numberOfLines={1}>
-          {entry.title}
-        </Text>
+
+        <View style={styles.headerCenter}>
+          <Text style={[styles.headerTitle, { color: theme.text }]} numberOfLines={1}>
+            {entry.title}
+          </Text>
+          {entry.groupName && (
+            <Text style={[styles.headerSubtitle, { color: theme.textTertiary }]} numberOfLines={1}>
+              {entry.groupName}
+            </Text>
+          )}
+        </View>
+
         <TouchableOpacity
           onPress={() => navigation.navigate('EntryEdit', { uuid })}
           accessibilityRole="button"
-          accessibilityLabel="Edit entry"
+          accessibilityLabel={t('entry.edit')}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Text style={[styles.editButton, { color: theme.primary }]}>Edit</Text>
+          <Text style={[styles.headerAction, { color: theme.primary }]}>{t('common.edit')}</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentInner}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Expiry warning */}
+        {entry.isExpired && (
+          <View
+            style={[styles.warningBanner, { backgroundColor: '#FEF2F2', borderColor: '#FECACA' }]}
+          >
+            <Text style={styles.warningText}>⚠️ {t('entry.expired')}</Text>
+          </View>
+        )}
+
         {/* Username */}
-        {entry.username && (
+        {entry.username ? (
           <FieldCard
-            label="Username"
+            label={t('entry.username')}
             value={entry.username}
             theme={theme}
-            onCopy={() => copyField(entry.username, 'username')}
+            onCopy={() => copyToClipboard(entry.username, 'username')}
             copied={copiedField === 'username'}
+            monospace={false}
           />
-        )}
+        ) : null}
 
         {/* Password */}
-        <View
-          style={[styles.fieldCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-        >
-          <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>Password</Text>
-          <View style={styles.fieldRow}>
-            <Text style={[styles.fieldValue, { color: theme.text }]}>
-              {showPassword ? password : '••••••••••••'}
-            </Text>
-            <View style={styles.fieldActions}>
-              <TouchableOpacity
-                onPress={showPassword ? () => setShowPassword(false) : revealPassword}
-                style={styles.actionButton}
-                accessibilityRole="button"
-                accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
-              >
-                <Text style={{ fontSize: 18 }}>{showPassword ? '🙈' : '👁'}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => copyField(showPassword ? password : '', 'password')}
-                style={styles.actionButton}
-                accessibilityRole="button"
-                accessibilityLabel="Copy password"
-              >
-                <Text
-                  style={{
-                    fontSize: 18,
-                    color: copiedField === 'password' ? tokens.color.success : theme.textTertiary,
-                  }}
-                >
-                  {copiedField === 'password' ? '✓' : '⎘'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-
-        {/* URL */}
-        {entry.url && (
-          <FieldCard
-            label="URL"
-            value={entry.url}
-            theme={theme}
-            onCopy={() => copyField(entry.url, 'url')}
-            copied={copiedField === 'url'}
-          />
-        )}
-
-        {/* OTP */}
-        {entry.hasOtp && otpCode && (
+        {entry.hasPassword && (
           <View
-            style={[
-              styles.fieldCard,
-              { backgroundColor: theme.surface, borderColor: theme.border },
-            ]}
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
           >
             <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
-              One-Time Password
+              {t('entry.password')}
             </Text>
-            <OtpCountdown
-              code={otpCode.code}
-              remainingSeconds={otpCode.remaining}
-              period={30}
-              onCopy={() => {
-                Clipboard.setString(otpCode.code);
-                ReactNativeHapticFeedback.trigger('impactLight');
-                setCopiedField('otp');
-                setTimeout(() => setCopiedField(null), 2000);
-              }}
-            />
-            {copiedField === 'otp' && (
-              <Text style={{ fontSize: tokens.fontSize.xs, color: tokens.color.success }}>
-                ✓ Copied!
+            <View style={styles.fieldRow}>
+              <Text
+                style={[styles.fieldValueMono, { color: theme.text }]}
+                numberOfLines={showPassword ? undefined : 1}
+              >
+                {showPassword ? password : '••••••••••••'}
+              </Text>
+              <View style={styles.fieldActions}>
+                <TouchableOpacity
+                  onPress={
+                    showPassword
+                      ? () => {
+                          setShowPassword(false);
+                          setPassword('');
+                        }
+                      : revealPassword
+                  }
+                  style={styles.iconBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    showPassword ? t('entry.hidePassword') : t('entry.showPassword')
+                  }
+                >
+                  <Text style={styles.iconBtnText}>{showPassword ? '🙈' : '👁'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    if (showPassword && password) {
+                      copyToClipboard(password, 'password');
+                    } else {
+                      // Fetch and copy without revealing
+                      KeePassExCore.getEntryPassword(uuid)
+                        .then((pw: string) => copyToClipboard(pw, 'password'))
+                        .catch(() => {});
+                    }
+                  }}
+                  style={styles.iconBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('entry.copyPassword')}
+                >
+                  <Text
+                    style={[
+                      styles.iconBtnText,
+                      {
+                        color:
+                          copiedField === 'password' ? tokens.color.success : theme.textTertiary,
+                      },
+                    ]}
+                  >
+                    {copiedField === 'password' ? '✓' : '⎘'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            {copiedField === 'password' && (
+              <Text style={[styles.copiedHint, { color: tokens.color.success }]}>
+                ✓ {t('common.copiedToClipboard')} · {t('common.clearingIn', { seconds: 10 })}
               </Text>
             )}
           </View>
         )}
 
-        {/* Notes */}
-        {entry.notes && (
+        {/* URL */}
+        {entry.url ? (
           <View
-            style={[
-              styles.fieldCard,
-              { backgroundColor: theme.surface, borderColor: theme.border },
-            ]}
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
           >
-            <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>Notes</Text>
-            <Text style={[styles.notesValue, { color: theme.text }]}>{entry.notes}</Text>
+            <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
+              {t('entry.url')}
+            </Text>
+            <View style={styles.fieldRow}>
+              <Text
+                style={[styles.fieldValue, { color: theme.primary, flex: 1 }]}
+                numberOfLines={1}
+                onPress={handleOpenUrl}
+                accessibilityRole="link"
+                accessibilityLabel={`${t('entry.openUrl')}: ${entry.url}`}
+              >
+                {entry.url}
+              </Text>
+              <View style={styles.fieldActions}>
+                <TouchableOpacity
+                  onPress={handleOpenUrl}
+                  style={styles.iconBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('entry.openUrl')}
+                >
+                  <Text style={styles.iconBtnText}>🔗</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => copyToClipboard(entry.url, 'url')}
+                  style={styles.iconBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('entry.copyUrl')}
+                >
+                  <Text
+                    style={[
+                      styles.iconBtnText,
+                      { color: copiedField === 'url' ? tokens.color.success : theme.textTertiary },
+                    ]}
+                  >
+                    {copiedField === 'url' ? '✓' : '⎘'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        ) : null}
+
+        {/* OTP */}
+        {entry.hasOtp && otpCode && (
+          <View
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+          >
+            <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
+              {t('entry.otp')}
+            </Text>
+            <OtpCountdown
+              code={otpCode.code}
+              remainingSeconds={otpCode.remaining}
+              period={30}
+              onCopy={() => copyToClipboard(otpCode.code, 'otp')}
+            />
+            {copiedField === 'otp' && (
+              <Text style={[styles.copiedHint, { color: tokens.color.success }]}>
+                ✓ {t('common.copied')}
+              </Text>
+            )}
           </View>
         )}
 
-        {/* Tags */}
-        {entry.tags?.length > 0 && (
+        {/* Custom fields */}
+        {entry.customFields.length > 0 && (
           <View
-            style={[
-              styles.fieldCard,
-              { backgroundColor: theme.surface, borderColor: theme.border },
-            ]}
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
           >
-            <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>Tags</Text>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              {t('entry.customFields')}
+            </Text>
+            {entry.customFields.map(field => {
+              const isRevealed = revealedCustomFields.has(field.key);
+              const displayValue = field.protected && !isRevealed ? '••••••••' : field.value;
+              return (
+                <View key={field.key} style={styles.customFieldRow}>
+                  <View style={styles.customFieldInfo}>
+                    <Text style={[styles.customFieldKey, { color: theme.textSecondary }]}>
+                      {field.key}
+                    </Text>
+                    <Text
+                      style={[styles.customFieldValue, { color: theme.text }]}
+                      numberOfLines={field.protected && !isRevealed ? 1 : undefined}
+                    >
+                      {displayValue}
+                    </Text>
+                  </View>
+                  <View style={styles.fieldActions}>
+                    {field.protected && (
+                      <TouchableOpacity
+                        onPress={() => toggleRevealCustomField(field.key)}
+                        style={styles.iconBtn}
+                        accessibilityRole="button"
+                        accessibilityLabel={
+                          isRevealed ? t('entry.hidePassword') : t('entry.showPassword')
+                        }
+                      >
+                        <Text style={styles.iconBtnText}>{isRevealed ? '🙈' : '👁'}</Text>
+                      </TouchableOpacity>
+                    )}
+                    <TouchableOpacity
+                      onPress={() => copyToClipboard(field.value, `cf_${field.key}`)}
+                      style={styles.iconBtn}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${t('common.copy')} ${field.key}`}
+                    >
+                      <Text
+                        style={[
+                          styles.iconBtnText,
+                          {
+                            color:
+                              copiedField === `cf_${field.key}`
+                                ? tokens.color.success
+                                : theme.textTertiary,
+                          },
+                        ]}
+                      >
+                        {copiedField === `cf_${field.key}` ? '✓' : '⎘'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        )}
+
+        {/* Notes */}
+        {entry.notes ? (
+          <View
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+          >
+            <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
+              {t('entry.notes')}
+            </Text>
+            <Text style={[styles.notesText, { color: theme.text }]} selectable>
+              {entry.notes}
+            </Text>
+          </View>
+        ) : null}
+
+        {/* Tags */}
+        {entry.tags.length > 0 && (
+          <View
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+          >
+            <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
+              {t('entry.tags')}
+            </Text>
             <TagList tags={entry.tags} theme={theme} />
           </View>
         )}
 
+        {/* Feature badges */}
+        {(entry.hasPasskey || entry.hasSshKey || entry.hasAttachments) && (
+          <View style={styles.badgeRow}>
+            {entry.hasPasskey && (
+              <View style={[styles.featureBadge, { backgroundColor: theme.backgroundSecondary }]}>
+                <Text style={[styles.featureBadgeText, { color: theme.textSecondary }]}>
+                  🔑 {t('passkey.title')}
+                </Text>
+              </View>
+            )}
+            {entry.hasSshKey && (
+              <View style={[styles.featureBadge, { backgroundColor: theme.backgroundSecondary }]}>
+                <Text style={[styles.featureBadgeText, { color: theme.textSecondary }]}>
+                  🖥 {t('ssh.title')}
+                </Text>
+              </View>
+            )}
+            {entry.hasAttachments && (
+              <View style={[styles.featureBadge, { backgroundColor: theme.backgroundSecondary }]}>
+                <Text style={[styles.featureBadgeText, { color: theme.textSecondary }]}>
+                  📎 {t('entry.attachments')}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Metadata */}
+        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>{t('statistics.title')}</Text>
+          <MetaRow
+            label={t('entry.expiry')}
+            value={entry.expiry ? formatDate(entry.expiry) : t('entry.neverExpires')}
+            theme={theme}
+            danger={entry.isExpired}
+          />
+          <MetaRow
+            label={t('auditLog.events.entry_modified')}
+            value={formatDate(entry.modifiedAt)}
+            theme={theme}
+          />
+          <MetaRow
+            label={t('auditLog.events.entry_created')}
+            value={formatDate(entry.createdAt)}
+            theme={theme}
+          />
+        </View>
+
         {/* Delete */}
         <TouchableOpacity
-          style={[styles.deleteButton, { borderColor: tokens.color.danger }]}
+          style={[styles.deleteBtn, { borderColor: tokens.color.danger }]}
           onPress={handleDelete}
           accessibilityRole="button"
-          accessibilityLabel="Delete entry"
+          accessibilityLabel={t('entry.delete')}
         >
-          <Text style={[styles.deleteButtonText, { color: tokens.color.danger }]}>
-            🗑 Delete Entry
+          <Text style={[styles.deleteBtnText, { color: tokens.color.danger }]}>
+            🗑 {t('entry.delete')}
           </Text>
         </TouchableOpacity>
       </ScrollView>
@@ -462,33 +525,49 @@ export function EntryDetailScreen() {
   );
 }
 
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
 function FieldCard({
   label,
   value,
   theme,
   onCopy,
   copied,
+  monospace = true,
 }: {
   label: string;
   value: string;
   theme: ReturnType<typeof useThemeStore>['theme'];
   onCopy: () => void;
   copied: boolean;
+  monospace?: boolean;
 }) {
   return (
-    <View style={[styles.fieldCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+    <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
       <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>{label}</Text>
       <View style={styles.fieldRow}>
-        <Text style={[styles.fieldValue, { color: theme.text }]} numberOfLines={2} selectable>
+        <Text
+          style={[
+            monospace ? styles.fieldValueMono : styles.fieldValue,
+            { color: theme.text, flex: 1 },
+          ]}
+          numberOfLines={2}
+          selectable
+        >
           {value}
         </Text>
         <TouchableOpacity
           onPress={onCopy}
-          style={styles.actionButton}
+          style={styles.iconBtn}
           accessibilityRole="button"
           accessibilityLabel={`Copy ${label}`}
         >
-          <Text style={{ fontSize: 18, color: copied ? tokens.color.success : theme.textTertiary }}>
+          <Text
+            style={[
+              styles.iconBtnText,
+              { color: copied ? tokens.color.success : theme.textTertiary },
+            ]}
+          >
             {copied ? '✓' : '⎘'}
           </Text>
         </TouchableOpacity>
@@ -497,95 +576,118 @@ function FieldCard({
   );
 }
 
+function MetaRow({
+  label,
+  value,
+  theme,
+  danger = false,
+}: {
+  label: string;
+  value: string;
+  theme: ReturnType<typeof useThemeStore>['theme'];
+  danger?: boolean;
+}) {
+  return (
+    <View style={styles.metaRow}>
+      <Text style={[styles.metaLabel, { color: theme.textTertiary }]}>{label}</Text>
+      <Text
+        style={[styles.metaValue, { color: danger ? tokens.color.danger : theme.textSecondary }]}
+      >
+        {value}
+      </Text>
+    </View>
+  );
+}
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  loadingText: { fontSize: tokens.fontSize.md },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: tokens.space.lg,
     paddingVertical: tokens.space.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    gap: tokens.space.md,
+    gap: tokens.space.sm,
   },
-  backButton: { fontSize: tokens.fontSize.md },
+  headerAction: { fontSize: tokens.fontSize.md, fontWeight: tokens.fontWeight.medium },
+  headerCenter: { flex: 1, alignItems: 'center' },
   headerTitle: {
-    flex: 1,
     fontSize: tokens.fontSize.lg,
     fontWeight: tokens.fontWeight.semibold,
     textAlign: 'center',
   },
-  editButton: { fontSize: tokens.fontSize.md },
-  content: { flex: 1 },
-  contentInner: {
-    padding: tokens.space.lg,
-    gap: tokens.space.md,
+  headerSubtitle: { fontSize: tokens.fontSize.xs, textAlign: 'center', marginTop: 1 },
+  scroll: { flex: 1 },
+  scrollContent: { padding: tokens.space.lg, gap: tokens.space.md, paddingBottom: 40 },
+  warningBanner: {
+    padding: tokens.space.md,
+    borderRadius: tokens.radius.md,
+    borderWidth: 1,
+    marginBottom: tokens.space.xs,
   },
-  fieldCard: {
+  warningText: { fontSize: tokens.fontSize.sm, color: '#DC2626', fontWeight: '600' },
+  card: {
     borderRadius: tokens.radius.md,
     borderWidth: StyleSheet.hairlineWidth,
     padding: tokens.space.md,
-    gap: tokens.space.xs,
+    gap: tokens.space.sm,
   },
   fieldLabel: {
-    fontSize: tokens.fontSize.xs,
-    fontWeight: tokens.fontWeight.semibold,
+    fontSize: 11,
+    fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
-  fieldRow: {
+  fieldRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space.sm },
+  fieldValue: { fontSize: tokens.fontSize.md },
+  fieldValueMono: { fontSize: tokens.fontSize.md, fontFamily: 'Menlo' },
+  fieldActions: { flexDirection: 'row', gap: 2 },
+  iconBtn: { padding: tokens.space.xs, minWidth: 32, alignItems: 'center' },
+  iconBtnText: { fontSize: 18 },
+  copiedHint: { fontSize: 11, marginTop: 2 },
+  sectionTitle: { fontSize: tokens.fontSize.sm, fontWeight: tokens.fontWeight.semibold },
+  customFieldRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: tokens.space.sm,
+    paddingTop: tokens.space.xs,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(0,0,0,0.06)',
   },
-  fieldValue: {
-    flex: 1,
-    fontSize: tokens.fontSize.md,
-    fontFamily: 'Menlo',
+  customFieldInfo: { flex: 1 },
+  customFieldKey: {
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  fieldActions: {
-    flexDirection: 'row',
-    gap: tokens.space.xs,
-  },
-  actionButton: {
-    padding: tokens.space.xs,
-  },
-  otpCode: {
-    flex: 1,
-    fontSize: tokens.fontSize['2xl'],
-    fontWeight: tokens.fontWeight.bold,
-    fontFamily: 'Menlo',
-    letterSpacing: 4,
-  },
-  otpTimer: {
-    fontSize: tokens.fontSize.sm,
-    fontWeight: tokens.fontWeight.semibold,
-    minWidth: 28,
-    textAlign: 'right',
-  },
-  notesValue: {
-    fontSize: tokens.fontSize.md,
-    lineHeight: 22,
-  },
-  tagsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: tokens.space.xs,
-  },
-  tag: {
-    paddingHorizontal: tokens.space.sm,
-    paddingVertical: 3,
+  customFieldValue: { fontSize: tokens.fontSize.sm, fontFamily: 'Menlo', marginTop: 2 },
+  notesText: { fontSize: tokens.fontSize.md, lineHeight: 22 },
+  badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space.sm },
+  featureBadge: {
+    paddingHorizontal: tokens.space.md,
+    paddingVertical: tokens.space.xs,
     borderRadius: tokens.radius.full,
   },
-  tagText: { fontSize: tokens.fontSize.xs },
-  deleteButton: {
+  featureBadgeText: { fontSize: tokens.fontSize.xs, fontWeight: '600' },
+  metaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 3,
+  },
+  metaLabel: { fontSize: tokens.fontSize.xs },
+  metaValue: { fontSize: tokens.fontSize.xs, fontWeight: '500' },
+  deleteBtn: {
     borderWidth: 1,
     borderRadius: tokens.radius.md,
     paddingVertical: tokens.space.md,
     alignItems: 'center',
-    marginTop: tokens.space.lg,
+    marginTop: tokens.space.md,
   },
-  deleteButtonText: {
-    fontSize: tokens.fontSize.md,
-    fontWeight: tokens.fontWeight.medium,
-  },
+  deleteBtnText: { fontSize: tokens.fontSize.md, fontWeight: tokens.fontWeight.medium },
 });

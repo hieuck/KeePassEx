@@ -6,7 +6,7 @@
  *
  * This feature surpasses KeePass/KeePassXC which only support one vault at a time.
  */
-import React, { useCallback, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTabsStore, type VaultTab } from '../store/tabs';
 

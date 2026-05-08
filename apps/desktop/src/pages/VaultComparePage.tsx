@@ -2,7 +2,7 @@
  * Vault Compare page — diff two KDBX vaults and merge changes
  * Unique feature: no competitor has this
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';

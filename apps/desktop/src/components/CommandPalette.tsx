@@ -1,7 +1,7 @@
 /**
  * Command Palette — Cmd/Ctrl+K
  */
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
@@ -220,7 +220,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
         <div id="palette-results" className="palette-results" role="listbox">
           {filteredCommands.length > 0 && (
             <div className="palette-group">
-              <p className="palette-group-label">Commands</p>
+              <p className="palette-group-label">{t('common.search')}</p>
               {filteredCommands.map((cmd, i) => (
                 <button
                   key={cmd.id}
@@ -239,7 +239,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           {entryResults.length > 0 && (
             <div className="palette-group">
               <p className="palette-group-label">
-                {t('vault.statistics_entries', { count: '' }).trim()}
+                {t('vault.statistics_entries', { count: 0 }).replace('0', '').trim()}
               </p>
               {entryResults.map((entry, i) => {
                 const idx = filteredCommands.length + i;
@@ -270,13 +270,13 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
 
         <div className="palette-footer">
           <span>
-            <kbd>↑↓</kbd> navigate
+            <kbd>↑↓</kbd> {t('entry.sortBy')}
           </span>
           <span>
-            <kbd>↵</kbd> select
+            <kbd>↵</kbd> {t('common.ok')}
           </span>
           <span>
-            <kbd>ESC</kbd> close
+            <kbd>ESC</kbd> {t('common.close')}
           </span>
         </div>
       </div>

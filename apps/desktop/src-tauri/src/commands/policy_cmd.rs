@@ -140,10 +140,36 @@ pub fn evaluate_password_policies(
 /// Check password strength
 #[tauri::command]
 pub fn check_password_strength(password: String) -> Result<serde_json::Value, String> {
-    use keepassex_core::password_policy::{calculate_entropy, classifyPasswordStrength};
+    // Compute entropy locally (mirrors the private calculate_entropy in core)
+    let entropy = {
+        let pw = &password;
+        let mut pool = 0usize;
+        if pw.chars().any(|c| c.is_lowercase()) {
+            pool += 26;
+        }
+        if pw.chars().any(|c| c.is_uppercase()) {
+            pool += 26;
+        }
+        if pw.chars().any(|c| c.is_ascii_digit()) {
+            pool += 10;
+        }
+        if pw.chars().any(|c| !c.is_alphanumeric()) {
+            pool += 32;
+        }
+        if pool == 0 {
+            0.0f64
+        } else {
+            (pool as f64).log2() * pw.len() as f64
+        }
+    };
 
-    let entropy = calculate_entropy(&password);
-    let score = classifyPasswordStrength(entropy);
+    let score: u8 = match entropy as u32 {
+        0..=24 => 0,
+        25..=39 => 1,
+        40..=59 => 2,
+        60..=79 => 3,
+        _ => 4,
+    };
 
     let label = match score {
         0 => "Very Weak",

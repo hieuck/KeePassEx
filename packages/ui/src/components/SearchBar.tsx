@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { tokens } from '../tokens';
 
@@ -9,13 +9,20 @@ interface SearchBarProps {
   onSubmit?: (text: string) => void;
 }
 
-export function SearchBar({ placeholder = 'Search...', value, onChangeText, onSubmit }: SearchBarProps) {
+export function SearchBar({
+  placeholder = 'Search...',
+  value,
+  onChangeText,
+  onSubmit,
+}: SearchBarProps) {
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
   return (
-    <View style={[styles.container, focused && styles.containerFocused]} accessibilityRole="search">
-      <Text style={styles.icon} accessibilityHidden>🔍</Text>
+    <View style={[styles.container, focused && styles.containerFocused]} accessibilityRole="none">
+      <Text style={styles.icon} accessibilityElementsHidden>
+        🔍
+      </Text>
       <TextInput
         ref={inputRef}
         style={styles.input}

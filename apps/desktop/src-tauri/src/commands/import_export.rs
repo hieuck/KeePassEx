@@ -2,8 +2,7 @@
 
 use crate::state::AppState;
 use keepassex_core::import_export::{
-    import_into_vault, export_vault, detect_format,
-    ImportFormat, ExportFormat,
+    detect_format, export_vault, import_into_vault, ExportFormat, ImportFormat,
 };
 use serde::{Deserialize, Serialize};
 use tauri::State;
@@ -11,7 +10,7 @@ use tauri::State;
 #[derive(Debug, Deserialize)]
 pub struct ImportArgs {
     pub file_path: String,
-    pub format: Option<String>, // None = auto-detect
+    pub format: Option<String>,
     pub target_group_uuid: Option<String>,
 }
 
@@ -26,7 +25,7 @@ pub struct ImportResultDto {
 #[derive(Debug, Deserialize)]
 pub struct ExportArgs {
     pub file_path: String,
-    pub format: String, // "csv" | "json"
+    pub format: String,
 }
 
 /// Import entries from an external file
@@ -35,6 +34,7 @@ pub async fn import_vault(
     args: ImportArgs,
     state: State<'_, AppState>,
 ) -> Result<ImportResultDto, String> {
+    // Read file BEFORE acquiring state lock — avoids Send issues
     let data = tokio::fs::read(&args.file_path)
         .await
         .map_err(|e| format!("Cannot read file: {}", e))?;
@@ -53,16 +53,17 @@ pub async fn import_vault(
         detect_format(&data).ok_or("Could not detect file format")?
     };
 
+    let target = args
+        .target_group_uuid
+        .as_deref()
+        .and_then(|s| uuid::Uuid::parse_str(s).ok());
+
+    // Now acquire state lock — no more awaits after this
     let mut vault_lock = state.vault.write().unwrap();
     let open_vault = vault_lock.as_mut().ok_or("No vault open")?;
-
     if open_vault.locked {
         return Err("Vault is locked".into());
     }
-
-    let target = args.target_group_uuid
-        .as_deref()
-        .and_then(|s| uuid::Uuid::parse_str(s).ok());
 
     let result = import_into_vault(&mut open_vault.vault, &data, format, target)
         .map_err(|e| e.to_string())?;
@@ -81,23 +82,25 @@ pub async fn export_vault_cmd(
     args: ExportArgs,
     state: State<'_, AppState>,
 ) -> Result<usize, String> {
-    let vault_lock = state.vault.read().unwrap();
-    let open_vault = vault_lock.as_ref().ok_or("No vault open")?;
-
-    if open_vault.locked {
-        return Err("Vault is locked".into());
-    }
-
-    let format = match args.format.to_lowercase().as_str() {
-        "csv" => ExportFormat::CsvUnencrypted,
-        "json" => ExportFormat::JsonUnencrypted,
-        _ => return Err(format!("Unknown export format: {}", args.format)),
+    // Collect export data BEFORE any await
+    let (data, file_path) = {
+        let vault_lock = state.vault.read().unwrap();
+        let open_vault = vault_lock.as_ref().ok_or("No vault open")?;
+        if open_vault.locked {
+            return Err("Vault is locked".into());
+        }
+        let format = match args.format.to_lowercase().as_str() {
+            "csv" => ExportFormat::CsvUnencrypted,
+            "json" => ExportFormat::JsonUnencrypted,
+            _ => return Err(format!("Unknown export format: {}", args.format)),
+        };
+        let data = export_vault(&open_vault.vault, format).map_err(|e| e.to_string())?;
+        (data, args.file_path.clone())
     };
+    // State lock released — safe to await
 
-    let data = export_vault(&open_vault.vault, format).map_err(|e| e.to_string())?;
     let size = data.len();
-
-    tokio::fs::write(&args.file_path, &data)
+    tokio::fs::write(&file_path, &data)
         .await
         .map_err(|e| format!("Cannot write file: {}", e))?;
 

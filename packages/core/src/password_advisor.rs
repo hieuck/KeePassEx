@@ -13,10 +13,10 @@
 //!
 //! # Usage
 //! ```no_run
-//! use keepassex_core::password_advisor::{advise_password, PasswordAdvice};
+//! use keepassex_core::password_advisor::advise_password;
 //!
 //! let advice = advise_password("mypassword", "Chase Bank", "https://chase.com", "banking");
-//! assert!(!advice.recommendations_en.is_empty());
+//! assert!(!advice.recommendations.is_empty());
 //! ```
 
 use serde::{Deserialize, Serialize};

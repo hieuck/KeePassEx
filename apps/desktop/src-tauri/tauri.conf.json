@@ -1,6 +1,6 @@
 {
   "productName": "KeePassEx",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "identifier": "com.keepassex.app",
   "build": {
     "frontendDist": "../dist",
@@ -26,14 +26,14 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: asset: https://asset.localhost"
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: asset: https://asset.localhost https://www.google.com"
     },
     "trayIcon": {
       "iconPath": "icons/icon.png",
       "iconAsTemplate": true,
       "menuOnLeftClick": false,
       "title": "KeePassEx",
-      "tooltip": "KeePassEx"
+      "tooltip": "KeePassEx — Password Manager"
     }
   },
   "bundle": {
@@ -54,7 +54,7 @@
     "longDescription": "KeePassEx — Native cross-platform password manager. Offline-first, zero-trust, KDBX 4.x compatible.",
     "macOS": {
       "minimumSystemVersion": "12.0",
-      "entitlements": "entitlements.plist",
+      "entitlements": null,
       "signingIdentity": null,
       "providerShortName": null
     },
@@ -64,21 +64,13 @@
       "timestampUrl": ""
     },
     "linux": {
-      "deb": {
-        "depends": []
-      },
-      "rpm": {
-        "depends": []
-      },
-      "appimage": {
-        "bundleMediaFramework": false
-      }
+      "deb": { "depends": [] },
+      "rpm": { "depends": [] },
+      "appimage": { "bundleMediaFramework": false }
     }
   },
   "plugins": {
-    "shell": {
-      "open": true
-    },
+    "shell": { "open": true },
     "updater": {
       "pubkey": "",
       "endpoints": [

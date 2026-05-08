@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { tokens } from '../tokens';
 import { Button } from './Button';
@@ -14,9 +14,14 @@ interface VaultLockScreenProps {
 }
 
 export function VaultLockScreen({
-  vaultName, onUnlock, onBiometric, biometricAvailable, loading, error,
+  vaultName,
+  onUnlock,
+  onBiometric,
+  biometricAvailable,
+  loading,
+  error,
 }: VaultLockScreenProps) {
-  const [password, setPassword] = React.useState('');
+  const [password, setPassword] = useState('');
 
   return (
     <View style={styles.container}>
@@ -61,6 +66,10 @@ const styles = StyleSheet.create({
     gap: tokens.space.lg,
   },
   logo: { fontSize: 64 },
-  title: { fontSize: tokens.fontSize['2xl'], fontWeight: tokens.fontWeight.bold, color: tokens.color.gray900 },
+  title: {
+    fontSize: tokens.fontSize['2xl'],
+    fontWeight: tokens.fontWeight.bold,
+    color: tokens.color.gray900,
+  },
   vaultName: { fontSize: tokens.fontSize.md, color: tokens.color.gray500 },
 });

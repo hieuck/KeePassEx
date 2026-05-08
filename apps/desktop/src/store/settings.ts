@@ -69,7 +69,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({ settings: newSettings });
     // Apply language change live — no restart required
     if (partial.language) {
-      await changeLocale(partial.language as SupportedLocale).catch(() => {});
+      try {
+        await changeLocale(partial.language as SupportedLocale);
+      } catch {
+        // i18next may not be initialized in test environments — ignore
+      }
     }
     try {
       await invoke('save_settings', { settings: newSettings });

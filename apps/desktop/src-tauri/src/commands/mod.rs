@@ -1,5 +1,6 @@
 //! Tauri command modules
 
+pub mod ai_cmd;
 pub mod analytics_cmd;
 pub mod attachments;
 pub mod audit_log_cmd;
@@ -24,5 +25,6 @@ pub mod ssh;
 pub mod steg_cmd;
 pub mod sync_cmd;
 pub mod team_cmd;
+pub mod updater_cmd;
 pub mod vault;
 pub mod vault_compare_cmd;

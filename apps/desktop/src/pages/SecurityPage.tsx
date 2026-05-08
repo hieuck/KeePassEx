@@ -7,7 +7,7 @@
  *
  * No competitor (KeePass, KeePassXC, Keepassium, KeePass2Android) has this feature.
  */
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { invoke } from '@tauri-apps/api/core';

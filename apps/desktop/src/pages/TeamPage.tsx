@@ -4,7 +4,7 @@
  * Exclusive KeePassEx feature: No competitor has this (Bitwarden has it but cloud-only).
  * Manage team members, roles, per-entry permissions, and encrypted comments.
  */
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { invoke } from '@tauri-apps/api/core';
 

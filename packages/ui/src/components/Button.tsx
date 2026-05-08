@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { tokens } from '../tokens';
 

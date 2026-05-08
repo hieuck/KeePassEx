@@ -1,7 +1,7 @@
 /**
  * Scheduled Backup page — configure automatic vault backups
  */
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
@@ -42,11 +42,15 @@ export function BackupPage() {
     queryFn: () => invoke<BackupRecord[]>('list_backups'),
   });
 
-  useQuery({
+  const { data: backupConfig } = useQuery({
     queryKey: ['backup-config'],
     queryFn: () => invoke<BackupConfig>('get_backup_config'),
-    onSuccess: (data: BackupConfig) => setConfig(data),
   });
+
+  // Sync config from query result
+  useEffect(() => {
+    if (backupConfig) setConfig(backupConfig);
+  }, [backupConfig]);
 
   const saveMutation = useMutation({
     mutationFn: (cfg: BackupConfig) => invoke('save_backup_config', { config: cfg }),

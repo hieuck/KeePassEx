@@ -117,19 +117,25 @@ export function EmergencyAccessScreen() {
           <View
             style={[styles.formCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
           >
-            <Text style={[styles.formTitle, { color: theme.text }]}>Add Trusted Contact</Text>
+            <Text style={[styles.formTitle, { color: theme.text }]}>
+              {t('emergencyAccess.addContact')}
+            </Text>
 
-            <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>NAME</Text>
+            <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
+              {t('emergencyAccess.granteeName').toUpperCase()}
+            </Text>
             <TextInput
               style={inputStyle}
               value={form.name}
               onChangeText={v => setForm(f => ({ ...f, name: v }))}
-              placeholder="Full name"
+              placeholder="John Doe"
               placeholderTextColor={theme.textTertiary}
-              accessibilityLabel="Contact name"
+              accessibilityLabel={t('emergencyAccess.granteeName')}
             />
 
-            <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>EMAIL</Text>
+            <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
+              {t('emergencyAccess.granteeEmail').toUpperCase()}
+            </Text>
             <TextInput
               style={inputStyle}
               value={form.email}
@@ -138,10 +144,12 @@ export function EmergencyAccessScreen() {
               placeholderTextColor={theme.textTertiary}
               keyboardType="email-address"
               autoCapitalize="none"
-              accessibilityLabel="Contact email"
+              accessibilityLabel={t('emergencyAccess.granteeEmail')}
             />
 
-            <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>ACCESS LEVEL</Text>
+            <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
+              {t('emergencyAccess.accessLevel').toUpperCase()}
+            </Text>
             <View style={styles.levelRow}>
               {(['view', 'takeover'] as EmergencyAccessLevel[]).map(level => (
                 <TouchableOpacity
@@ -164,13 +172,17 @@ export function EmergencyAccessScreen() {
                       { color: form.accessLevel === level ? 'white' : theme.text },
                     ]}
                   >
-                    {level === 'view' ? 'View only' : 'Full takeover'}
+                    {level === 'view'
+                      ? t('emergencyAccess.accessLevelView')
+                      : t('emergencyAccess.accessLevelTakeover')}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
 
-            <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>WAITING PERIOD</Text>
+            <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
+              {t('emergencyAccess.waitPeriod').toUpperCase()}
+            </Text>
             <View style={styles.waitRow}>
               {[1, 3, 7, 14, 30].map(days => (
                 <TouchableOpacity
@@ -207,7 +219,9 @@ export function EmergencyAccessScreen() {
                 accessibilityRole="button"
               >
                 <Text style={styles.sendBtnText}>
-                  {addMutation.isPending ? '...' : '📧 Send Invitation'}
+                  {addMutation.isPending
+                    ? t('common.loading')
+                    : `📧 ${t('emergencyAccess.sendInvitation')}`}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -215,7 +229,9 @@ export function EmergencyAccessScreen() {
                 onPress={() => setShowForm(false)}
                 accessibilityRole="button"
               >
-                <Text style={[styles.cancelBtnText, { color: theme.text }]}>Cancel</Text>
+                <Text style={[styles.cancelBtnText, { color: theme.text }]}>
+                  {t('common.cancel')}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -224,10 +240,14 @@ export function EmergencyAccessScreen() {
         {/* Grants list */}
         {grants.length === 0 && !showForm ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>🆘</Text>
-            <Text style={[styles.emptyTitle, { color: theme.text }]}>No emergency contacts</Text>
+            <Text style={styles.emptyIcon} accessibilityHidden>
+              🆘
+            </Text>
+            <Text style={[styles.emptyTitle, { color: theme.text }]}>
+              {t('emergencyAccess.noContacts')}
+            </Text>
             <Text style={[styles.emptyDesc, { color: theme.textSecondary }]}>
-              Add trusted contacts who can access your vault in an emergency.
+              {t('emergencyAccess.noContactsDesc')}
             </Text>
           </View>
         ) : (
@@ -255,12 +275,14 @@ export function EmergencyAccessScreen() {
 
               <View style={styles.grantMeta}>
                 <Text style={[styles.grantMetaText, { color: theme.textSecondary }]}>
-                  {grant.accessLevel === 'view' ? 'View only' : 'Full takeover'} •{' '}
-                  {grant.waitTimeDays} day wait
+                  {grant.accessLevel === 'view'
+                    ? t('emergencyAccess.accessLevelView')
+                    : t('emergencyAccess.accessLevelTakeover')}{' '}
+                  · {grant.waitTimeDays} {t('emergencyAccess.waitPeriod').toLowerCase()}
                 </Text>
                 {grant.daysRemaining !== undefined && (
                   <Text style={[styles.grantMetaText, { color: tokens.color.warning }]}>
-                    ⏳ {grant.daysRemaining} days remaining
+                    ⏳ {t('emergencyAccess.daysRemaining', { days: grant.daysRemaining })}
                   </Text>
                 )}
               </View>
@@ -269,18 +291,25 @@ export function EmergencyAccessScreen() {
                 <TouchableOpacity
                   style={[styles.revokeBtn, { borderColor: tokens.color.danger }]}
                   onPress={() =>
-                    Alert.alert('Revoke Access', `Revoke access for ${grant.granteeName}?`, [
-                      { text: 'Cancel', style: 'cancel' },
-                      {
-                        text: 'Revoke',
-                        style: 'destructive',
-                        onPress: () => revokeMutation.mutate(grant.id),
-                      },
-                    ])
+                    Alert.alert(
+                      t('emergencyAccess.revoke'),
+                      t('emergencyAccess.confirmRevoke', { name: grant.granteeName }),
+                      [
+                        { text: t('common.cancel'), style: 'cancel' },
+                        {
+                          text: t('emergencyAccess.revoke'),
+                          style: 'destructive',
+                          onPress: () => revokeMutation.mutate(grant.id),
+                        },
+                      ]
+                    )
                   }
                   accessibilityRole="button"
+                  accessibilityLabel={t('emergencyAccess.revoke')}
                 >
-                  <Text style={[styles.revokeBtnText, { color: tokens.color.danger }]}>Revoke</Text>
+                  <Text style={[styles.revokeBtnText, { color: tokens.color.danger }]}>
+                    {t('emergencyAccess.revoke')}
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>

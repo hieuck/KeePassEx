@@ -1,7 +1,7 @@
 /**
  * Tag Input — add/remove tags with keyboard support
  */
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface TagInputProps {

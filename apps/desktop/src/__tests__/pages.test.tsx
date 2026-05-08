@@ -1,9 +1,9 @@
 /**
  * Desktop page tests
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock Tauri
@@ -270,7 +270,6 @@ describe('BreachPage', () => {
   });
 
   it('shows no breaches when report is clean', async () => {
-    const { useBreachStore } = vi.mocked(await import('../store/breach'));
     // Already mocked with null report — no results shown
     render(<BreachPage />, { wrapper: createWrapper() });
     expect(screen.queryByText(/breached/i)).toBeNull();

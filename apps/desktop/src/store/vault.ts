@@ -96,6 +96,8 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       path,
       name: meta.name,
       lastOpened: new Date().toISOString(),
+      hasBiometric: false,
+      requiresHardwareKey: false,
     });
   },
 

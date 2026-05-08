@@ -3,7 +3,7 @@
 use crate::state::AppState;
 use keepassex_core::crypto::pqc::PqcAlgorithm;
 use keepassex_core::vault::operations::VaultCredentials;
-use keepassex_core::vault::pqc_migration::{downgrade_from_pqc, is_pqc_vault, migrate_to_pqc};
+use keepassex_core::vault::pqc_migration::is_pqc_vault;
 use serde::Serialize;
 use tauri::State;
 

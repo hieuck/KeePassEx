@@ -2,10 +2,13 @@
 //!
 //! Provides KDBX 4.x vault management, cryptography, and all business logic.
 //! This crate is used by all platform apps (desktop, mobile, CLI, watch).
+//! 32 modules, 650+ unit tests.
 
+pub mod ai;
 pub mod analytics;
 pub mod audit_log;
 pub mod breach;
+pub mod cache;
 pub mod categorizer;
 pub mod crypto;
 pub mod decoy_vault;

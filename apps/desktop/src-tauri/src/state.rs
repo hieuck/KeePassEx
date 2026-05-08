@@ -53,6 +53,12 @@ pub struct AppSettings {
     pub enabled_policy_ids: Option<Vec<String>>,
     /// Password policies (serialized)
     pub password_policies: Option<String>,
+    /// Sync configuration (provider, credentials, etc.)
+    pub sync_config: Option<keepassex_core::sync::SyncConfig>,
+    /// Last sync timestamp (RFC3339)
+    pub last_sync_at: Option<String>,
+    /// Last sync status (success, error, no_changes, conflict)
+    pub last_sync_status: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -82,6 +88,9 @@ impl Default for AppSettings {
             backup_config: None,
             enabled_policy_ids: None,
             password_policies: None,
+            sync_config: None,
+            last_sync_at: None,
+            last_sync_status: None,
         }
     }
 }

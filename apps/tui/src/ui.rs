@@ -12,7 +12,7 @@ use crate::app::{App, AppMode, ConfirmAction, Panel};
 
 /// Main draw function — called every frame
 pub fn draw(f: &mut Frame, app: &App) {
-    let size = f.area();
+    let size = f.size();
 
     // Main layout: [sidebar(22)] | [content]
     let main_chunks = Layout::default()

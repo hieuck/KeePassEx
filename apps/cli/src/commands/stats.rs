@@ -10,7 +10,7 @@ pub fn run(vault: &Vault) -> anyhow::Result<()> {
     let with_otp = entries.iter().filter(|e| e.otp.is_some()).count();
     let with_passkey = entries.iter().filter(|e| !e.passkeys.is_empty()).count();
     let with_ssh = entries.iter().filter(|e| e.ssh_key.is_some()).count();
-    let expired = entries.iter().filter(|e| e.is_expired()).count();
+    let expired = entries.iter().filter(|e| e.check_expired()).count();
     let with_attachments = entries.iter().filter(|e| !e.attachments.is_empty()).count();
 
     println!("\n{}", "📊 Vault Statistics".bold());

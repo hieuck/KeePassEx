@@ -10,7 +10,7 @@
  * - "entries with OTP created last month"
  * - "tìm mật khẩu yếu" (Vietnamese)
  */
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface NlSearchProps {

@@ -4,7 +4,7 @@
  * Exclusive KeePassEx feature: No competitor has this.
  * Embeds encrypted vault into PNG/JPEG/MP4/AVI files using LSB steganography.
  */
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { invoke } from '@tauri-apps/api/core';
 import { open, save } from '@tauri-apps/plugin-dialog';

@@ -9,7 +9,7 @@
  * - Click to copy
  * - Accessible (ARIA live region)
  */
-import React, { useEffect, useState, useCallback } from 'react';
+import type {} from 'react';
 
 export interface OtpCode {
   code: string;
@@ -57,9 +57,7 @@ export function OtpDisplay({
   const circumference = 2 * Math.PI * radius;
   const dashOffset = circumference * (1 - progress);
 
-  const formattedCode = code.length === 6
-    ? `${code.slice(0, 3)} ${code.slice(3)}`
-    : code;
+  const formattedCode = code.length === 6 ? `${code.slice(0, 3)} ${code.slice(3)}` : code;
 
   return (
     <div

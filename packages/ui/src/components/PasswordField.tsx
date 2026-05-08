@@ -4,7 +4,7 @@
  *
  * Used in desktop EntryDetailPage and generator
  */
-import React, { useState, useCallback } from 'react';
+import { useState } from 'react';
 
 export type StrengthScore = 0 | 1 | 2 | 3 | 4;
 
@@ -69,12 +69,11 @@ export function PasswordField({
 }: PasswordFieldProps) {
   const [visible, setVisible] = useState(false);
 
-  const displayValue = readOnly
-    ? (visible ? value : '••••••••••••')
-    : value;
+  const displayValue = readOnly ? (visible ? value : '••••••••••••') : value;
 
   const color = strengthScore !== undefined ? STRENGTH_COLORS[strengthScore] : undefined;
-  const label = strengthLabel ?? (strengthScore !== undefined ? STRENGTH_LABELS[strengthScore] : undefined);
+  const label =
+    strengthLabel ?? (strengthScore !== undefined ? STRENGTH_LABELS[strengthScore] : undefined);
 
   return (
     <div className="pw-field">
@@ -150,9 +149,7 @@ export function PasswordField({
                 key={i}
                 className="pw-field__bar"
                 style={{
-                  background: i < strengthScore
-                    ? color
-                    : 'var(--color-border, #e5e7eb)',
+                  background: i < strengthScore ? color : 'var(--color-border, #e5e7eb)',
                   transition: 'background 0.2s',
                 }}
               />

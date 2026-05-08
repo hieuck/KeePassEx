@@ -1,7 +1,7 @@
 /**
  * Vault Statistics page — detailed metrics about the vault
  */
-import React from 'react';
+
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';

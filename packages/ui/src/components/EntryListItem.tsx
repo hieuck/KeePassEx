@@ -2,7 +2,7 @@
  * Entry list item component
  * Used in vault entry lists across all platforms
  */
-import React from 'react';
+
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { tokens } from '../tokens';
 

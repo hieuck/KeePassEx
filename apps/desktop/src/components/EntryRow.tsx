@@ -1,7 +1,8 @@
 /**
- * Entry row for the vault list
+ * Entry row for the vault list — full i18n
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { EntryDto } from '../store/vault';
 
 interface EntryRowProps {
@@ -11,6 +12,7 @@ interface EntryRowProps {
 }
 
 export function EntryRow({ entry, onPress, onCopyPassword }: EntryRowProps) {
+  const { t } = useTranslation();
   const [copyFeedback, setCopyFeedback] = useState(false);
 
   const handleCopy = (e: React.MouseEvent) => {
@@ -35,7 +37,7 @@ export function EntryRow({ entry, onPress, onCopyPassword }: EntryRowProps) {
       onClick={handleClick}
       onKeyDown={e => e.key === 'Enter' && onPress(entry.uuid)}
       tabIndex={0}
-      aria-label={`${entry.title}, ${entry.username}`}
+      aria-label={`${entry.title || t('common.unknown')}, ${entry.username}`}
     >
       {/* Icon */}
       <div className="entry-row-icon" aria-hidden="true">
@@ -45,7 +47,9 @@ export function EntryRow({ entry, onPress, onCopyPassword }: EntryRowProps) {
             alt=""
             width={20}
             height={20}
-            onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            onError={e => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
           />
         ) : (
           <span>{getIconEmoji(entry.iconId)}</span>
@@ -56,13 +60,29 @@ export function EntryRow({ entry, onPress, onCopyPassword }: EntryRowProps) {
       <div className="entry-row-content">
         <div className="entry-row-title-line">
           <span className={`entry-row-title ${entry.isExpired ? 'expired' : ''}`}>
-            {entry.title || '(no title)'}
+            {entry.title || `(${t('common.none')})`}
           </span>
-          <div className="entry-row-badges" aria-label="Entry features">
-            {entry.hasOtp && <span className="badge badge-otp" title="Has OTP">OTP</span>}
-            {entry.hasPasskey && <span className="badge badge-passkey" title="Has Passkey">🔑</span>}
-            {entry.hasSshKey && <span className="badge badge-ssh" title="Has SSH key">SSH</span>}
-            {entry.isExpired && <span className="badge badge-expired" title="Expired">Expired</span>}
+          <div className="entry-row-badges" aria-label={t('entry.tags')}>
+            {entry.hasOtp && (
+              <span className="badge badge-otp" title={t('otp.title')}>
+                {t('otp.title')}
+              </span>
+            )}
+            {entry.hasPasskey && (
+              <span className="badge badge-passkey" title={t('passkey.title')}>
+                🔑
+              </span>
+            )}
+            {entry.hasSshKey && (
+              <span className="badge badge-ssh" title={t('ssh.title')}>
+                SSH
+              </span>
+            )}
+            {entry.isExpired && (
+              <span className="badge badge-expired" title={t('entry.expired')}>
+                {t('entry.expired')}
+              </span>
+            )}
           </div>
         </div>
         <span className="entry-row-username">{entry.username || '—'}</span>
@@ -73,8 +93,8 @@ export function EntryRow({ entry, onPress, onCopyPassword }: EntryRowProps) {
         <button
           className={`entry-row-copy ${copyFeedback ? 'copied' : ''}`}
           onClick={handleCopy}
-          aria-label={`Copy password for ${entry.title}`}
-          title="Copy password"
+          aria-label={`${t('entry.copyPassword')} ${entry.title}`}
+          title={t('entry.copyPassword')}
           tabIndex={-1}
         >
           {copyFeedback ? '✓' : '⎘'}
@@ -174,10 +194,23 @@ export function EntryRow({ entry, onPress, onCopyPassword }: EntryRowProps) {
 
 function getIconEmoji(iconId: number): string {
   const map: Record<number, string> = {
-    0: '🔑', 1: '🌐', 2: '⚠️', 3: '🖥️', 4: '🔧',
-    5: '💻', 6: '📁', 7: '🔒', 8: '📧', 9: '💳',
-    10: '🏦', 11: '📱', 12: '🛡️', 13: '👤', 14: '🏠',
-    15: '💼', 48: '📂',
+    0: '🔑',
+    1: '🌐',
+    2: '⚠️',
+    3: '🖥️',
+    4: '🔧',
+    5: '💻',
+    6: '📁',
+    7: '🔒',
+    8: '📧',
+    9: '💳',
+    10: '🏦',
+    11: '📱',
+    12: '🛡️',
+    13: '👤',
+    14: '🏠',
+    15: '💼',
+    48: '📂',
   };
   return map[iconId] ?? '🔑';
 }

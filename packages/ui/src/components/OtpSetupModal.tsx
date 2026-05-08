@@ -2,7 +2,7 @@
  * OTP Setup Modal — shared component for adding OTP to an entry
  * Supports manual entry and QR code scanning
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, Modal, ScrollView,

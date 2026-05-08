@@ -5,7 +5,7 @@
  * Shows password strength distribution, entry timeline, most accessed entries,
  * breach history, OTP usage, and security summary.
  */
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { invoke } from '@tauri-apps/api/core';
 
@@ -178,11 +178,11 @@ export function AnalyticsPage() {
             className={`tab ${activeTab === tab ? 'tab-active' : ''}`}
             onClick={() => setActiveTab(tab)}
           >
-            {tab === 'overview' && '🏠 Overview'}
-            {tab === 'strength' && '💪 Strength'}
-            {tab === 'timeline' && '📅 Timeline'}
-            {tab === 'access' && '🔑 Access'}
-            {tab === 'features' && '⚙️ Features'}
+            {tab === 'overview' && `🏠 ${t('common.info') ?? 'Overview'}`}
+            {tab === 'strength' && `💪 ${t('analytics.passwordStrength')}`}
+            {tab === 'timeline' && `📅 ${t('analytics.entryTimeline')}`}
+            {tab === 'access' && `🔑 ${t('analytics.mostAccessed')}`}
+            {tab === 'features' && `⚙️ ${t('settings.advanced')}`}
           </button>
         ))}
       </div>
@@ -194,15 +194,15 @@ export function AnalyticsPage() {
             {/* Health Score */}
             <div
               className={`health-score-card ${healthColor}`}
-              aria-label={`Health score: ${ss.health_score}`}
+              aria-label={`${t('health.score')}: ${ss.health_score}`}
             >
               <div className="health-score-circle">
                 <span className="health-score-number">{ss.health_score}</span>
                 <span className="health-score-label">/100</span>
               </div>
               <div className="health-score-info">
-                <h3>Vault Health Score</h3>
-                <p>{analytics.total_entries} entries analyzed</p>
+                <h3>{t('health.score')}</h3>
+                <p>{t('vault.statistics_entries', { count: analytics.total_entries })}</p>
               </div>
             </div>
 
@@ -216,7 +216,7 @@ export function AnalyticsPage() {
               />
               <SummaryCard
                 icon="💪"
-                label="Strong Passwords"
+                label={`${t('analytics.strengthStrong')}+`}
                 value={`${pctStrong}%`}
                 color={pctStrong >= 70 ? 'green' : pctStrong >= 40 ? 'yellow' : 'red'}
               />
@@ -248,23 +248,26 @@ export function AnalyticsPage() {
 
             {/* Password Age */}
             <section className="analytics-section" aria-labelledby="age-label">
-              <h3 id="age-label">🕐 Password Age</h3>
+              <h3 id="age-label">🕐 {t('statistics.averageStrength')}</h3>
               <div className="age-stats">
                 <div className="age-stat">
                   <span className="age-stat-value">
                     {Math.round(analytics.password_age.average_days)}
                   </span>
-                  <span className="age-stat-label">days average</span>
+                  <span className="age-stat-label">
+                    {t('analytics.averageAge', { days: '' }).replace('{{days}}', '').trim() ||
+                      'days avg'}
+                  </span>
                 </div>
                 <div className="age-stat">
                   <span className="age-stat-value">{analytics.password_age.older_than_1_year}</span>
-                  <span className="age-stat-label">older than 1 year</span>
+                  <span className="age-stat-label">&gt; 1 year</span>
                 </div>
                 <div className="age-stat">
                   <span className="age-stat-value">
                     {analytics.password_age.changed_last_30_days}
                   </span>
-                  <span className="age-stat-label">changed last 30 days</span>
+                  <span className="age-stat-label">changed 30d</span>
                 </div>
               </div>
             </section>
@@ -307,7 +310,7 @@ export function AnalyticsPage() {
                 color="#16a34a"
               />
               <StrengthBar
-                label="No Password"
+                label={t('health.noPassword')}
                 count={sd.no_password}
                 total={analytics.total_entries}
                 color="#6b7280"
@@ -353,7 +356,7 @@ export function AnalyticsPage() {
                     <span className="entry-title">{entry.title}</span>
                     <span className="access-count">
                       {entry.access_count}{' '}
-                      {t('analytics.totalCopies', { count: '' }).replace('{{count}} ', '')}
+                      {t('analytics.totalCopies', { count: 0 }).replace('0 ', '')}
                     </span>
                   </li>
                 ))}
@@ -365,41 +368,41 @@ export function AnalyticsPage() {
         {/* FEATURES TAB */}
         {activeTab === 'features' && (
           <section className="analytics-section" aria-labelledby="features-label">
-            <h3 id="features-label">⚙️ Feature Usage</h3>
+            <h3 id="features-label">⚙️ {t('settings.advanced')}</h3>
             <div className="feature-grid">
               <FeatureCard
                 icon="🔐"
-                label="OTP / 2FA"
+                label={t('otp.title')}
                 count={analytics.feature_usage.with_otp}
                 total={analytics.total_entries}
               />
               <FeatureCard
                 icon="🗝️"
-                label="Passkeys"
+                label={t('passkey.title')}
                 count={analytics.feature_usage.with_passkey}
                 total={analytics.total_entries}
               />
               <FeatureCard
                 icon="🖥️"
-                label="SSH Keys"
+                label={t('ssh.title')}
                 count={analytics.feature_usage.with_ssh_key}
                 total={analytics.total_entries}
               />
               <FeatureCard
                 icon="📎"
-                label="Attachments"
+                label={t('entry.attachments')}
                 count={analytics.feature_usage.with_attachment}
                 total={analytics.total_entries}
               />
               <FeatureCard
                 icon="⭐"
-                label="Favorites"
+                label={t('vaultFilter.favorites')}
                 count={analytics.feature_usage.favorites}
                 total={analytics.total_entries}
               />
               <FeatureCard
                 icon="⏰"
-                label="With Expiry"
+                label={t('entry.expiry')}
                 count={analytics.feature_usage.with_expiry}
                 total={analytics.total_entries}
               />

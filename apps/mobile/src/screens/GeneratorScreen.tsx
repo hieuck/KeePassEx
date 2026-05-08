@@ -1,8 +1,10 @@
 /**
- * Password generator screen (mobile) — with full i18n EN/VI
+ * Password generator screen (mobile) — full i18n (10 languages)
+ * Supports random, passphrase, and pronounceable modes.
  */
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Switch, Slider } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Switch } from 'react-native';
+import Slider from '@react-native-community/slider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp, RouteProp } from '@react-navigation/native-stack';
@@ -19,13 +21,16 @@ const { KeePassExCore } = NativeModules;
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Route = RouteProp<RootStackParamList, 'Generator'>;
 
-const STRENGTH_COLORS = [
-  tokens.color.strengthVeryWeak,
-  tokens.color.strengthWeak,
-  tokens.color.strengthFair,
-  tokens.color.strengthStrong,
-  tokens.color.strengthVeryStrong,
-];
+type GeneratorMode = 'random' | 'passphrase' | 'pronounceable';
+
+interface GenerateResult {
+  password: string;
+  strengthScore: 0 | 1 | 2 | 3 | 4;
+  entropy: number;
+  strengthLabel: string;
+}
+
+const STRENGTH_COLORS = ['#DC2626', '#EA580C', '#D97706', '#16A34A', '#059669'];
 
 export function GeneratorScreen() {
   const navigation = useNavigation<Nav>();
@@ -34,22 +39,19 @@ export function GeneratorScreen() {
   const { t } = useTranslation();
   const onSelect = route.params?.onSelect;
 
-  const [mode, setMode] = useState<'random' | 'passphrase'>('random');
+  const [mode, setMode] = useState<GeneratorMode>('random');
   const [length, setLength] = useState(20);
   const [useUppercase, setUseUppercase] = useState(true);
   const [useLowercase, setUseLowercase] = useState(true);
   const [useDigits, setUseDigits] = useState(true);
   const [useSymbols, setUseSymbols] = useState(true);
+  const [excludeAmbiguous, setExcludeAmbiguous] = useState(false);
   const [wordCount, setWordCount] = useState(6);
-  const [result, setResult] = useState<{
-    password: string;
-    strengthScore: number;
-    entropy: number;
-  } | null>(null);
+  const [result, setResult] = useState<GenerateResult | null>(null);
   const [copied, setCopied] = useState(false);
 
   const generateMutation = useMutation({
-    mutationFn: () =>
+    mutationFn: (): Promise<GenerateResult> =>
       KeePassExCore.generatePassword({
         mode,
         length,
@@ -57,7 +59,7 @@ export function GeneratorScreen() {
         use_lowercase: useLowercase,
         use_digits: useDigits,
         use_symbols: useSymbols,
-        exclude_ambiguous: false,
+        exclude_ambiguous: excludeAmbiguous,
         exclude_chars: '',
         min_uppercase: 1,
         min_lowercase: 1,
@@ -68,28 +70,43 @@ export function GeneratorScreen() {
         capitalize_words: false,
         include_number: true,
       }),
-    onSuccess: (data: { password: string; strengthScore: number; entropy: number }) => {
+    onSuccess: data => {
       setResult(data);
       ReactNativeHapticFeedback.trigger('impactLight');
     },
   });
 
-  const handleCopy = () => {
+  const handleCopy = useCallback(() => {
     if (!result) return;
     Clipboard.setString(result.password);
     ReactNativeHapticFeedback.trigger('impactMedium');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
     setTimeout(() => Clipboard.setString(''), 10_000);
-  };
+  }, [result]);
 
-  const handleUse = () => {
+  const handleUse = useCallback(() => {
     if (!result) return;
     onSelect?.(result.password);
     navigation.goBack();
-  };
+  }, [result, onSelect, navigation]);
 
   const strengthColor = result ? STRENGTH_COLORS[result.strengthScore] : theme.border;
+  const strengthLabel = result
+    ? [
+        t('generator.strengthVeryWeak'),
+        t('generator.strengthWeak'),
+        t('generator.strengthFair'),
+        t('generator.strengthStrong'),
+        t('generator.strengthVeryStrong'),
+      ][result.strengthScore]
+    : '';
+
+  const MODES: { id: GeneratorMode; label: string }[] = [
+    { id: 'random', label: t('generator.modeRandom') },
+    { id: 'passphrase', label: t('generator.modePassphrase') },
+    { id: 'pronounceable', label: t('generator.modePronounce') },
+  ];
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -98,16 +115,17 @@ export function GeneratorScreen() {
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           accessibilityRole="button"
-          accessibilityLabel="Close"
+          accessibilityLabel={t('common.close')}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Text style={[styles.closeButton, { color: theme.primary }]}>Close</Text>
+          <Text style={[styles.headerAction, { color: theme.primary }]}>{t('common.close')}</Text>
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>Generator</Text>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>{t('generator.title')}</Text>
         <View style={{ width: 50 }} />
       </View>
 
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentInner}>
-        {/* Output */}
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+        {/* Output card */}
         <View
           style={[styles.outputCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
         >
@@ -115,8 +133,9 @@ export function GeneratorScreen() {
             style={[styles.passwordText, { color: result ? theme.text : theme.textTertiary }]}
             numberOfLines={3}
             selectable
+            accessibilityLabel={result ? result.password : t('generator.generate')}
           >
-            {result?.password ?? 'Tap Generate'}
+            {result?.password ?? t('generator.generate') + '...'}
           </Text>
 
           {result && (
@@ -126,14 +145,15 @@ export function GeneratorScreen() {
                   style={[
                     styles.strengthFill,
                     {
-                      width: `${(result.strengthScore + 1) * 20}%`,
+                      width: `${(result.strengthScore + 1) * 20}%` as `${number}%`,
                       backgroundColor: strengthColor,
                     },
                   ]}
                 />
               </View>
-              <Text style={[styles.entropyText, { color: theme.textSecondary }]}>
-                {result.entropy.toFixed(0)} bits
+              <Text style={[styles.strengthLabel, { color: strengthColor }]}>{strengthLabel}</Text>
+              <Text style={[styles.entropyText, { color: theme.textTertiary }]}>
+                {t('generator.entropy', { bits: result.entropy.toFixed(0) })}
               </Text>
             </View>
           )}
@@ -144,20 +164,23 @@ export function GeneratorScreen() {
               onPress={() => generateMutation.mutate()}
               disabled={generateMutation.isPending}
               accessibilityRole="button"
-              accessibilityLabel="Generate password"
+              accessibilityLabel={t('generator.generate')}
             >
               <Text style={styles.generateButtonText}>
-                {generateMutation.isPending ? '...' : '🎲 Generate'}
+                {generateMutation.isPending ? '...' : `🎲 ${t('generator.generate')}`}
               </Text>
             </TouchableOpacity>
 
             {result && (
               <>
                 <TouchableOpacity
-                  style={[styles.actionButton, { borderColor: theme.border }]}
+                  style={[
+                    styles.actionButton,
+                    { borderColor: copied ? tokens.color.success : theme.border },
+                  ]}
                   onPress={handleCopy}
                   accessibilityRole="button"
-                  accessibilityLabel="Copy password"
+                  accessibilityLabel={t('common.copy')}
                 >
                   <Text
                     style={[
@@ -165,7 +188,7 @@ export function GeneratorScreen() {
                       { color: copied ? tokens.color.success : theme.text },
                     ]}
                   >
-                    {copied ? '✓ Copied' : '⎘ Copy'}
+                    {copied ? `✓ ${t('common.copied')}` : `⎘ ${t('common.copy')}`}
                   </Text>
                 </TouchableOpacity>
 
@@ -174,10 +197,10 @@ export function GeneratorScreen() {
                     style={[styles.actionButton, { borderColor: theme.primary }]}
                     onPress={handleUse}
                     accessibilityRole="button"
-                    accessibilityLabel="Use this password"
+                    accessibilityLabel={t('generator.usePassword')}
                   >
                     <Text style={[styles.actionButtonText, { color: theme.primary }]}>
-                      Use This
+                      {t('generator.usePassword')}
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -187,101 +210,117 @@ export function GeneratorScreen() {
         </View>
 
         {/* Mode selector */}
-        <View style={styles.modeRow}>
-          {(['random', 'passphrase'] as const).map(m => (
+        <View style={styles.modeRow} accessibilityRole="radiogroup">
+          {MODES.map(m => (
             <TouchableOpacity
-              key={m}
+              key={m.id}
               style={[
                 styles.modeButton,
                 { borderColor: theme.border },
-                mode === m && { backgroundColor: theme.primary, borderColor: theme.primary },
+                mode === m.id && { backgroundColor: theme.primary, borderColor: theme.primary },
               ]}
-              onPress={() => setMode(m)}
+              onPress={() => setMode(m.id)}
               accessibilityRole="radio"
-              accessibilityState={{ checked: mode === m }}
+              accessibilityState={{ checked: mode === m.id }}
+              accessibilityLabel={m.label}
             >
-              <Text style={[styles.modeButtonText, { color: mode === m ? 'white' : theme.text }]}>
-                {m === 'random' ? 'Random' : 'Passphrase'}
+              <Text
+                style={[styles.modeButtonText, { color: mode === m.id ? 'white' : theme.text }]}
+              >
+                {m.label}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
         {/* Options */}
-        {mode === 'random' ? (
-          <View
-            style={[
-              styles.optionsCard,
-              { backgroundColor: theme.surface, borderColor: theme.border },
-            ]}
-          >
-            <View style={styles.sliderRow}>
-              <Text style={[styles.optionLabel, { color: theme.text }]}>Length: {length}</Text>
-              <Slider
-                style={styles.slider}
-                minimumValue={8}
-                maximumValue={128}
-                step={1}
-                value={length}
-                onValueChange={setLength}
-                minimumTrackTintColor={theme.primary}
-                maximumTrackTintColor={theme.border}
-                accessibilityLabel={`Password length: ${length}`}
-              />
-            </View>
+        <View
+          style={[
+            styles.optionsCard,
+            { backgroundColor: theme.surface, borderColor: theme.border },
+          ]}
+        >
+          {mode === 'random' || mode === 'pronounceable' ? (
+            <>
+              {/* Length slider */}
+              <View style={styles.sliderRow}>
+                <Text style={[styles.optionLabel, { color: theme.text }]}>
+                  {t('generator.length')}: {length}
+                </Text>
+                <Slider
+                  style={styles.slider}
+                  minimumValue={8}
+                  maximumValue={128}
+                  step={1}
+                  value={length}
+                  onValueChange={v => setLength(Math.round(v))}
+                  minimumTrackTintColor={theme.primary}
+                  maximumTrackTintColor={theme.border}
+                  accessibilityLabel={`${t('generator.length')}: ${length}`}
+                />
+              </View>
 
-            <ToggleOption
-              label="Uppercase (A-Z)"
-              value={useUppercase}
-              onChange={setUseUppercase}
-              theme={theme}
-            />
-            <ToggleOption
-              label="Lowercase (a-z)"
-              value={useLowercase}
-              onChange={setUseLowercase}
-              theme={theme}
-            />
-            <ToggleOption
-              label="Digits (0-9)"
-              value={useDigits}
-              onChange={setUseDigits}
-              theme={theme}
-            />
-            <ToggleOption
-              label="Symbols (!@#...)"
-              value={useSymbols}
-              onChange={setUseSymbols}
-              theme={theme}
-            />
-          </View>
-        ) : (
-          <View
-            style={[
-              styles.optionsCard,
-              { backgroundColor: theme.surface, borderColor: theme.border },
-            ]}
-          >
-            <View style={styles.sliderRow}>
-              <Text style={[styles.optionLabel, { color: theme.text }]}>Words: {wordCount}</Text>
-              <Slider
-                style={styles.slider}
-                minimumValue={3}
-                maximumValue={12}
-                step={1}
-                value={wordCount}
-                onValueChange={setWordCount}
-                minimumTrackTintColor={theme.primary}
-                maximumTrackTintColor={theme.border}
-                accessibilityLabel={`Word count: ${wordCount}`}
+              <ToggleOption
+                label={t('generator.uppercase')}
+                value={useUppercase}
+                onChange={setUseUppercase}
+                theme={theme}
               />
-            </View>
-          </View>
-        )}
+              <ToggleOption
+                label={t('generator.lowercase')}
+                value={useLowercase}
+                onChange={setUseLowercase}
+                theme={theme}
+              />
+              <ToggleOption
+                label={t('generator.digits')}
+                value={useDigits}
+                onChange={setUseDigits}
+                theme={theme}
+              />
+              {mode === 'random' && (
+                <ToggleOption
+                  label={t('generator.symbols')}
+                  value={useSymbols}
+                  onChange={setUseSymbols}
+                  theme={theme}
+                />
+              )}
+              <ToggleOption
+                label={t('generator.excludeAmbiguous')}
+                value={excludeAmbiguous}
+                onChange={setExcludeAmbiguous}
+                theme={theme}
+              />
+            </>
+          ) : (
+            <>
+              {/* Word count slider */}
+              <View style={styles.sliderRow}>
+                <Text style={[styles.optionLabel, { color: theme.text }]}>
+                  {t('generator.wordCount')}: {wordCount}
+                </Text>
+                <Slider
+                  style={styles.slider}
+                  minimumValue={3}
+                  maximumValue={12}
+                  step={1}
+                  value={wordCount}
+                  onValueChange={v => setWordCount(Math.round(v))}
+                  minimumTrackTintColor={theme.primary}
+                  maximumTrackTintColor={theme.border}
+                  accessibilityLabel={`${t('generator.wordCount')}: ${wordCount}`}
+                />
+              </View>
+            </>
+          )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function ToggleOption({
   label,
@@ -310,6 +349,8 @@ function ToggleOption({
   );
 }
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
@@ -319,18 +360,15 @@ const styles = StyleSheet.create({
     paddingVertical: tokens.space.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  closeButton: { fontSize: tokens.fontSize.md },
+  headerAction: { fontSize: tokens.fontSize.md, width: 50 },
   headerTitle: {
     flex: 1,
     fontSize: tokens.fontSize.lg,
     fontWeight: tokens.fontWeight.semibold,
     textAlign: 'center',
   },
-  content: { flex: 1 },
-  contentInner: {
-    padding: tokens.space.lg,
-    gap: tokens.space.lg,
-  },
+  scroll: { flex: 1 },
+  scrollContent: { padding: tokens.space.lg, gap: tokens.space.lg },
   outputCard: {
     borderRadius: tokens.radius.lg,
     borderWidth: 1,
@@ -348,23 +386,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: tokens.space.sm,
+    flexWrap: 'wrap',
   },
   strengthBar: {
     flex: 1,
     height: 4,
     borderRadius: tokens.radius.full,
     overflow: 'hidden',
+    minWidth: 60,
   },
-  strengthFill: {
-    height: '100%',
-    borderRadius: tokens.radius.full,
-  },
+  strengthFill: { height: '100%', borderRadius: tokens.radius.full },
+  strengthLabel: { fontSize: tokens.fontSize.xs, fontWeight: '600' },
   entropyText: { fontSize: tokens.fontSize.xs },
-  outputActions: {
-    flexDirection: 'row',
-    gap: tokens.space.sm,
-    flexWrap: 'wrap',
-  },
+  outputActions: { flexDirection: 'row', gap: tokens.space.sm, flexWrap: 'wrap' },
   generateButton: {
     paddingHorizontal: tokens.space.lg,
     paddingVertical: tokens.space.sm,
@@ -381,14 +415,8 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius.md,
     borderWidth: 1,
   },
-  actionButtonText: {
-    fontWeight: tokens.fontWeight.medium,
-    fontSize: tokens.fontSize.sm,
-  },
-  modeRow: {
-    flexDirection: 'row',
-    gap: tokens.space.sm,
-  },
+  actionButtonText: { fontWeight: tokens.fontWeight.medium, fontSize: tokens.fontSize.sm },
+  modeRow: { flexDirection: 'row', gap: tokens.space.sm },
   modeButton: {
     flex: 1,
     paddingVertical: tokens.space.sm,
@@ -396,10 +424,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
   },
-  modeButtonText: {
-    fontSize: tokens.fontSize.sm,
-    fontWeight: tokens.fontWeight.medium,
-  },
+  modeButtonText: { fontSize: tokens.fontSize.xs, fontWeight: tokens.fontWeight.medium },
   optionsCard: {
     borderRadius: tokens.radius.lg,
     borderWidth: 1,
@@ -412,6 +437,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingVertical: 2,
   },
-  optionLabel: { fontSize: tokens.fontSize.md },
+  optionLabel: { fontSize: tokens.fontSize.md, flex: 1 },
 });

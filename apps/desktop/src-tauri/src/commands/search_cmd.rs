@@ -54,7 +54,7 @@ pub fn nl_search(state: State<'_, AppState>, query: String) -> Result<Vec<Search
                 group_name,
                 has_otp: entry.otp.is_some(),
                 has_passkey: !entry.passkeys.is_empty(),
-                is_expired: entry.is_expired(),
+                is_expired: entry.check_expired(),
                 is_favorite: entry.tags.contains(&"favorite".to_string()),
                 modified_at: entry.modified_at.to_rfc3339(),
                 relevance_score: calculate_relevance(entry, &query),
@@ -123,7 +123,7 @@ fn apply_filter(
     }
 
     // Expired filter
-    if filter.expired_only && !entry.is_expired() {
+    if filter.expired_only && !entry.check_expired() {
         return false;
     }
 

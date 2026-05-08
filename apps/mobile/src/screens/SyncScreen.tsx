@@ -1,6 +1,6 @@
 /**
- * Sync screen — mobile (with full i18n, all 10 languages)
- * Supports KeePassEx Server (self-hosted, zero-knowledge) + cloud providers
+ * Sync screen — mobile, full i18n (10 languages)
+ * Supports KeePassEx Server (self-hosted, zero-knowledge) + 6 cloud providers
  */
 import React, { useState } from 'react';
 import {
@@ -31,19 +31,20 @@ type Provider =
   | 'webdav'
   | 'local';
 
-const PROVIDERS: { value: Provider; label: string; icon: string; featured?: boolean }[] = [
-  { value: 'keepassex_server', label: 'KeePassEx Server', icon: '🔐', featured: true },
-  { value: 'icloud', label: 'iCloud Drive', icon: '☁️' },
-  { value: 'gdrive', label: 'Google Drive', icon: '🔵' },
-  { value: 'onedrive', label: 'OneDrive', icon: '🔷' },
-  { value: 'dropbox', label: 'Dropbox', icon: '📦' },
-  { value: 'webdav', label: 'WebDAV', icon: '🌐' },
-  { value: 'local', label: 'Local Folder', icon: '📁' },
+const PROVIDERS: { value: Provider; labelKey: string; icon: string; featured?: boolean }[] = [
+  { value: 'keepassex_server', labelKey: 'server.title', icon: '🔐', featured: true },
+  { value: 'icloud', labelKey: 'sync.providers.icloud', icon: '☁️' },
+  { value: 'gdrive', labelKey: 'sync.providers.gdrive', icon: '🔵' },
+  { value: 'onedrive', labelKey: 'sync.providers.onedrive', icon: '🔷' },
+  { value: 'dropbox', labelKey: 'sync.providers.dropbox', icon: '📦' },
+  { value: 'webdav', labelKey: 'sync.providers.webdav', icon: '🌐' },
+  { value: 'local', labelKey: 'sync.providers.local', icon: '📁' },
 ];
 
 export function SyncScreen() {
   const { theme } = useThemeStore();
   const { t } = useTranslation();
+
   const [provider, setProvider] = useState<Provider>('keepassex_server');
   const [remotePath, setRemotePath] = useState('');
   const [autoSync, setAutoSync] = useState(false);
@@ -78,7 +79,7 @@ export function SyncScreen() {
       });
 
       if (!response.ok) {
-        const err = await response.json().catch(() => ({ error: 'Unknown error' }));
+        const err = await response.json().catch(() => ({ error: t('errors.generic') }));
         throw new Error(err.error || `HTTP ${response.status}`);
       }
 
@@ -86,7 +87,7 @@ export function SyncScreen() {
       setServerToken(data.access_token);
       Alert.alert('✅', t('server.connected', { url: serverUrl }));
     } catch (e: unknown) {
-      Alert.alert('❌', e instanceof Error ? e.message : String(e));
+      Alert.alert(t('common.error'), e instanceof Error ? e.message : t('errors.generic'));
     } finally {
       setServerAuthLoading(false);
     }
@@ -101,6 +102,7 @@ export function SyncScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      {/* Header */}
       <View style={[styles.header, { borderBottomColor: theme.border }]}>
         <Text style={[styles.headerTitle, { color: theme.text }]}>🔄 {t('sync.title')}</Text>
         <TouchableOpacity
@@ -116,8 +118,8 @@ export function SyncScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentInner}>
-        {/* Provider */}
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+        {/* Provider selection */}
         <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
           {t('sync.provider').toUpperCase()}
         </Text>
@@ -129,10 +131,13 @@ export function SyncScreen() {
                 onPress={() => setProvider(p.value)}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: provider === p.value }}
+                accessibilityLabel={t(p.labelKey)}
               >
-                <Text style={styles.providerIcon}>{p.icon}</Text>
+                <Text style={styles.providerIcon} accessibilityHidden>
+                  {p.icon}
+                </Text>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.providerLabel, { color: theme.text }]}>{p.label}</Text>
+                  <Text style={[styles.providerLabel, { color: theme.text }]}>{t(p.labelKey)}</Text>
                   {p.featured && (
                     <Text style={[styles.providerBadge, { color: theme.primary }]}>
                       {t('server.selfHosted')}
@@ -161,6 +166,7 @@ export function SyncScreen() {
             <View
               style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
             >
+              {/* Server URL */}
               <View style={styles.fieldRow}>
                 <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
                   {t('server.serverUrl')}
@@ -174,6 +180,7 @@ export function SyncScreen() {
                   autoCapitalize="none"
                   autoCorrect={false}
                   keyboardType="url"
+                  accessibilityLabel={t('server.serverUrl')}
                 />
               </View>
 
@@ -181,40 +188,30 @@ export function SyncScreen() {
                 <>
                   {/* Auth mode tabs */}
                   <View style={[styles.authTabs, { borderColor: theme.border }]}>
-                    <TouchableOpacity
-                      style={[
-                        styles.authTab,
-                        serverAuthMode === 'login' && { backgroundColor: theme.primary },
-                      ]}
-                      onPress={() => setServerAuthMode('login')}
-                    >
-                      <Text
+                    {(['login', 'register'] as const).map(mode => (
+                      <TouchableOpacity
+                        key={mode}
                         style={[
-                          styles.authTabText,
-                          { color: serverAuthMode === 'login' ? 'white' : theme.textSecondary },
+                          styles.authTab,
+                          serverAuthMode === mode && { backgroundColor: theme.primary },
                         ]}
+                        onPress={() => setServerAuthMode(mode)}
+                        accessibilityRole="tab"
+                        accessibilityState={{ selected: serverAuthMode === mode }}
                       >
-                        {t('server.login')}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[
-                        styles.authTab,
-                        serverAuthMode === 'register' && { backgroundColor: theme.primary },
-                      ]}
-                      onPress={() => setServerAuthMode('register')}
-                    >
-                      <Text
-                        style={[
-                          styles.authTabText,
-                          { color: serverAuthMode === 'register' ? 'white' : theme.textSecondary },
-                        ]}
-                      >
-                        {t('server.register')}
-                      </Text>
-                    </TouchableOpacity>
+                        <Text
+                          style={[
+                            styles.authTabText,
+                            { color: serverAuthMode === mode ? 'white' : theme.textSecondary },
+                          ]}
+                        >
+                          {t(`server.${mode}`)}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
                   </View>
 
+                  {/* Email */}
                   <View style={styles.fieldRow}>
                     <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
                       {t('server.email')}
@@ -227,9 +224,11 @@ export function SyncScreen() {
                       placeholderTextColor={theme.textTertiary}
                       autoCapitalize="none"
                       keyboardType="email-address"
+                      accessibilityLabel={t('server.email')}
                     />
                   </View>
 
+                  {/* Password */}
                   <View style={styles.fieldRow}>
                     <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
                       {t('server.password')}
@@ -241,30 +240,34 @@ export function SyncScreen() {
                       placeholder="••••••••"
                       placeholderTextColor={theme.textTertiary}
                       secureTextEntry
+                      autoCapitalize="none"
+                      accessibilityLabel={t('server.password')}
                     />
                   </View>
 
                   <TouchableOpacity
                     style={[
                       styles.authBtn,
-                      { backgroundColor: theme.primary, opacity: serverAuthLoading ? 0.7 : 1 },
+                      { backgroundColor: theme.primary },
+                      (serverAuthLoading || !serverUrl || !serverEmail || !serverPassword) &&
+                        styles.disabled,
                     ]}
                     onPress={handleServerAuth}
                     disabled={serverAuthLoading || !serverUrl || !serverEmail || !serverPassword}
                     accessibilityRole="button"
+                    accessibilityLabel={t(`server.${serverAuthMode}`)}
                   >
                     <Text style={styles.authBtnText}>
-                      {serverAuthLoading
-                        ? t('common.loading')
-                        : serverAuthMode === 'login'
-                          ? t('server.login')
-                          : t('server.register')}
+                      {serverAuthLoading ? t('common.loading') : t(`server.${serverAuthMode}`)}
                     </Text>
                   </TouchableOpacity>
                 </>
               ) : (
+                /* Connected state */
                 <View style={[styles.connectedCard, { backgroundColor: 'rgba(16,185,129,0.08)' }]}>
-                  <Text style={styles.connectedIcon}>✅</Text>
+                  <Text style={styles.connectedIcon} accessibilityHidden>
+                    ✅
+                  </Text>
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.connectedLabel, { color: theme.text }]}>
                       {t('server.connected', { url: serverUrl })}
@@ -279,8 +282,10 @@ export function SyncScreen() {
                       setServerEmail('');
                       setServerPassword('');
                     }}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('server.disconnect')}
                   >
-                    <Text style={[styles.disconnectBtn, { color: theme.danger ?? '#ef4444' }]}>
+                    <Text style={[styles.disconnectBtn, { color: '#ef4444' }]}>
                       {t('server.disconnect')}
                     </Text>
                   </TouchableOpacity>
@@ -309,13 +314,13 @@ export function SyncScreen() {
           </>
         )}
 
-        {/* Auto sync */}
+        {/* Options */}
         <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
           {t('settings.advanced').toUpperCase()}
         </Text>
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <View style={styles.toggleRow}>
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={[styles.toggleLabel, { color: theme.text }]}>{t('sync.autoSync')}</Text>
               <Text style={[styles.toggleDesc, { color: theme.textSecondary }]}>
                 {t('sync.syncInterval')}
@@ -327,14 +332,18 @@ export function SyncScreen() {
               trackColor={{ false: theme.border, true: theme.primary }}
               thumbColor="white"
               accessibilityLabel={t('sync.autoSync')}
+              accessibilityRole="switch"
+              accessibilityState={{ checked: autoSync }}
             />
           </View>
         </View>
 
+        {/* Save */}
         <TouchableOpacity
           style={[styles.saveBtn, { backgroundColor: theme.primary }]}
           onPress={() => Alert.alert('✅', t('sync.syncSuccess'))}
           accessibilityRole="button"
+          accessibilityLabel={t('common.save')}
         >
           <Text style={styles.saveBtnText}>💾 {t('common.save')}</Text>
         </TouchableOpacity>
@@ -342,140 +351,8 @@ export function SyncScreen() {
     </SafeAreaView>
   );
 }
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  Switch,
-  StyleSheet,
-  Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useMutation } from '@tanstack/react-query';
-import { NativeModules } from 'react-native';
-import { useThemeStore } from '../store/theme';
-import { useTranslation } from '../store/i18n';
-import { tokens } from '@keepassex/ui';
 
-const { KeePassExCore } = NativeModules;
-
-type Provider = 'local' | 'webdav' | 'icloud' | 'gdrive' | 'onedrive' | 'dropbox';
-
-const PROVIDERS: { value: Provider; label: string; icon: string }[] = [
-  { value: 'icloud', label: 'iCloud Drive', icon: '☁️' },
-  { value: 'gdrive', label: 'Google Drive', icon: '🔵' },
-  { value: 'onedrive', label: 'OneDrive', icon: '🔷' },
-  { value: 'dropbox', label: 'Dropbox', icon: '📦' },
-  { value: 'webdav', label: 'WebDAV', icon: '🌐' },
-  { value: 'local', label: 'Local Folder', icon: '📁' },
-];
-
-export function SyncScreen() {
-  const { theme } = useThemeStore();
-  const { t } = useTranslation();
-  const [provider, setProvider] = useState<Provider>('icloud');
-  const [remotePath, setRemotePath] = useState('');
-  const [autoSync, setAutoSync] = useState(false);
-
-  const syncMutation = useMutation({
-    mutationFn: () => KeePassExCore.syncNow(),
-    onSuccess: () => Alert.alert('✅', t('sync.syncSuccess')),
-    onError: (e: Error) => Alert.alert('❌', t('sync.syncError', { error: e.message })),
-  });
-
-  const inputStyle = [
-    styles.input,
-    { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text },
-  ];
-
-  return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={[styles.header, { borderBottomColor: theme.border }]}>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>🔄 Sync</Text>
-        <TouchableOpacity
-          style={[styles.syncBtn, { backgroundColor: theme.primary }]}
-          onPress={() => syncMutation.mutate()}
-          disabled={syncMutation.isPending}
-          accessibilityRole="button"
-          accessibilityLabel="Sync now"
-        >
-          <Text style={styles.syncBtnText}>{syncMutation.isPending ? '...' : 'Sync Now'}</Text>
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentInner}>
-        {/* Provider */}
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>PROVIDER</Text>
-        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          {PROVIDERS.map((p, i) => (
-            <React.Fragment key={p.value}>
-              <TouchableOpacity
-                style={styles.providerRow}
-                onPress={() => setProvider(p.value)}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: provider === p.value }}
-              >
-                <Text style={styles.providerIcon}>{p.icon}</Text>
-                <Text style={[styles.providerLabel, { color: theme.text }]}>{p.label}</Text>
-                <View style={[styles.radio, { borderColor: theme.primary }]}>
-                  {provider === p.value && (
-                    <View style={[styles.radioDot, { backgroundColor: theme.primary }]} />
-                  )}
-                </View>
-              </TouchableOpacity>
-              {i < PROVIDERS.length - 1 && (
-                <View style={[styles.divider, { backgroundColor: theme.border }]} />
-              )}
-            </React.Fragment>
-          ))}
-        </View>
-
-        {/* Remote path */}
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>REMOTE PATH</Text>
-        <TextInput
-          style={inputStyle}
-          value={remotePath}
-          onChangeText={setRemotePath}
-          placeholder="/keepassex/vault.kdbx"
-          placeholderTextColor={theme.textTertiary}
-          autoCapitalize="none"
-          autoCorrect={false}
-          accessibilityLabel="Remote path"
-        />
-
-        {/* Auto sync */}
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>OPTIONS</Text>
-        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <View style={styles.toggleRow}>
-            <View>
-              <Text style={[styles.toggleLabel, { color: theme.text }]}>Auto Sync</Text>
-              <Text style={[styles.toggleDesc, { color: theme.textSecondary }]}>
-                Sync when vault opens and closes
-              </Text>
-            </View>
-            <Switch
-              value={autoSync}
-              onValueChange={setAutoSync}
-              trackColor={{ false: theme.border, true: theme.primary }}
-              thumbColor="white"
-              accessibilityLabel="Auto sync"
-            />
-          </View>
-        </View>
-
-        <TouchableOpacity
-          style={[styles.saveBtn, { backgroundColor: theme.primary }]}
-          onPress={() => Alert.alert('Saved', 'Sync configuration saved')}
-          accessibilityRole="button"
-        >
-          <Text style={styles.saveBtnText}>💾 Save Configuration</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -498,8 +375,8 @@ const styles = StyleSheet.create({
     fontWeight: tokens.fontWeight.semibold,
     fontSize: tokens.fontSize.sm,
   },
-  content: { flex: 1 },
-  contentInner: { padding: tokens.space.lg, gap: tokens.space.sm },
+  scroll: { flex: 1 },
+  scrollContent: { padding: tokens.space.lg, gap: tokens.space.sm },
   sectionTitle: {
     fontSize: 11,
     fontWeight: '600',
@@ -540,7 +417,12 @@ const styles = StyleSheet.create({
     fontSize: tokens.fontSize.md,
   },
   fieldRow: { padding: tokens.space.md, gap: tokens.space.xs },
-  fieldLabel: { fontSize: 11, fontWeight: '600', letterSpacing: 0.5, textTransform: 'uppercase' },
+  fieldLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
   fieldInput: { marginTop: 4 },
   authTabs: {
     flexDirection: 'row',
@@ -592,4 +474,5 @@ const styles = StyleSheet.create({
     fontWeight: tokens.fontWeight.semibold,
     fontSize: tokens.fontSize.md,
   },
+  disabled: { opacity: 0.5 },
 });

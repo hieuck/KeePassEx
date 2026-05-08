@@ -2,7 +2,7 @@
  * Welcome page — shown when no vault is open
  * Shows recent vaults and open/create actions
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { open, save } from '@tauri-apps/plugin-dialog';
 import { useTranslation } from 'react-i18next';
 import { useVaultStore } from '../store/vault';

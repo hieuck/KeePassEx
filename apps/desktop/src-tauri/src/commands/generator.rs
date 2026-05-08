@@ -1,8 +1,8 @@
 //! Password generator Tauri commands
 
 use keepassex_core::{
-    generator::{PasswordGenerator, PasswordStrength},
-    types::{PasswordGeneratorConfig, GeneratorMode, WordList},
+    generator::PasswordGenerator,
+    types::{GeneratorMode, PasswordGeneratorConfig, WordList},
 };
 use serde::{Deserialize, Serialize};
 

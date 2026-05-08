@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, type TextInputProps } from 'react-native';
 import { tokens } from '../tokens';
 

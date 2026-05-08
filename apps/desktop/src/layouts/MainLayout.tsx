@@ -1,7 +1,7 @@
 /**
  * Main application layout — sidebar + content
  */
-import React from 'react';
+
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useVaultStore } from '../store/vault';

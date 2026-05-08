@@ -6,6 +6,15 @@ authors.workspace = true
 license.workspace = true
 description = "KeePassEx Desktop — Tauri v2 backend"
 
+[package.metadata.bundle]
+name = "KeePassEx"
+identifier = "com.keepassex.app"
+icon = ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"]
+copyright = "© 2025 KeePassEx Team"
+category = "Utility"
+short_description = "Secure password manager"
+long_description = "KeePassEx — Native cross-platform password manager"
+
 [lib]
 name = "keepassex_desktop_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
@@ -37,6 +46,7 @@ uuid.workspace = true
 chrono.workspace = true
 zeroize.workspace = true
 base64.workspace = true
+reqwest.workspace = true
 
 [features]
 default = ["custom-protocol"]

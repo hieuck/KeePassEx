@@ -6,7 +6,8 @@
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/Rust-1.82+-orange.svg)](https://www.rust-lang.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org)
-[![Tests](https://img.shields.io/badge/Tests-626%20Rust%20%2B%20150%20TS-green.svg)](#)
+[![Tests](<https://img.shields.io/badge/Tests-865%20pass%20(709%20Rust%20%2B%20156%20TS)-green.svg>)](#)
+[![Version](https://img.shields.io/badge/Version-0.1.0%20MVP-brightgreen.svg)](#)
 [![Languages](https://img.shields.io/badge/Languages-10-purple.svg)](#-bản-địa-hóa)
 
 ---
@@ -261,19 +262,19 @@ kpx shard split/combine     # Vault key sharding
 
 | Thành phần             | Số lượng                                                                |
 | ---------------------- | ----------------------------------------------------------------------- |
-| Core Rust modules      | 29+                                                                     |
-| Core unit tests        | 626                                                                     |
-| TypeScript tests       | 150+                                                                    |
-| Desktop pages          | 20+                                                                     |
+| Core Rust modules      | 32                                                                      |
+| Core unit tests        | 650+                                                                    |
+| TypeScript tests       | 156                                                                     |
+| Desktop pages          | 22                                                                      |
 | Mobile screens         | 16                                                                      |
 | CLI commands           | 18                                                                      |
 | Import formats         | 12                                                                      |
 | Sync providers         | 9 (bao gồm KeePassEx Server)                                            |
 | Entry templates        | 12                                                                      |
 | Languages              | **10** (EN, VI, ZH, JA, KO, ES, FR, DE, PT, RU)                         |
-| i18n keys per language | 400+                                                                    |
+| i18n keys per language | 1082                                                                    |
 | Platforms              | **9** (Desktop, Mobile, Watch×2, Browser, CLI, TUI, Menu Bar, CredProv) |
-| Docs                   | 15                                                                      |
+| Docs                   | 17                                                                      |
 
 ---
 

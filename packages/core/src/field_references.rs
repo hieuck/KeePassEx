@@ -140,8 +140,15 @@ pub fn resolve_references(
             if let Some(field_ref) = parse_ref(token) {
                 match resolve_single_ref(&field_ref, entries, depth) {
                     Ok(resolved) => result.push_str(&resolved),
-                    Err(_) => {
-                        // Leave unresolved reference as-is (KeePass behavior)
+                    Err(e) => {
+                        // Propagate circular reference errors
+                        if matches!(e, KeePassExError::Other(_)) {
+                            let msg = e.to_string();
+                            if msg.contains("Circular") || msg.contains("circular") {
+                                return Err(e);
+                            }
+                        }
+                        // Other errors (entry not found) — leave as-is (KeePass behavior)
                         result.push_str(token);
                     }
                 }

@@ -27,11 +27,11 @@ All features are implemented. When adding code, assume these exist and work:
 - KDBX 4.x read/write, TOTP/HOTP, Passkeys, SSH Agent
 - Breach monitoring (HIBP k-anonymity), Emergency Access
 - Plugin system (WASM sandbox)
-- Import: Bitwarden, LastPass, 1Password, Chrome, Firefox, Dashlane, NordPass, Enpass, RoboForm, CSV
+- Import: Bitwarden, LastPass, 1Password, Chrome, Firefox, Dashlane, NordPass, Enpass, RoboForm, KeePass 1.x, CSV (12 formats)
 - Export: KDBX, CSV, JSON, HTML
 - Sync: WebDAV, Google Drive, OneDrive, Dropbox, S3, SFTP, iCloud, Local, **KeePassEx Server** (self-hosted, zero-knowledge)
 - iOS/Android AutoFill and Widgets
-- Steganography (vault in PNG/JPEG/MP4), Shamir secret sharing (M-of-N)
+- Steganography (vault in PNG/JPEG/MP4/AVI), Shamir secret sharing (M-of-N)
 - Entry field references `{REF:F@I:uuid}` — KeePass-compatible
 - Favicon auto-fetch — privacy-safe (domain only, never full URL)
 - Multi-vault tabs — multiple vaults open simultaneously
@@ -39,10 +39,11 @@ All features are implemented. When adding code, assume these exist and work:
 - Mobile Secure Enclave (iOS) + StrongBox (Android) — hardware-backed biometric key storage
 - TUI with vim keybindings, ZKPV, smart categorizer, natural language search
 - Password rotation engine, context-aware password advisor
+- AI password suggestions (on-device, 5 strategies, bilingual rationale)
 
 ## Languages
 
-10 languages fully implemented with ~400 keys each, all in parity:
+10 languages fully implemented with ~1082 keys each, all in parity:
 `en` (English), `vi` (Tiếng Việt), `zh` (简体中文), `ja` (日本語), `ko` (한국어), `es` (Español), `fr` (Français), `de` (Deutsch), `pt` (Português), `ru` (Русский)
 
 ## New Platforms (beyond original scope)

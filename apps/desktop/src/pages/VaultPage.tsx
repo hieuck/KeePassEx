@@ -2,7 +2,7 @@
  * Main vault page — entry list with group tree, bulk operations, keyboard shortcuts,
  * and entry preview pane (split view)
  */
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
@@ -273,7 +273,7 @@ export function VaultPage() {
           <span className="entry-count" aria-live="polite">
             {filteredEntries.length}
             {filteredEntries.length !== entries.length && `/${entries.length}`}{' '}
-            {t('vault.statistics_entries', { count: '' }).trim()}
+            {t('vault.statistics_entries', { count: 0 }).replace('0', '').trim()}
             {selectedUuids.size > 0 && ` · ${t('bulk.selected', { count: selectedUuids.size })}`}
           </span>
 
@@ -292,7 +292,7 @@ export function VaultPage() {
             className="btn btn-primary"
             onClick={() => navigate('/vault/entry/new')}
             aria-label={`${t('entry.new')} (N)`}
-            title="N"
+            title="N (new entry)"
           >
             + {t('entry.new')}
           </button>

@@ -82,7 +82,10 @@ describe('useVaultStore', () => {
     vi.mocked(invoke).mockResolvedValueOnce(undefined);
 
     // Set some state first
-    useVaultStore.setState({ isOpen: true, meta: { name: 'Test', description: '', entryCount: 1, groupCount: 1, path: '/test.kdbx' } });
+    useVaultStore.setState({
+      isOpen: true,
+      meta: { name: 'Test', description: '', entryCount: 1, groupCount: 1, path: '/test.kdbx' },
+    });
 
     await useVaultStore.getState().closeVault();
 
@@ -112,6 +115,7 @@ describe('useSettingsStore', () => {
         browserIntegration: true,
         sshAgentEnabled: false,
         defaultAutoTypeSequence: '{USERNAME}{TAB}{PASSWORD}{ENTER}',
+        recentVaults: [],
       },
     });
   });

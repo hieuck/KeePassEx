@@ -2,12 +2,10 @@
  * Import/Export page — desktop
  * EN/VI i18n throughout
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { open, save } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
 import { useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
-
 import { useTranslation } from 'react-i18next';
 
 type ImportFormat = 'auto' | 'bitwarden' | 'lastpass' | 'chrome' | 'firefox' | '1password' | 'csv';
@@ -144,7 +142,7 @@ export function ImportExportPage() {
               <ul className="ie-result-list">
                 <li>
                   {importResult.entriesImported}{' '}
-                  {t('importExport.importSuccess', { count: '' }).split(' ')[0]}
+                  {t('importExport.importSuccess', { count: 0 }).split(' ')[0]}
                 </li>
                 {importResult.groupsCreated > 0 && (
                   <li>{importResult.groupsCreated} groups created</li>

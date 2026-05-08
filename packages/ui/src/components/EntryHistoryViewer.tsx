@@ -4,7 +4,7 @@
  *
  * Used in desktop EntryDetailPage
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 export interface HistoryEntry {
   uuid: string;

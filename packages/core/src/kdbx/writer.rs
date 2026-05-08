@@ -1,17 +1,14 @@
 //! KDBX 4.x file writer
 
-use crate::error::{KeePassExError, Result};
-use crate::vault::Vault;
-use crate::kdbx::{
-    KDBX_SIGNATURE_1, KDBX_SIGNATURE_2, KDBX_VERSION_4_1,
-    Compression,
-};
 use crate::crypto::{
-    kdf::{KdfParams, ArgonParams, derive_master_key},
     cipher::{Cipher, CipherAlgorithm},
     hmac::{compute_block_hmac, compute_header_hmac},
+    kdf::{derive_master_key, ArgonParams, KdfParams},
     keys::MasterKey,
 };
+use crate::error::{KeePassExError, Result};
+use crate::kdbx::{Compression, KDBX_SIGNATURE_1, KDBX_SIGNATURE_2, KDBX_VERSION_4_1};
+use crate::vault::Vault;
 use rand::RngCore;
 
 pub struct KdbxWriter;
@@ -48,8 +45,8 @@ impl KdbxWriter {
         let master_key = MasterKey::new(transformed_key);
         let (enc_key, hmac_key) = master_key.derive_keys(&master_seed);
 
-        // Build outer header
-        let header_data = self.build_outer_header(
+        // Build outer header fields
+        let header_fields = self.build_outer_header(
             &kdf_params,
             &CipherAlgorithm::ChaCha20Poly1305,
             &Compression::GZip,
@@ -57,8 +54,16 @@ impl KdbxWriter {
             &encryption_iv,
         )?;
 
-        // Compute header HMAC
-        let header_hmac = compute_header_hmac(&hmac_key, &header_data)?;
+        // The header HMAC covers: signature(8) + version(4) + header_fields
+        // This matches what the reader does: full_data[..header_end]
+        let mut header_data_for_hmac = Vec::new();
+        header_data_for_hmac.extend_from_slice(&KDBX_SIGNATURE_1.to_le_bytes());
+        header_data_for_hmac.extend_from_slice(&KDBX_SIGNATURE_2.to_le_bytes());
+        header_data_for_hmac.extend_from_slice(&KDBX_VERSION_4_1.to_le_bytes());
+        header_data_for_hmac.extend_from_slice(&header_fields);
+
+        // Compute header HMAC over the full header (sig + version + fields)
+        let header_hmac = compute_header_hmac(&hmac_key, &header_data_for_hmac)?;
 
         // Build XML payload
         let xml_parser = super::xml::XmlSerializer::new(inner_stream_key.clone());
@@ -79,12 +84,12 @@ impl KdbxWriter {
         // Build HMAC blocks
         let blocks = self.build_hmac_blocks(&encrypted, &hmac_key)?;
 
-        // Assemble final file
+        // Assemble final file: sig + version + header_fields + header_hmac + blocks
         let mut output = Vec::new();
         output.extend_from_slice(&KDBX_SIGNATURE_1.to_le_bytes());
         output.extend_from_slice(&KDBX_SIGNATURE_2.to_le_bytes());
         output.extend_from_slice(&KDBX_VERSION_4_1.to_le_bytes());
-        output.extend_from_slice(&header_data);
+        output.extend_from_slice(&header_fields);
         output.extend_from_slice(&header_hmac);
         output.extend_from_slice(&blocks);
 
@@ -181,20 +186,25 @@ fn build_kdf_variant_map(params: &KdfParams) -> Result<Vec<u8>> {
         KdfParams::Argon2(p) => {
             // UUID
             let argon2_uuid = [
-                0xEF, 0x63, 0x6D, 0xDF, 0x8C, 0x29, 0x44, 0x4B,
-                0x91, 0xF7, 0xA9, 0xA4, 0x03, 0xE3, 0x0A, 0x0C,
+                0xEF, 0x63, 0x6D, 0xDF, 0x8C, 0x29, 0x44, 0x4B, 0x91, 0xF7, 0xA9, 0xA4, 0x03, 0xE3,
+                0x0A, 0x0C,
             ];
             write_variant_entry(&mut map, 0x42, b"$UUID", &argon2_uuid);
             write_variant_entry(&mut map, 0x42, b"S", &p.salt);
             write_variant_entry(&mut map, 0x05, b"I", &(p.iterations as u64).to_le_bytes());
-            write_variant_entry(&mut map, 0x05, b"M", &((p.memory_kb as u64) * 1024).to_le_bytes());
+            write_variant_entry(
+                &mut map,
+                0x05,
+                b"M",
+                &((p.memory_kb as u64) * 1024).to_le_bytes(),
+            );
             write_variant_entry(&mut map, 0x05, b"P", &(p.parallelism as u64).to_le_bytes());
             write_variant_entry(&mut map, 0x04, b"V", &(p.version as u32).to_le_bytes());
         }
         KdfParams::AesKdf(p) => {
             let aes_kdf_uuid = [
-                0xC9, 0xD9, 0xF3, 0x9A, 0x62, 0x8A, 0x44, 0x60,
-                0xBF, 0x74, 0x0D, 0x08, 0xC1, 0x8A, 0x4F, 0xEA,
+                0xC9, 0xD9, 0xF3, 0x9A, 0x62, 0x8A, 0x44, 0x60, 0xBF, 0x74, 0x0D, 0x08, 0xC1, 0x8A,
+                0x4F, 0xEA,
             ];
             write_variant_entry(&mut map, 0x42, b"$UUID", &aes_kdf_uuid);
             write_variant_entry(&mut map, 0x42, b"S", &p.seed);

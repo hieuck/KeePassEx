@@ -3449,13 +3449,16 @@ dependencies = [
 
 [[package]]
 name = "keepassex-cli"
-version = "1.0.0"
+version = "0.1.0"
 dependencies = [
  "anyhow",
+ "chrono",
  "clap",
  "colored",
  "indicatif",
  "keepassex-core",
+ "rand 0.8.6",
+ "reqwest 0.12.28",
  "rpassword",
  "serde",
  "serde_json",
@@ -3463,11 +3466,13 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "uuid",
+ "zeroize",
 ]
 
 [[package]]
 name = "keepassex-core"
-version = "1.0.0"
+version = "0.1.0"
 dependencies = [
  "aes 0.8.4",
  "aes-gcm 0.10.3",
@@ -3506,7 +3511,7 @@ dependencies = [
 
 [[package]]
 name = "keepassex-credprov"
-version = "1.0.0"
+version = "0.1.0"
 dependencies = [
  "keepassex-core",
  "serde",
@@ -3514,17 +3519,19 @@ dependencies = [
  "thiserror 2.0.18",
  "tokio",
  "tracing",
+ "tracing-subscriber",
  "windows 0.58.0",
  "zeroize",
 ]
 
 [[package]]
 name = "keepassex-desktop"
-version = "1.0.0"
+version = "0.1.0"
 dependencies = [
  "base64 0.22.1",
  "chrono",
  "keepassex-core",
+ "reqwest 0.12.28",
  "serde",
  "serde_json",
  "tauri",
@@ -3546,7 +3553,7 @@ dependencies = [
 
 [[package]]
 name = "keepassex-server"
-version = "1.0.0"
+version = "0.1.0"
 dependencies = [
  "anyhow",
  "argon2",

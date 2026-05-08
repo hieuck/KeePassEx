@@ -28,7 +28,7 @@ pub struct EntryDto {
     pub custom_fields: Vec<CustomFieldDto>,
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CustomFieldDto {
     pub key: String,
     pub value: String,
@@ -414,7 +414,7 @@ fn entry_to_dto(entry: &keepassex_core::types::Entry) -> EntryDto {
         has_passkey: !entry.passkeys.is_empty(),
         has_ssh_key: entry.ssh_key.is_some(),
         has_attachments: !entry.attachments.is_empty(),
-        is_expired: entry.is_expired(),
+        is_expired: entry.is_expired,
         expiry: entry.expiry.map(|e| e.to_rfc3339()),
         created_at: entry.created_at.to_rfc3339(),
         modified_at: entry.modified_at.to_rfc3339(),

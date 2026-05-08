@@ -3,84 +3,86 @@ name: Release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v[0-9]*'
 
 permissions:
   contents: write
+  packages: write
 
 jobs:
+  # ─── Create GitHub Release ───────────────────────────────────────────────────
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
     outputs:
-      release-id: ${{ steps.create-release.outputs.result }}
-      upload-url: ${{ steps.get-upload-url.outputs.upload_url }}
+      release_id: ${{ steps.create-release.outputs.release_id }}
+      version: ${{ steps.get-version.outputs.version }}
+      prerelease: ${{ steps.get-version.outputs.prerelease }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: get-version
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          if [[ "$VERSION" == *"-"* ]]; then
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Extract changelog for this version
+        id: changelog
+        run: |
+          VERSION="${{ steps.get-version.outputs.version }}"
+          NOTES=$(awk "/^## \[$VERSION\]/{found=1; next} found && /^## \[/{exit} found{print}" CHANGELOG.md | head -80)
+          if [ -z "$NOTES" ]; then
+            NOTES="See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details."
+          fi
+          {
+            echo "notes<<CHANGELOG_EOF"
+            echo "$NOTES"
+            echo "CHANGELOG_EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         id: create-release
         uses: actions/github-script@v7
         with:
-          result-encoding: string
           script: |
             const { data } = await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
               tag_name: context.ref.replace('refs/tags/', ''),
-              name: `KeePassEx ${context.ref.replace('refs/tags/', '')}`,
-              draft: true,
-              prerelease: false,
-              generate_release_notes: true,
+              name: `KeePassEx v${{ steps.get-version.outputs.version }}`,
+              body: `${{ steps.changelog.outputs.notes }}`,
+              draft: false,
+              prerelease: ${{ steps.get-version.outputs.prerelease }},
             });
-            return String(data.id);
+            core.setOutput('release_id', String(data.id));
 
-      - name: Get upload URL
-        id: get-upload-url
-        uses: actions/github-script@v7
-        with:
-          result-encoding: string
-          script: |
-            const { data } = await github.rest.repos.getRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: ${{ steps.create-release.outputs.result }},
-            });
-            core.setOutput('upload_url', data.upload_url);
-            return data.upload_url;
-
-  # ─── Desktop Release ────────────────────────────────────────────────────────
-  desktop-release:
-    name: Desktop Release — ${{ matrix.platform }}
+  # ─── Build Desktop — Windows x64 ─────────────────────────────────────────────
+  build-desktop-windows:
+    name: Desktop — Windows x64
     needs: create-release
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: ubuntu-latest
-            os-name: linux
-          - platform: macos-latest
-            os-name: macos
-          - platform: windows-latest
-            os-name: windows
-
-    runs-on: ${{ matrix.platform }}
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Linux dependencies
-        if: matrix.platform == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
 
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
 
-      - uses: pnpm/action-setup@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
           version: 9
-      - uses: actions/setup-node@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
@@ -88,96 +90,544 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build and release
-        uses: tauri-apps/tauri-action@v0
+      - name: Build desktop (Windows)
+        run: pnpm --filter @keepassex/desktop tauri:build
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        with:
-          releaseId: ${{ needs.create-release.outputs.release-id }}
-          projectPath: apps/desktop
 
-  # ─── CLI Release ────────────────────────────────────────────────────────────
-  cli-release:
-    name: CLI Release — ${{ matrix.target }}
+      - name: Find and upload Windows installers
+        shell: pwsh
+        run: |
+          $releaseId = "${{ needs.create-release.outputs.release_id }}"
+          $token = "${{ secrets.GITHUB_TOKEN }}"
+          $repo = "${{ github.repository }}"
+          $headers = @{ Authorization = "Bearer $token"; "Content-Type" = "application/octet-stream" }
+
+          $patterns = @(
+            "apps/desktop/src-tauri/target/release/bundle/msi/*.msi",
+            "apps/desktop/src-tauri/target/release/bundle/nsis/*.exe"
+          )
+
+          foreach ($pattern in $patterns) {
+            $files = Get-ChildItem -Path $pattern -ErrorAction SilentlyContinue
+            foreach ($file in $files) {
+              Write-Host "Uploading: $($file.Name)"
+              $uploadUrl = "https://uploads.github.com/repos/$repo/releases/$releaseId/assets?name=$([uri]::EscapeDataString($file.Name))"
+              Invoke-RestMethod -Uri $uploadUrl -Method Post -Headers $headers -InFile $file.FullName
+            }
+          }
+
+  # ─── Build Desktop — macOS Universal ─────────────────────────────────────────
+  build-desktop-macos:
+    name: Desktop — macOS Universal (Intel + Apple Silicon)
     needs: create-release
-    strategy:
-      matrix:
-        include:
-          - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
-            artifact: kpx-linux-x64
-          - target: aarch64-unknown-linux-gnu
-            os: ubuntu-latest
-            artifact: kpx-linux-arm64
-          - target: x86_64-apple-darwin
-            os: macos-latest
-            artifact: kpx-macos-x64
-          - target: aarch64-apple-darwin
-            os: macos-latest
-            artifact: kpx-macos-arm64
-          - target: x86_64-pc-windows-msvc
-            os: windows-latest
-            artifact: kpx-windows-x64.exe
-
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Rust stable + Apple targets
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build desktop (macOS Universal)
+        run: pnpm --filter @keepassex/desktop tauri:build -- --target universal-apple-darwin
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+
+      - name: Upload macOS DMG
+        run: |
+          RELEASE_ID="${{ needs.create-release.outputs.release_id }}"
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          REPO="${{ github.repository }}"
+
+          for file in apps/desktop/src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg; do
+            [ -f "$file" ] || continue
+            NAME=$(basename "$file")
+            echo "Uploading: $NAME"
+            curl -sS --fail \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary @"$file" \
+              "https://uploads.github.com/repos/$REPO/releases/$RELEASE_ID/assets?name=${NAME// /%20}"
+          done
+
+  # ─── Build Desktop — Linux x64 ───────────────────────────────────────────────
+  build-desktop-linux:
+    name: Desktop — Linux x64 (deb + AppImage)
+    needs: create-release
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libssl-dev \
+            pkg-config
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build desktop (Linux)
+        run: pnpm --filter @keepassex/desktop tauri:build
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+
+      - name: Upload Linux packages
+        run: |
+          RELEASE_ID="${{ needs.create-release.outputs.release_id }}"
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          REPO="${{ github.repository }}"
+
+          upload_file() {
+            local file="$1"
+            local name
+            name=$(basename "$file")
+            # URL-encode spaces only (filenames shouldn't have special chars)
+            local encoded_name="${name// /%20}"
+            echo "Uploading: $name"
+            curl -sS --fail \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary @"$file" \
+              "https://uploads.github.com/repos/$REPO/releases/$RELEASE_ID/assets?name=$encoded_name"
+          }
+
+          for ext in deb AppImage rpm; do
+            for file in apps/desktop/src-tauri/target/release/bundle/**/*.$ext; do
+              [ -f "$file" ] && upload_file "$file"
+            done
+          done
+
+  # ─── Build CLI — Multi-platform ──────────────────────────────────────────────
+  build-cli:
+    name: CLI — ${{ matrix.name }}
+    needs: create-release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux x86_64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact: kpx
+            asset: kpx-linux-x86_64
+            cross: false
+          - name: Linux ARM64
+            os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            artifact: kpx
+            asset: kpx-linux-arm64
+            cross: true
+          - name: macOS x86_64
+            os: macos-latest
+            target: x86_64-apple-darwin
+            artifact: kpx
+            asset: kpx-macos-x86_64
+            cross: false
+          - name: macOS ARM64
+            os: macos-latest
+            target: aarch64-apple-darwin
+            artifact: kpx
+            asset: kpx-macos-arm64
+            cross: false
+          - name: Windows x86_64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact: kpx.exe
+            asset: kpx-windows-x86_64.exe
+            cross: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-      - uses: Swatinem/rust-cache@v2
 
-      - name: Install cross-compilation tools
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: sudo apt-get install -y gcc-aarch64-linux-gnu
+      - name: Install cross-compilation tools (Linux ARM64)
+        if: matrix.cross == true
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: cli-${{ matrix.target }}
 
       - name: Build CLI
         run: cargo build --release -p keepassex-cli --target ${{ matrix.target }}
 
-      - name: Rename binary
-        shell: bash
-        run: |
-          EXT=""
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then EXT=".exe"; fi
-          cp target/${{ matrix.target }}/release/kpx${EXT} ${{ matrix.artifact }}
+      - name: Strip binary (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: strip "target/${{ matrix.target }}/release/${{ matrix.artifact }}" || true
 
-      - name: Upload to release
+      - name: Upload CLI binary (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          BINARY="target/${{ matrix.target }}/release/${{ matrix.artifact }}"
+          RELEASE_ID="${{ needs.create-release.outputs.release_id }}"
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          REPO="${{ github.repository }}"
+          ASSET="${{ matrix.asset }}"
+
+          echo "Uploading $BINARY as $ASSET"
+          curl -sS --fail \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary @"$BINARY" \
+            "https://uploads.github.com/repos/$REPO/releases/$RELEASE_ID/assets?name=$ASSET"
+
+      - name: Upload CLI binary (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $binary = "target/${{ matrix.target }}/release/${{ matrix.artifact }}"
+          $releaseId = "${{ needs.create-release.outputs.release_id }}"
+          $token = "${{ secrets.GITHUB_TOKEN }}"
+          $repo = "${{ github.repository }}"
+          $asset = "${{ matrix.asset }}"
+
+          Write-Host "Uploading $binary as $asset"
+          $headers = @{ Authorization = "Bearer $token"; "Content-Type" = "application/octet-stream" }
+          $uploadUrl = "https://uploads.github.com/repos/$repo/releases/$releaseId/assets?name=$asset"
+          Invoke-RestMethod -Uri $uploadUrl -Method Post -Headers $headers -InFile $binary
+
+  # ─── Build Server — Multi-platform ───────────────────────────────────────────
+  build-server:
+    name: Server — ${{ matrix.name }}
+    needs: create-release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux x86_64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact: keepassex-server
+            asset: keepassex-server-linux-x86_64
+          - name: macOS ARM64
+            os: macos-latest
+            target: aarch64-apple-darwin
+            artifact: keepassex-server
+            asset: keepassex-server-macos-arm64
+          - name: Windows x86_64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact: keepassex-server.exe
+            asset: keepassex-server-windows-x86_64.exe
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: server-${{ matrix.target }}
+
+      - name: Build Server
+        run: cargo build --release -p keepassex-server --target ${{ matrix.target }}
+
+      - name: Upload Server binary (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          BINARY="target/${{ matrix.target }}/release/${{ matrix.artifact }}"
+          RELEASE_ID="${{ needs.create-release.outputs.release_id }}"
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          REPO="${{ github.repository }}"
+          ASSET="${{ matrix.asset }}"
+
+          curl -sS --fail \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary @"$BINARY" \
+            "https://uploads.github.com/repos/$REPO/releases/$RELEASE_ID/assets?name=$ASSET"
+
+      - name: Upload Server binary (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $binary = "target/${{ matrix.target }}/release/${{ matrix.artifact }}"
+          $releaseId = "${{ needs.create-release.outputs.release_id }}"
+          $token = "${{ secrets.GITHUB_TOKEN }}"
+          $repo = "${{ github.repository }}"
+          $asset = "${{ matrix.asset }}"
+
+          $headers = @{ Authorization = "Bearer $token"; "Content-Type" = "application/octet-stream" }
+          $uploadUrl = "https://uploads.github.com/repos/$repo/releases/$releaseId/assets?name=$asset"
+          Invoke-RestMethod -Uri $uploadUrl -Method Post -Headers $headers -InFile $binary
+
+  # ─── Build Browser Extension ─────────────────────────────────────────────────
+  build-extension:
+    name: Browser Extension (Chrome + Firefox)
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Chrome extension (MV3)
+        run: pnpm --filter @keepassex/browser-extension build:chrome
+
+      - name: Build Firefox extension (MV2)
+        run: pnpm --filter @keepassex/browser-extension build:firefox
+
+      - name: Package extensions
+        run: |
+          VERSION="${{ needs.create-release.outputs.version }}"
+          cd apps/browser-extension
+          zip -r "keepassex-chrome-v${VERSION}.zip" dist-chrome/
+          zip -r "keepassex-firefox-v${VERSION}.zip" dist-firefox/
+          ls -la keepassex-*.zip
+
+      - name: Upload Chrome extension
+        run: |
+          VERSION="${{ needs.create-release.outputs.version }}"
+          RELEASE_ID="${{ needs.create-release.outputs.release_id }}"
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          REPO="${{ github.repository }}"
+          FILE="apps/browser-extension/keepassex-chrome-v${VERSION}.zip"
+          NAME="keepassex-chrome-v${VERSION}.zip"
+
+          curl -sS --fail \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/zip" \
+            --data-binary @"$FILE" \
+            "https://uploads.github.com/repos/$REPO/releases/$RELEASE_ID/assets?name=$NAME"
+
+      - name: Upload Firefox extension
+        run: |
+          VERSION="${{ needs.create-release.outputs.version }}"
+          RELEASE_ID="${{ needs.create-release.outputs.release_id }}"
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          REPO="${{ github.repository }}"
+          FILE="apps/browser-extension/keepassex-firefox-v${VERSION}.zip"
+          NAME="keepassex-firefox-v${VERSION}.zip"
+
+          curl -sS --fail \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/zip" \
+            --data-binary @"$FILE" \
+            "https://uploads.github.com/repos/$REPO/releases/$RELEASE_ID/assets?name=$NAME"
+
+  # ─── Build Server Docker Image ────────────────────────────────────────────────
+  build-server-docker:
+    name: Server — Docker Image (linux/amd64 + linux/arm64)
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU (for ARM64 emulation)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/server/Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/keepassex-server:${{ needs.create-release.outputs.version }}
+            ghcr.io/${{ github.repository_owner }}/keepassex-server:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─── Generate Tauri Update Manifest ──────────────────────────────────────────
+  generate-update-manifest:
+    name: Generate Tauri Update Manifest
+    needs:
+      - create-release
+      - build-desktop-windows
+      - build-desktop-macos
+      - build-desktop-linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate latest.json for Tauri updater
         uses: actions/github-script@v7
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           script: |
             const fs = require('fs');
-            const path = require('path');
-            const artifact = '${{ matrix.artifact }}';
+            const version = '${{ needs.create-release.outputs.version }}';
+            const releaseId = '${{ needs.create-release.outputs.release_id }}';
+
+            // Get release assets
+            const { data: release } = await github.rest.repos.getRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: parseInt(releaseId),
+            });
+
+            const assets = release.assets;
+            const findUrl = (ext) => {
+              const a = assets.find(a => a.name.endsWith(ext));
+              return a ? a.browser_download_url : '';
+            };
+
+            const manifest = {
+              version: `v${version}`,
+              notes: `See https://github.com/${context.repo.owner}/${context.repo.repo}/releases/tag/v${version}`,
+              pub_date: release.published_at,
+              platforms: {
+                'windows-x86_64': {
+                  url: findUrl('.msi'),
+                  signature: '',
+                },
+                'darwin-x86_64': {
+                  url: findUrl('.dmg'),
+                  signature: '',
+                },
+                'darwin-aarch64': {
+                  url: findUrl('.dmg'),
+                  signature: '',
+                },
+                'linux-x86_64': {
+                  url: findUrl('.AppImage'),
+                  signature: '',
+                },
+              },
+            };
+
+            fs.writeFileSync('latest.json', JSON.stringify(manifest, null, 2));
+            console.log('Generated latest.json:', JSON.stringify(manifest, null, 2));
+
+            // Upload to release
             await github.rest.repos.uploadReleaseAsset({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              release_id: ${{ needs.create-release.outputs.release-id }},
-              name: artifact,
-              data: fs.readFileSync(path.resolve(artifact)),
+              release_id: parseInt(releaseId),
+              name: 'latest.json',
+              data: fs.readFileSync('latest.json'),
             });
 
-  # ─── Publish Release ────────────────────────────────────────────────────────
-  publish-release:
-    name: Publish Release
-    needs: [desktop-release, cli-release]
+  # ─── Release Summary ──────────────────────────────────────────────────────────
+  release-summary:
+    name: Release Summary
+    needs:
+      - create-release
+      - build-desktop-windows
+      - build-desktop-macos
+      - build-desktop-linux
+      - build-cli
+      - build-server
+      - build-extension
+      - build-server-docker
+      - generate-update-manifest
     runs-on: ubuntu-latest
+    if: always()
     steps:
-      - uses: actions/github-script@v7
+      - name: Summarize release
+        uses: actions/github-script@v7
         with:
           script: |
-            await github.rest.repos.updateRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: ${{ needs.create-release.outputs.release-id }},
-              draft: false,
-            });
+            const results = {
+              '🖥️ Desktop Windows': '${{ needs.build-desktop-windows.result }}',
+              '🍎 Desktop macOS': '${{ needs.build-desktop-macos.result }}',
+              '🐧 Desktop Linux': '${{ needs.build-desktop-linux.result }}',
+              '⌨️ CLI (5 platforms)': '${{ needs.build-cli.result }}',
+              '🖧 Server (3 platforms)': '${{ needs.build-server.result }}',
+              '🧩 Browser Extension': '${{ needs.build-extension.result }}',
+              '🐳 Docker Image': '${{ needs.build-server-docker.result }}',
+              '🔄 Update Manifest': '${{ needs.generate-update-manifest.result }}',
+            };
+
+            let md = `## 🚀 KeePassEx v${{ needs.create-release.outputs.version }} Release\n\n`;
+            md += `| Component | Status |\n|---|---|\n`;
+
+            let failed = false;
+            for (const [name, result] of Object.entries(results)) {
+              const icon = result === 'success' ? '✅' : result === 'skipped' ? '⏭️' : '❌';
+              md += `| ${name} | ${icon} ${result} |\n`;
+              if (result === 'failure') failed = true;
+            }
+
+            md += `\n### Release Assets\n`;
+            md += `- Windows: \`.msi\` installer (NSIS)\n`;
+            md += `- macOS: Universal \`.dmg\` (Intel + Apple Silicon)\n`;
+            md += `- Linux: \`.deb\` + \`.AppImage\` + \`.rpm\`\n`;
+            md += `- CLI: \`kpx\` binaries for Linux x64/arm64, macOS x64/arm64, Windows x64\n`;
+            md += `- Server: \`keepassex-server\` for Linux x64, macOS arm64, Windows x64\n`;
+            md += `- Browser: \`keepassex-chrome-v*.zip\` + \`keepassex-firefox-v*.zip\`\n`;
+            md += `- Docker: \`ghcr.io/${{ github.repository_owner }}/keepassex-server:${{ needs.create-release.outputs.version }}\`\n`;
+
+            await core.summary.addRaw(md).write();
+            if (failed) core.setFailed('One or more release jobs failed');

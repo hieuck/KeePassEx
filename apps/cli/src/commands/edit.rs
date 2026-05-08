@@ -1,9 +1,12 @@
 //! CLI `edit` command — edit an existing entry
 
-use keepassex_core::{Vault, vault::operations::{save_vault, VaultCredentials}};
 use colored::Colorize;
-use uuid::Uuid;
+use keepassex_core::{
+    vault::operations::{save_vault, VaultCredentials},
+    Vault,
+};
 use std::path::Path;
+use uuid::Uuid;
 
 pub async fn run(
     vault: &mut Vault,
@@ -73,7 +76,11 @@ fn resolve_uuid(vault: &Vault, uuid_str: &str) -> anyhow::Result<Uuid> {
 fn prompt_with_default(label: &str, current: &str) -> anyhow::Result<String> {
     eprint!("{} [{}]: ", label, current.dimmed());
     let input = read_line()?;
-    Ok(if input.is_empty() { current.to_string() } else { input })
+    Ok(if input.is_empty() {
+        current.to_string()
+    } else {
+        input
+    })
 }
 
 fn read_line() -> anyhow::Result<String> {
@@ -81,5 +88,8 @@ fn read_line() -> anyhow::Result<String> {
     let stdin = std::io::stdin();
     let mut line = String::new();
     stdin.lock().read_line(&mut line)?;
-    Ok(line.trim_end_matches('\n').trim_end_matches('\r').to_string())
+    Ok(line
+        .trim_end_matches('\n')
+        .trim_end_matches('\r')
+        .to_string())
 }

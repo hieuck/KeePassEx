@@ -2,7 +2,7 @@
  * Entry detail / edit page — complete with OTP, custom fields, attachments,
  * history viewer, passkey section, SSH key section, password strength
  */
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
@@ -381,7 +381,7 @@ export function EntryDetailPage() {
 
             {/* URL */}
             <FieldRow
-              label="URL"
+              label={t('entry.url')}
               editing={editing}
               value={entry?.url}
               inputValue={form.url}

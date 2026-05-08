@@ -1,5 +1,5 @@
 /**
- * Vault unlock screen — biometric + password (with full i18n EN/VI)
+ * Vault unlock screen — biometric + password, full i18n (10 languages)
  * Uses hardware-backed Secure Enclave (iOS) / StrongBox (Android) for biometric key storage.
  */
 import React, { useState, useEffect } from 'react';
@@ -28,7 +28,6 @@ export function UnlockScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
-  const [biometricType, setBiometricType] = useState<string>('');
   const { unlockVault, meta, vaultPath } = useVaultStore();
   const { theme } = useThemeStore();
   const { t } = useTranslation();
@@ -41,14 +40,9 @@ export function UnlockScreen() {
     try {
       const capability = await checkBiometricCapability();
       setBiometricAvailable(capability.available);
-      setBiometricType(capability.biometryType);
-
       if (capability.available && vaultPath) {
         const hasKey = await hasBiometricKey(vaultPath);
-        if (hasKey) {
-          // Auto-trigger biometric on mount if key is stored
-          handleBiometricUnlock();
-        }
+        if (hasKey) handleBiometricUnlock();
       }
     } catch {
       setBiometricAvailable(false);
@@ -60,20 +54,14 @@ export function UnlockScreen() {
     try {
       setLoading(true);
       const result = await retrieveMasterKeyWithBiometric(vaultPath, t('biometric.prompt'));
-
       if (result.success && result.masterKey) {
-        // Convert Uint8Array master key back to password string for vault unlock
-        const decoder = new TextDecoder();
-        const masterPassword = decoder.decode(result.masterKey);
+        const masterPassword = new TextDecoder().decode(result.masterKey);
         await unlockVault(masterPassword);
-      } else {
-        // Biometric failed — user falls back to password
-        if (result.error && !result.error.includes('cancel')) {
-          Alert.alert(t('errors.biometricFailed'), result.error);
-        }
+      } else if (result.error && !result.error.includes('cancel')) {
+        Alert.alert(t('errors.biometricFailed'), result.error);
       }
     } catch {
-      // Silent fail — user can use password
+      // Silent — user falls back to password
     } finally {
       setLoading(false);
     }
@@ -81,11 +69,10 @@ export function UnlockScreen() {
 
   const handlePasswordUnlock = async () => {
     if (!password.trim()) return;
-
     setLoading(true);
     try {
       await unlockVault(password);
-    } catch (e: unknown) {
+    } catch {
       Alert.alert(t('errors.wrongCredentials'), t('vault.wrongPassword'), [
         { text: t('common.ok') },
       ]);
@@ -93,6 +80,9 @@ export function UnlockScreen() {
       setLoading(false);
     }
   };
+
+  const biometricLabel =
+    Platform.OS === 'ios' ? 'Face ID / Touch ID' : t('settings.biometricUnlock');
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -102,7 +92,9 @@ export function UnlockScreen() {
       >
         {/* Logo */}
         <View style={styles.hero}>
-          <Text style={styles.logo}>🔐</Text>
+          <Text style={styles.logo} accessibilityHidden>
+            🔐
+          </Text>
           <Text style={[styles.title, { color: theme.text }]}>{t('app.name')}</Text>
           {meta && (
             <Text style={[styles.vaultName, { color: theme.textSecondary }]}>{meta.name}</Text>
@@ -118,18 +110,20 @@ export function UnlockScreen() {
             accessibilityLabel={t('biometric.prompt')}
             accessibilityRole="button"
           >
-            <Text style={styles.biometricIcon}>{Platform.OS === 'ios' ? '👤' : '🔏'}</Text>
-            <Text style={[styles.biometricText, { color: theme.primary }]}>
-              {Platform.OS === 'ios' ? 'Face ID / Touch ID' : t('settings.biometricUnlock')}
+            <Text style={styles.biometricIcon} accessibilityHidden>
+              {Platform.OS === 'ios' ? '👤' : '🔏'}
             </Text>
+            <Text style={[styles.biometricText, { color: theme.primary }]}>{biometricLabel}</Text>
           </TouchableOpacity>
         )}
 
         {/* Divider */}
         {biometricAvailable && (
-          <View style={styles.divider}>
+          <View style={styles.divider} accessibilityHidden>
             <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
-            <Text style={[styles.dividerText, { color: theme.textTertiary }]}>or</Text>
+            <Text style={[styles.dividerText, { color: theme.textTertiary }]}>
+              {t('common.or') ?? 'or'}
+            </Text>
             <View style={[styles.dividerLine, { backgroundColor: theme.border }]} />
           </View>
         )}
@@ -139,13 +133,9 @@ export function UnlockScreen() {
           <TextInput
             style={[
               styles.passwordInput,
-              {
-                backgroundColor: theme.surface,
-                borderColor: theme.border,
-                color: theme.text,
-              },
+              { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text },
             ]}
-            placeholder="Master Password"
+            placeholder={t('vault.masterPassword')}
             placeholderTextColor={theme.textTertiary}
             secureTextEntry
             value={password}
@@ -153,32 +143,42 @@ export function UnlockScreen() {
             onSubmitEditing={handlePasswordUnlock}
             returnKeyType="go"
             autoFocus={!biometricAvailable}
-            accessibilityLabel="Master password"
+            accessibilityLabel={t('vault.masterPassword')}
+            autoCapitalize="none"
+            autoCorrect={false}
           />
 
           <TouchableOpacity
             style={[
               styles.unlockButton,
               { backgroundColor: theme.primary },
-              loading && styles.unlockButtonDisabled,
+              (loading || !password.trim()) && styles.unlockButtonDisabled,
             ]}
             onPress={handlePasswordUnlock}
             disabled={loading || !password.trim()}
-            accessibilityLabel="Unlock vault"
+            accessibilityLabel={t('vault.unlock')}
             accessibilityRole="button"
+            accessibilityState={{ disabled: loading || !password.trim() }}
           >
-            <Text style={styles.unlockButtonText}>{loading ? '...' : 'Unlock'}</Text>
+            <Text style={styles.unlockButtonText}>
+              {loading ? t('vault.unlocking') : t('vault.unlock')}
+            </Text>
           </TouchableOpacity>
         </View>
+
+        {/* Biometric fallback hint */}
+        {biometricAvailable && (
+          <Text style={[styles.biometricHint, { color: theme.textTertiary }]}>
+            {t('biometric.fallback')}
+          </Text>
+        )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   inner: {
     flex: 1,
     alignItems: 'center',
@@ -186,20 +186,10 @@ const styles = StyleSheet.create({
     padding: tokens.space.xl,
     gap: tokens.space.xl,
   },
-  hero: {
-    alignItems: 'center',
-    gap: tokens.space.sm,
-  },
-  logo: {
-    fontSize: 64,
-  },
-  title: {
-    fontSize: tokens.fontSize['2xl'],
-    fontWeight: tokens.fontWeight.bold,
-  },
-  vaultName: {
-    fontSize: tokens.fontSize.md,
-  },
+  hero: { alignItems: 'center', gap: tokens.space.sm },
+  logo: { fontSize: 64 },
+  title: { fontSize: tokens.fontSize['2xl'], fontWeight: tokens.fontWeight.bold },
+  vaultName: { fontSize: tokens.fontSize.md },
   biometricButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -209,30 +199,17 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius.full,
     borderWidth: 2,
   },
-  biometricIcon: {
-    fontSize: 24,
-  },
-  biometricText: {
-    fontSize: tokens.fontSize.md,
-    fontWeight: tokens.fontWeight.semibold,
-  },
+  biometricIcon: { fontSize: 24 },
+  biometricText: { fontSize: tokens.fontSize.md, fontWeight: tokens.fontWeight.semibold },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: tokens.space.md,
     width: '100%',
   },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-  },
-  dividerText: {
-    fontSize: tokens.fontSize.sm,
-  },
-  passwordSection: {
-    width: '100%',
-    gap: tokens.space.md,
-  },
+  dividerLine: { flex: 1, height: 1 },
+  dividerText: { fontSize: tokens.fontSize.sm },
+  passwordSection: { width: '100%', gap: tokens.space.md },
   passwordInput: {
     borderWidth: 1,
     borderRadius: tokens.radius.md,
@@ -246,12 +223,11 @@ const styles = StyleSheet.create({
     paddingVertical: tokens.space.md,
     alignItems: 'center',
   },
-  unlockButtonDisabled: {
-    opacity: 0.5,
-  },
+  unlockButtonDisabled: { opacity: 0.5 },
   unlockButtonText: {
     color: 'white',
     fontSize: tokens.fontSize.md,
     fontWeight: tokens.fontWeight.semibold,
   },
+  biometricHint: { fontSize: tokens.fontSize.sm, textAlign: 'center' },
 });

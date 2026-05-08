@@ -1,7 +1,7 @@
 /**
  * Attachment Viewer — view and manage file attachments on an entry
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { open, save } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
 import { useTranslation } from 'react-i18next';

@@ -1,7 +1,7 @@
 /**
  * Search bar component
  */
-import React, { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 
 interface SearchBarProps {
   placeholder?: string;
