@@ -300,6 +300,21 @@ export function WelcomePage() {
         ))}
       </div>
 
+      {/* Version badge */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 8,
+          right: 12,
+          fontSize: 11,
+          color: 'var(--color-text-tertiary)',
+          opacity: 0.6,
+        }}
+        aria-hidden="true"
+      >
+        v0.1.0
+      </div>
+
       <style>{`
         .welcome-page {
           display: flex;

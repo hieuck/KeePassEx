@@ -151,13 +151,13 @@ export function ImportExportPage() {
                   <li>{t('importExport.importSkipped', { count: importResult.entriesSkipped })}</li>
                 )}
               </ul>
-              {importResult.warnings.length > 0 && (
+              {(importResult.warnings ?? []).length > 0 && (
                 <details className="ie-warnings">
                   <summary>
-                    {importResult.warnings.length} {t('common.warning')}
+                    {(importResult.warnings ?? []).length} {t('common.warning')}
                   </summary>
                   <ul>
-                    {importResult.warnings.map((w, i) => (
+                    {(importResult.warnings ?? []).map((w, i) => (
                       <li key={i}>{w}</li>
                     ))}
                   </ul>

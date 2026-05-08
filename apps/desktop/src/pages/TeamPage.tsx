@@ -7,6 +7,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { invoke } from '@tauri-apps/api/core';
+import { useVaultStore } from '../store/vault';
 
 type TeamRole = 'admin' | 'editor' | 'viewer';
 type MemberStatus = 'invited' | 'active' | 'suspended' | 'removed';
@@ -41,6 +42,7 @@ interface TeamVault {
 
 export function TeamPage() {
   const { t } = useTranslation();
+  const { isOpen, isLocked } = useVaultStore();
   const [team, setTeam] = useState<TeamVault | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabId>('members');
@@ -51,6 +53,7 @@ export function TeamPage() {
   const [inviting, setInviting] = useState(false);
 
   const loadTeam = useCallback(async () => {
+    if (!isOpen || isLocked) return;
     setLoading(true);
     try {
       const data = await invoke<TeamVault>('get_team_vault');
@@ -60,7 +63,7 @@ export function TeamPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isOpen, isLocked]);
 
   useEffect(() => {
     loadTeam();
@@ -128,6 +131,14 @@ export function TeamPage() {
       <div className="page-loading" role="status">
         <span className="spinner" aria-hidden="true" />
         {t('common.loading')}
+      </div>
+    );
+  }
+
+  if (!isOpen || isLocked) {
+    return (
+      <div className="page-error" role="alert">
+        <p>{t('errors.vaultLocked')}</p>
       </div>
     );
   }
@@ -252,7 +263,7 @@ export function TeamPage() {
           onClick={() => setActiveTab('members')}
         >
           👥 {t('team.members')}{' '}
-          {team && `(${team.members.filter(m => m.status !== 'removed').length})`}
+          {team && `(${(team.members ?? []).filter(m => m.status !== 'removed').length})`}
         </button>
         <button
           role="tab"
@@ -276,13 +287,13 @@ export function TeamPage() {
         {/* MEMBERS TAB */}
         {activeTab === 'members' && (
           <div className="members-list" role="list">
-            {!team || team.members.filter(m => m.status !== 'removed').length === 0 ? (
+            {!team || (team.members ?? []).filter(m => m.status !== 'removed').length === 0 ? (
               <div className="empty-state">
                 <p>{t('team.noMembers')}</p>
                 <p className="empty-state-desc">{t('team.noMembersDesc')}</p>
               </div>
             ) : (
-              team.members
+              (team.members ?? [])
                 .filter(m => m.status !== 'removed')
                 .map(member => (
                   <div key={member.id} className="member-card" role="listitem">
@@ -327,10 +338,10 @@ export function TeamPage() {
         {/* ACTIVITY TAB */}
         {activeTab === 'activity' && (
           <div className="activity-log" role="log" aria-live="polite">
-            {!team || team.activity_log.length === 0 ? (
+            {!team || (team.activity_log ?? []).length === 0 ? (
               <p className="empty-state">{t('team.noActivity')}</p>
             ) : (
-              [...team.activity_log]
+              [...(team.activity_log ?? [])]
                 .reverse()
                 .slice(0, 50)
                 .map(activity => (

@@ -8,6 +8,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { invoke } from '@tauri-apps/api/core';
+import { useVaultStore } from '../store/vault';
 
 interface StrengthDistribution {
   very_weak: number;
@@ -75,6 +76,7 @@ type TabId = 'overview' | 'strength' | 'timeline' | 'access' | 'features';
 
 export function AnalyticsPage() {
   const { t } = useTranslation();
+  const { isOpen, isLocked } = useVaultStore();
   const [analytics, setAnalytics] = useState<VaultAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -82,6 +84,7 @@ export function AnalyticsPage() {
   const [exporting, setExporting] = useState(false);
 
   const loadAnalytics = useCallback(async () => {
+    if (!isOpen || isLocked) return;
     setLoading(true);
     setError(null);
     try {
@@ -92,7 +95,7 @@ export function AnalyticsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isOpen, isLocked]);
 
   useEffect(() => {
     loadAnalytics();
@@ -115,6 +118,14 @@ export function AnalyticsPage() {
       <div className="page-loading" role="status" aria-live="polite">
         <span className="spinner" aria-hidden="true" />
         {t('common.loading')}
+      </div>
+    );
+  }
+
+  if (!isOpen || isLocked) {
+    return (
+      <div className="page-error" role="alert">
+        <p>{t('errors.vaultLocked')}</p>
       </div>
     );
   }
@@ -329,7 +340,7 @@ export function AnalyticsPage() {
                   <div
                     className="timeline-bar"
                     style={{
-                      height: `${Math.max(4, (point.count / Math.max(...analytics.creation_timeline.map(p => p.count), 1)) * 120)}px`,
+                      height: `${Math.max(4, (point.count / Math.max(...(analytics.creation_timeline ?? []).map(p => p.count), 1)) * 120)}px`,
                     }}
                     aria-label={`${point.label}: ${point.count} entries`}
                     title={`${point.label}: ${point.count}`}
