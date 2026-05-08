@@ -32,39 +32,54 @@ pub struct OpenVault {
 
 /// Application settings (persisted to disk)
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AppSettings {
     pub language: String,
     pub theme: String,
+    #[serde(alias = "lock_on_minimize")]
     pub lock_on_minimize: bool,
+    #[serde(alias = "lock_on_screen_lock")]
     pub lock_on_screen_lock: bool,
+    #[serde(alias = "lock_after_idle_minutes")]
     pub lock_after_idle_minutes: Option<u32>,
+    #[serde(alias = "clipboard_clear_seconds")]
     pub clipboard_clear_seconds: Option<u32>,
+    #[serde(alias = "show_password_in_list")]
     pub show_password_in_list: bool,
+    #[serde(alias = "minimize_to_tray")]
     pub minimize_to_tray: bool,
+    #[serde(alias = "start_minimized")]
     pub start_minimized: bool,
+    #[serde(alias = "check_for_updates")]
     pub check_for_updates: bool,
+    #[serde(alias = "browser_integration")]
     pub browser_integration: bool,
+    #[serde(alias = "ssh_agent_enabled")]
     pub ssh_agent_enabled: bool,
+    #[serde(alias = "default_auto_type_sequence")]
     pub default_auto_type_sequence: String,
+    #[serde(alias = "recent_vaults")]
     pub recent_vaults: Vec<RecentVault>,
-    /// Scheduled backup configuration
+    #[serde(alias = "backup_config")]
     pub backup_config: Option<keepassex_core::scheduled_backup::BackupConfig>,
-    /// IDs of enabled password policies
+    #[serde(alias = "enabled_policy_ids")]
     pub enabled_policy_ids: Option<Vec<String>>,
-    /// Password policies (serialized)
+    #[serde(alias = "password_policies")]
     pub password_policies: Option<String>,
-    /// Sync configuration (provider, credentials, etc.)
+    #[serde(alias = "sync_config")]
     pub sync_config: Option<keepassex_core::sync::SyncConfig>,
-    /// Last sync timestamp (RFC3339)
+    #[serde(alias = "last_sync_at")]
     pub last_sync_at: Option<String>,
-    /// Last sync status (success, error, no_changes, conflict)
+    #[serde(alias = "last_sync_status")]
     pub last_sync_status: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RecentVault {
     pub path: String,
     pub name: String,
+    #[serde(alias = "last_opened")]
     pub last_opened: chrono::DateTime<chrono::Utc>,
 }
 
