@@ -1,7 +1,7 @@
 //! Composite key construction from master password + key file + hardware key
 
 use crate::error::{KeePassExError, Result};
-use sha2::{Sha256, Digest};
+use sha2::{Digest, Sha256};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// Composite key = SHA256(SHA256(password) || SHA256(keyfile) || ...)
@@ -12,7 +12,9 @@ pub struct CompositeKey {
 
 impl CompositeKey {
     pub fn new() -> Self {
-        Self { components: Vec::new() }
+        Self {
+            components: Vec::new(),
+        }
     }
 
     /// Add master password component
@@ -69,6 +71,8 @@ impl MasterKey {
 
     /// Derive encryption key and HMAC key from master key + master seed
     pub fn derive_keys(&self, master_seed: &[u8]) -> (Vec<u8>, Vec<u8>) {
+        use sha2::Sha512;
+
         // Encryption key: SHA256(master_seed || transformed_key || 0x01)
         let mut enc_hasher = Sha256::new();
         enc_hasher.update(master_seed);
@@ -76,14 +80,13 @@ impl MasterKey {
         enc_hasher.update(&[0x01u8]);
         let enc_key = enc_hasher.finalize().to_vec();
 
-        // HMAC key: SHA512(master_seed || transformed_key || 0x01) — first 32 bytes
-        use sha2::Sha512;
+        // HMAC key: SHA512(master_seed || transformed_key)
+        // NOTE: No 0x01 suffix — that is only for the encryption key
         let mut hmac_hasher = Sha512::new();
         hmac_hasher.update(master_seed);
         hmac_hasher.update(&self.key);
-        hmac_hasher.update(&[0x01u8]);
         let hmac_full = hmac_hasher.finalize();
-        let hmac_key = hmac_full[..32].to_vec();
+        let hmac_key = hmac_full.to_vec(); // full 64 bytes
 
         (enc_key, hmac_key)
     }
@@ -160,7 +163,12 @@ impl KeyFile {
         );
 
         let xml_bytes = xml.into_bytes();
-        (KeyFile::Xml { data: xml_bytes.clone() }, xml_bytes)
+        (
+            KeyFile::Xml {
+                data: xml_bytes.clone(),
+            },
+            xml_bytes,
+        )
     }
 }
 
@@ -185,10 +193,9 @@ fn parse_xml_key_file(data: &[u8]) -> Result<Vec<u8>> {
     let key_data = data_section[content_start..content_end].trim();
 
     // Try base64 decode first
-    if let Ok(decoded) = base64::Engine::decode(
-        &base64::engine::general_purpose::STANDARD,
-        key_data,
-    ) {
+    if let Ok(decoded) =
+        base64::Engine::decode(&base64::engine::general_purpose::STANDARD, key_data)
+    {
         return Ok(decoded);
     }
 
@@ -197,5 +204,7 @@ fn parse_xml_key_file(data: &[u8]) -> Result<Vec<u8>> {
         return Ok(decoded);
     }
 
-    Err(KeePassExError::Other("Cannot decode XML key file data".into()))
+    Err(KeePassExError::Other(
+        "Cannot decode XML key file data".into(),
+    ))
 }

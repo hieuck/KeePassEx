@@ -1,7 +1,7 @@
 //! Cryptography tests
 
+use crate::crypto::kdf::{derive_master_key, AesKdfParams, ArgonParams, KdfParams};
 use crate::crypto::keys::{CompositeKey, KeyFile};
-use crate::crypto::kdf::{KdfParams, ArgonParams, AesKdfParams, derive_master_key};
 
 #[test]
 fn test_composite_key_password_only() {
@@ -105,9 +105,12 @@ fn test_master_key_derive_keys() {
     let seed = vec![1u8; 32];
     let (enc_key, hmac_key) = key.derive_keys(&seed);
 
+    // enc_key is SHA256 output = 32 bytes
     assert_eq!(enc_key.len(), 32);
-    assert_eq!(hmac_key.len(), 32);
-    assert_ne!(enc_key, hmac_key);
+    // hmac_key is SHA512 output = 64 bytes (KDBX 4.x spec)
+    assert_eq!(hmac_key.len(), 64);
+    // They must be different
+    assert_ne!(enc_key, hmac_key[..32]);
 }
 
 #[test]
