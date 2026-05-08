@@ -31,7 +31,6 @@ pub fn run() {
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             Some(vec!["--minimized"]),
         ))
-        .plugin(tauri_plugin_updater::Builder::new().build())
         // App state
         .manage(state::AppState::new())
         // Commands

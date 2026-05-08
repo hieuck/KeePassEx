@@ -70,12 +70,6 @@
     }
   },
   "plugins": {
-    "shell": { "open": true },
-    "updater": {
-      "pubkey": "",
-      "endpoints": [
-        "https://releases.keepassex.app/{{target}}/{{arch}}/latest.json"
-      ]
-    }
+    "shell": { "open": true }
   }
 }

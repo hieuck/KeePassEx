@@ -46,7 +46,7 @@ jobs:
             echo "CHANGELOG_EOF"
           } >> $GITHUB_OUTPUT
 
-      - name: Create GitHub Release
+      - name: Create or update GitHub Release
         id: create-release
         uses: actions/github-script@v7
         env:
@@ -59,38 +59,25 @@ jobs:
             const prerelease = process.env.RELEASE_PRERELEASE === 'true';
             const notes = process.env.RELEASE_NOTES || 'See CHANGELOG.md for details.';
             const tagName = context.ref.replace('refs/tags/', '');
-
-            // Try to get existing release first (re-run scenario)
             let releaseId;
             try {
               const { data: existing } = await github.rest.repos.getReleaseByTag({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                tag: tagName,
+                owner: context.repo.owner, repo: context.repo.repo, tag: tagName,
               });
-              console.log(`Found existing release ${existing.id}, updating...`);
+              console.log(`Updating existing release ${existing.id}`);
               const { data: updated } = await github.rest.repos.updateRelease({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                release_id: existing.id,
-                name: `KeePassEx v${version}`,
-                body: notes,
-                draft: false,
-                prerelease,
+                owner: context.repo.owner, repo: context.repo.repo,
+                release_id: existing.id, name: `KeePassEx v${version}`,
+                body: notes, draft: false, prerelease,
               });
               releaseId = updated.id;
             } catch (e) {
               if (e.status !== 404) throw e;
-              // Release doesn't exist yet — create it
-              console.log('Creating new release...');
+              console.log('Creating new release');
               const { data } = await github.rest.repos.createRelease({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                tag_name: tagName,
-                name: `KeePassEx v${version}`,
-                body: notes,
-                draft: false,
-                prerelease,
+                owner: context.repo.owner, repo: context.repo.repo,
+                tag_name: tagName, name: `KeePassEx v${version}`,
+                body: notes, draft: false, prerelease,
               });
               releaseId = data.id;
             }
@@ -124,29 +111,24 @@ jobs:
 
       - name: Build desktop (Windows)
         run: pnpm --filter @keepassex/desktop tauri:build
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
-      - name: Find and upload Windows installers
+      - name: Upload Windows installers
         shell: pwsh
         run: |
           $releaseId = "${{ needs.create-release.outputs.release_id }}"
           $token = "${{ secrets.GITHUB_TOKEN }}"
           $repo = "${{ github.repository }}"
           $headers = @{ Authorization = "Bearer $token"; "Content-Type" = "application/octet-stream" }
-
           $patterns = @(
             "apps/desktop/src-tauri/target/release/bundle/msi/*.msi",
             "apps/desktop/src-tauri/target/release/bundle/nsis/*.exe"
           )
-
           foreach ($pattern in $patterns) {
-            $files = Get-ChildItem -Path $pattern -ErrorAction SilentlyContinue
-            foreach ($file in $files) {
+            foreach ($file in (Get-ChildItem -Path $pattern -ErrorAction SilentlyContinue)) {
               Write-Host "Uploading: $($file.Name)"
-              $uploadUrl = "https://uploads.github.com/repos/$repo/releases/$releaseId/assets?name=$([uri]::EscapeDataString($file.Name))"
-              Invoke-RestMethod -Uri $uploadUrl -Method Post -Headers $headers -InFile $file.FullName
+              $url = "https://uploads.github.com/repos/$repo/releases/$releaseId/assets?name=$([uri]::EscapeDataString($file.Name))"
+              try { Invoke-RestMethod -Uri $url -Method Post -Headers $headers -InFile $file.FullName }
+              catch { Write-Host "Skip (may already exist): $($_.Exception.Message)" }
             }
           }
 
@@ -180,25 +162,21 @@ jobs:
 
       - name: Build desktop (macOS Universal)
         run: pnpm --filter @keepassex/desktop tauri:build -- --target universal-apple-darwin
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
       - name: Upload macOS DMG
         run: |
           RELEASE_ID="${{ needs.create-release.outputs.release_id }}"
           TOKEN="${{ secrets.GITHUB_TOKEN }}"
           REPO="${{ github.repository }}"
-
           for file in apps/desktop/src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg; do
             [ -f "$file" ] || continue
             NAME=$(basename "$file")
             echo "Uploading: $NAME"
-            curl -sS --fail \
+            curl -sS \
               -H "Authorization: Bearer $TOKEN" \
               -H "Content-Type: application/octet-stream" \
               --data-binary @"$file" \
-              "https://uploads.github.com/repos/$REPO/releases/$RELEASE_ID/assets?name=${NAME// /%20}"
+              "https://uploads.github.com/repos/$REPO/releases/$RELEASE_ID/assets?name=${NAME// /%20}" || echo "Skip: may already exist"
           done
 
   # ─── Build Desktop — Linux x64 ───────────────────────────────────────────────
@@ -213,12 +191,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            libwebkit2gtk-4.1-dev \
-            libappindicator3-dev \
-            librsvg2-dev \
-            patchelf \
-            libssl-dev \
-            pkg-config
+            libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev \
+            patchelf libssl-dev pkg-config
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -240,33 +214,26 @@ jobs:
 
       - name: Build desktop (Linux)
         run: pnpm --filter @keepassex/desktop tauri:build
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
       - name: Upload Linux packages
         run: |
           RELEASE_ID="${{ needs.create-release.outputs.release_id }}"
           TOKEN="${{ secrets.GITHUB_TOKEN }}"
           REPO="${{ github.repository }}"
-
-          upload_file() {
+          upload_asset() {
             local file="$1"
-            local name
-            name=$(basename "$file")
-            # URL-encode spaces only (filenames shouldn't have special chars)
-            local encoded_name="${name// /%20}"
+            local name; name=$(basename "$file")
             echo "Uploading: $name"
-            curl -sS --fail \
+            curl -sS \
               -H "Authorization: Bearer $TOKEN" \
               -H "Content-Type: application/octet-stream" \
               --data-binary @"$file" \
-              "https://uploads.github.com/repos/$REPO/releases/$RELEASE_ID/assets?name=$encoded_name"
+              "https://uploads.github.com/repos/$REPO/releases/$RELEASE_ID/assets?name=${name// /%20}" || echo "Skip: may already exist"
           }
-
+          shopt -s globstar
           for ext in deb AppImage rpm; do
             for file in apps/desktop/src-tauri/target/release/bundle/**/*.$ext; do
-              [ -f "$file" ] && upload_file "$file"
+              [ -f "$file" ] && upload_asset "$file"
             done
           done
 
@@ -309,7 +276,6 @@ jobs:
             artifact: kpx.exe
             asset: kpx-windows-x86_64.exe
             cross: false
-
     steps:
       - uses: actions/checkout@v4
 
@@ -321,8 +287,7 @@ jobs:
       - name: Install cross-compilation tools (Linux ARM64)
         if: matrix.cross == true
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
+          sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu
           echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
 
       - name: Cache Rust
@@ -340,33 +305,20 @@ jobs:
       - name: Upload CLI binary (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
-          BINARY="target/${{ matrix.target }}/release/${{ matrix.artifact }}"
-          RELEASE_ID="${{ needs.create-release.outputs.release_id }}"
-          TOKEN="${{ secrets.GITHUB_TOKEN }}"
-          REPO="${{ github.repository }}"
-          ASSET="${{ matrix.asset }}"
-
-          echo "Uploading $BINARY as $ASSET"
-          curl -sS --fail \
-            -H "Authorization: Bearer $TOKEN" \
+          curl -sS \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/octet-stream" \
-            --data-binary @"$BINARY" \
-            "https://uploads.github.com/repos/$REPO/releases/$RELEASE_ID/assets?name=$ASSET"
+            --data-binary @"target/${{ matrix.target }}/release/${{ matrix.artifact }}" \
+            "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=${{ matrix.asset }}" || echo "Skip: may already exist"
 
       - name: Upload CLI binary (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $binary = "target/${{ matrix.target }}/release/${{ matrix.artifact }}"
-          $releaseId = "${{ needs.create-release.outputs.release_id }}"
-          $token = "${{ secrets.GITHUB_TOKEN }}"
-          $repo = "${{ github.repository }}"
-          $asset = "${{ matrix.asset }}"
-
-          Write-Host "Uploading $binary as $asset"
-          $headers = @{ Authorization = "Bearer $token"; "Content-Type" = "application/octet-stream" }
-          $uploadUrl = "https://uploads.github.com/repos/$repo/releases/$releaseId/assets?name=$asset"
-          Invoke-RestMethod -Uri $uploadUrl -Method Post -Headers $headers -InFile $binary
+          $headers = @{ Authorization = "Bearer ${{ secrets.GITHUB_TOKEN }}"; "Content-Type" = "application/octet-stream" }
+          $url = "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=${{ matrix.asset }}"
+          try { Invoke-RestMethod -Uri $url -Method Post -Headers $headers -InFile "target/${{ matrix.target }}/release/${{ matrix.artifact }}" }
+          catch { Write-Host "Skip: may already exist" }
 
   # ─── Build Server — Multi-platform ───────────────────────────────────────────
   build-server:
@@ -392,7 +344,6 @@ jobs:
             target: x86_64-pc-windows-msvc
             artifact: keepassex-server.exe
             asset: keepassex-server-windows-x86_64.exe
-
     steps:
       - uses: actions/checkout@v4
 
@@ -412,31 +363,20 @@ jobs:
       - name: Upload Server binary (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
-          BINARY="target/${{ matrix.target }}/release/${{ matrix.artifact }}"
-          RELEASE_ID="${{ needs.create-release.outputs.release_id }}"
-          TOKEN="${{ secrets.GITHUB_TOKEN }}"
-          REPO="${{ github.repository }}"
-          ASSET="${{ matrix.asset }}"
-
-          curl -sS --fail \
-            -H "Authorization: Bearer $TOKEN" \
+          curl -sS \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Content-Type: application/octet-stream" \
-            --data-binary @"$BINARY" \
-            "https://uploads.github.com/repos/$REPO/releases/$RELEASE_ID/assets?name=$ASSET"
+            --data-binary @"target/${{ matrix.target }}/release/${{ matrix.artifact }}" \
+            "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=${{ matrix.asset }}" || echo "Skip: may already exist"
 
       - name: Upload Server binary (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $binary = "target/${{ matrix.target }}/release/${{ matrix.artifact }}"
-          $releaseId = "${{ needs.create-release.outputs.release_id }}"
-          $token = "${{ secrets.GITHUB_TOKEN }}"
-          $repo = "${{ github.repository }}"
-          $asset = "${{ matrix.asset }}"
-
-          $headers = @{ Authorization = "Bearer $token"; "Content-Type" = "application/octet-stream" }
-          $uploadUrl = "https://uploads.github.com/repos/$repo/releases/$releaseId/assets?name=$asset"
-          Invoke-RestMethod -Uri $uploadUrl -Method Post -Headers $headers -InFile $binary
+          $headers = @{ Authorization = "Bearer ${{ secrets.GITHUB_TOKEN }}"; "Content-Type" = "application/octet-stream" }
+          $url = "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.release_id }}/assets?name=${{ matrix.asset }}"
+          try { Invoke-RestMethod -Uri $url -Method Post -Headers $headers -InFile "target/${{ matrix.target }}/release/${{ matrix.artifact }}" }
+          catch { Write-Host "Skip: may already exist" }
 
   # ─── Build Browser Extension ─────────────────────────────────────────────────
   build-extension:
@@ -464,43 +404,22 @@ jobs:
       - name: Build Firefox extension (MV2)
         run: pnpm --filter @keepassex/browser-extension build:firefox
 
-      - name: Package extensions
+      - name: Package and upload extensions
         run: |
           VERSION="${{ needs.create-release.outputs.version }}"
+          RELEASE_ID="${{ needs.create-release.outputs.release_id }}"
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          REPO="${{ github.repository }}"
           cd apps/browser-extension
           zip -r "keepassex-chrome-v${VERSION}.zip" dist-chrome/
           zip -r "keepassex-firefox-v${VERSION}.zip" dist-firefox/
-          ls -la keepassex-*.zip
-
-      - name: Upload Chrome extension
-        run: |
-          VERSION="${{ needs.create-release.outputs.version }}"
-          RELEASE_ID="${{ needs.create-release.outputs.release_id }}"
-          TOKEN="${{ secrets.GITHUB_TOKEN }}"
-          REPO="${{ github.repository }}"
-          FILE="apps/browser-extension/keepassex-chrome-v${VERSION}.zip"
-          NAME="keepassex-chrome-v${VERSION}.zip"
-
-          curl -sS --fail \
-            -H "Authorization: Bearer $TOKEN" \
-            -H "Content-Type: application/zip" \
-            --data-binary @"$FILE" \
-            "https://uploads.github.com/repos/$REPO/releases/$RELEASE_ID/assets?name=$NAME"
-
-      - name: Upload Firefox extension
-        run: |
-          VERSION="${{ needs.create-release.outputs.version }}"
-          RELEASE_ID="${{ needs.create-release.outputs.release_id }}"
-          TOKEN="${{ secrets.GITHUB_TOKEN }}"
-          REPO="${{ github.repository }}"
-          FILE="apps/browser-extension/keepassex-firefox-v${VERSION}.zip"
-          NAME="keepassex-firefox-v${VERSION}.zip"
-
-          curl -sS --fail \
-            -H "Authorization: Bearer $TOKEN" \
-            -H "Content-Type: application/zip" \
-            --data-binary @"$FILE" \
-            "https://uploads.github.com/repos/$REPO/releases/$RELEASE_ID/assets?name=$NAME"
+          for zip in keepassex-chrome-v${VERSION}.zip keepassex-firefox-v${VERSION}.zip; do
+            curl -sS \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "Content-Type: application/zip" \
+              --data-binary @"$zip" \
+              "https://uploads.github.com/repos/$REPO/releases/$RELEASE_ID/assets?name=$zip" || echo "Skip: may already exist"
+          done
 
   # ─── Build Server Docker Image ────────────────────────────────────────────────
   build-server-docker:
@@ -510,7 +429,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up QEMU (for ARM64 emulation)
+      - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
@@ -536,74 +455,53 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # ─── Generate Tauri Update Manifest ──────────────────────────────────────────
+  # ─── Generate Update Manifest ─────────────────────────────────────────────────
   generate-update-manifest:
-    name: Generate Tauri Update Manifest
+    name: Generate Update Manifest
     needs:
       - create-release
       - build-desktop-windows
       - build-desktop-macos
       - build-desktop-linux
     runs-on: ubuntu-latest
+    if: always()
     steps:
       - uses: actions/checkout@v4
 
-      - name: Generate latest.json for Tauri updater
+      - name: Generate latest.json
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
             const version = '${{ needs.create-release.outputs.version }}';
             const releaseId = '${{ needs.create-release.outputs.release_id }}';
-
-            // Get release assets
             const { data: release } = await github.rest.repos.getRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+              owner: context.repo.owner, repo: context.repo.repo,
               release_id: parseInt(releaseId),
             });
-
-            const assets = release.assets;
             const findUrl = (ext) => {
-              const a = assets.find(a => a.name.endsWith(ext));
+              const a = release.assets.find(a => a.name.endsWith(ext));
               return a ? a.browser_download_url : '';
             };
-
             const manifest = {
               version: `v${version}`,
-              notes: `See https://github.com/${context.repo.owner}/${context.repo.repo}/releases/tag/v${version}`,
+              notes: `https://github.com/${context.repo.owner}/${context.repo.repo}/releases/tag/v${version}`,
               pub_date: release.published_at,
               platforms: {
-                'windows-x86_64': {
-                  url: findUrl('.msi'),
-                  signature: '',
-                },
-                'darwin-x86_64': {
-                  url: findUrl('.dmg'),
-                  signature: '',
-                },
-                'darwin-aarch64': {
-                  url: findUrl('.dmg'),
-                  signature: '',
-                },
-                'linux-x86_64': {
-                  url: findUrl('.AppImage'),
-                  signature: '',
-                },
+                'windows-x86_64': { url: findUrl('.msi'), signature: '' },
+                'darwin-x86_64':  { url: findUrl('.dmg'), signature: '' },
+                'darwin-aarch64': { url: findUrl('.dmg'), signature: '' },
+                'linux-x86_64':   { url: findUrl('.AppImage'), signature: '' },
               },
             };
-
             fs.writeFileSync('latest.json', JSON.stringify(manifest, null, 2));
-            console.log('Generated latest.json:', JSON.stringify(manifest, null, 2));
-
-            // Upload to release
-            await github.rest.repos.uploadReleaseAsset({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: parseInt(releaseId),
-              name: 'latest.json',
-              data: fs.readFileSync('latest.json'),
-            });
+            try {
+              await github.rest.repos.uploadReleaseAsset({
+                owner: context.repo.owner, repo: context.repo.repo,
+                release_id: parseInt(releaseId), name: 'latest.json',
+                data: fs.readFileSync('latest.json'),
+              });
+            } catch(e) { console.log('latest.json may already exist:', e.message); }
 
   # ─── Release Summary ──────────────────────────────────────────────────────────
   release-summary:
@@ -626,34 +524,21 @@ jobs:
         with:
           script: |
             const results = {
-              '🖥️ Desktop Windows': '${{ needs.build-desktop-windows.result }}',
-              '🍎 Desktop macOS': '${{ needs.build-desktop-macos.result }}',
-              '🐧 Desktop Linux': '${{ needs.build-desktop-linux.result }}',
+              '🖥️ Desktop Windows':   '${{ needs.build-desktop-windows.result }}',
+              '🍎 Desktop macOS':     '${{ needs.build-desktop-macos.result }}',
+              '🐧 Desktop Linux':     '${{ needs.build-desktop-linux.result }}',
               '⌨️ CLI (5 platforms)': '${{ needs.build-cli.result }}',
               '🖧 Server (3 platforms)': '${{ needs.build-server.result }}',
               '🧩 Browser Extension': '${{ needs.build-extension.result }}',
-              '🐳 Docker Image': '${{ needs.build-server-docker.result }}',
-              '🔄 Update Manifest': '${{ needs.generate-update-manifest.result }}',
+              '🐳 Docker Image':      '${{ needs.build-server-docker.result }}',
+              '🔄 Update Manifest':   '${{ needs.generate-update-manifest.result }}',
             };
-
-            let md = `## 🚀 KeePassEx v${{ needs.create-release.outputs.version }} Release\n\n`;
-            md += `| Component | Status |\n|---|---|\n`;
-
+            let md = `## 🚀 KeePassEx v${{ needs.create-release.outputs.version }} Release\n\n| Component | Status |\n|---|---|\n`;
             let failed = false;
             for (const [name, result] of Object.entries(results)) {
               const icon = result === 'success' ? '✅' : result === 'skipped' ? '⏭️' : '❌';
               md += `| ${name} | ${icon} ${result} |\n`;
               if (result === 'failure') failed = true;
             }
-
-            md += `\n### Release Assets\n`;
-            md += `- Windows: \`.msi\` installer (NSIS)\n`;
-            md += `- macOS: Universal \`.dmg\` (Intel + Apple Silicon)\n`;
-            md += `- Linux: \`.deb\` + \`.AppImage\` + \`.rpm\`\n`;
-            md += `- CLI: \`kpx\` binaries for Linux x64/arm64, macOS x64/arm64, Windows x64\n`;
-            md += `- Server: \`keepassex-server\` for Linux x64, macOS arm64, Windows x64\n`;
-            md += `- Browser: \`keepassex-chrome-v*.zip\` + \`keepassex-firefox-v*.zip\`\n`;
-            md += `- Docker: \`ghcr.io/${{ github.repository_owner }}/keepassex-server:${{ needs.create-release.outputs.version }}\`\n`;
-
             await core.summary.addRaw(md).write();
             if (failed) core.setFailed('One or more release jobs failed');
