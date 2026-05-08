@@ -180,8 +180,10 @@ pub fn run() {
             // Setup system tray
             tray::setup_tray(app)?;
 
-            // Setup global shortcuts
-            setup_shortcuts(app)?;
+            // Setup global shortcuts — ignore if hotkey already registered
+            if let Err(e) = setup_shortcuts(app) {
+                tracing::warn!("Could not register global shortcuts: {}", e);
+            }
 
             Ok(())
         })
@@ -204,7 +206,10 @@ fn setup_shortcuts(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error
 
     // Ctrl+Alt+K — Show/hide window
     let shortcut = "CommandOrControl+Alt+K".parse::<Shortcut>()?;
-    app.global_shortcut()
+
+    // Ignore if already registered (e.g. another instance running)
+    let _ = app
+        .global_shortcut()
         .on_shortcut(shortcut, |app, _shortcut, event| {
             if event.state() == ShortcutState::Pressed {
                 if let Some(window) = app.get_webview_window("main") {
@@ -216,7 +221,7 @@ fn setup_shortcuts(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error
                     }
                 }
             }
-        })?;
+        });
 
     Ok(())
 }
