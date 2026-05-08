@@ -170,7 +170,7 @@ jobs:
         run: pnpm --filter @keepassex/desktop build
 
       - name: Build desktop (macOS ARM64)
-        run: pnpm --filter @keepassex/desktop tauri:build -- --target aarch64-apple-darwin -b dmg
+        run: pnpm --filter @keepassex/desktop tauri:build -- --target aarch64-apple-darwin
         env:
           RUST_BACKTRACE: 1
 
@@ -179,16 +179,20 @@ jobs:
           RELEASE_ID="${{ needs.create-release.outputs.release_id }}"
           TOKEN="${{ secrets.GITHUB_TOKEN }}"
           REPO="${{ github.repository }}"
-          # Tauri builds to workspace root target/
-          for file in target/aarch64-apple-darwin/release/bundle/dmg/*.dmg; do
-            [ -f "$file" ] || continue
-            NAME=$(basename "$file")
-            echo "Uploading: $NAME"
-            curl -sS \
-              -H "Authorization: Bearer $TOKEN" \
-              -H "Content-Type: application/octet-stream" \
-              --data-binary @"$file" \
-              "https://uploads.github.com/repos/$REPO/releases/$RELEASE_ID/assets?name=${NAME// /%20}" || echo "Skip: may already exist"
+          # Search both target paths (with and without --target flag)
+          for dir in \
+            "target/aarch64-apple-darwin/release/bundle/dmg" \
+            "target/release/bundle/dmg"; do
+            for file in "$dir"/*.dmg; do
+              [ -f "$file" ] || continue
+              NAME=$(basename "$file")
+              echo "Uploading: $NAME"
+              curl -sS \
+                -H "Authorization: Bearer $TOKEN" \
+                -H "Content-Type: application/octet-stream" \
+                --data-binary @"$file" \
+                "https://uploads.github.com/repos/$REPO/releases/$RELEASE_ID/assets?name=${NAME// /%20}" || echo "Skip: may already exist"
+            done
           done
 
   # ─── Build Desktop — Linux x64 ───────────────────────────────────────────────
