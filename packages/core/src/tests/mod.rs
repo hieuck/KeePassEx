@@ -29,6 +29,8 @@ mod health_tests;
 #[cfg(test)]
 mod import_tests;
 #[cfg(test)]
+mod kdbx4_roundtrip_test;
+#[cfg(test)]
 mod kdbx_compat_test;
 #[cfg(test)]
 mod kdbx_tests;

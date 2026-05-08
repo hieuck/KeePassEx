@@ -61,7 +61,10 @@ impl KdbxReader {
         let master_key = MasterKey::new(transformed_key);
         let (enc_key, hmac_key) = master_key.derive_keys(&master_seed);
 
-        // Verify header HMAC
+        // KDBX 4.x has TWO checksums after the header:
+        // 1. Header SHA256 (32 bytes) — integrity check
+        // 2. Header HMAC (32 bytes) — authentication check
+        let _header_sha256 = read_bytes_exact(&mut cursor, 32)?; // skip SHA256
         let stored_header_hmac = read_bytes_exact(&mut cursor, 32)?;
         let computed_hmac = compute_header_hmac(&hmac_key, header_data)?;
         if stored_header_hmac != computed_hmac {

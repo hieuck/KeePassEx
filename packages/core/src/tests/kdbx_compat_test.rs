@@ -81,18 +81,20 @@ mod kdbx_compat_tests {
         let block_index: u64 = 0;
         let data = b"hello world";
 
+        // Block key = SHA512(block_index_le64 || hmac_key) — full 64 bytes
         let mut h = Sha512::new();
         h.update(block_index.to_le_bytes());
         h.update(&hmac_key);
-        let block_key = h.finalize();
+        let block_key = h.finalize(); // 64 bytes
 
-        let mut mac = HmacSha256::new_from_slice(&block_key[..32]).unwrap();
+        // HMAC-SHA256 with full 64-byte block key
+        let mut mac = HmacSha256::new_from_slice(&block_key).unwrap();
         mac.update(&block_index.to_le_bytes());
         mac.update(&(data.len() as u32).to_le_bytes());
         mac.update(data);
         let expected: [u8; 32] = mac.finalize().into_bytes().into();
 
         let computed = compute_block_hmac(&hmac_key, block_index, data).unwrap();
-        assert_eq!(computed, expected);
+        assert_eq!(computed, expected, "block HMAC must use full 64-byte key");
     }
 }

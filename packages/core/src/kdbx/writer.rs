@@ -62,7 +62,10 @@ impl KdbxWriter {
         header_data_for_hmac.extend_from_slice(&KDBX_VERSION_4_1.to_le_bytes());
         header_data_for_hmac.extend_from_slice(&header_fields);
 
-        // Compute header HMAC over the full header (sig + version + fields)
+        // Compute header SHA256 (integrity) and HMAC (authentication)
+        // KDBX 4.x writes both after the header
+        use sha2::{Digest, Sha256};
+        let header_sha256: [u8; 32] = Sha256::digest(&header_data_for_hmac).into();
         let header_hmac = compute_header_hmac(&hmac_key, &header_data_for_hmac)?;
 
         // Build XML payload
@@ -84,13 +87,14 @@ impl KdbxWriter {
         // Build HMAC blocks
         let blocks = self.build_hmac_blocks(&encrypted, &hmac_key)?;
 
-        // Assemble final file: sig + version + header_fields + header_hmac + blocks
+        // Assemble final file: sig + version + header_fields + header_sha256 + header_hmac + blocks
         let mut output = Vec::new();
         output.extend_from_slice(&KDBX_SIGNATURE_1.to_le_bytes());
         output.extend_from_slice(&KDBX_SIGNATURE_2.to_le_bytes());
         output.extend_from_slice(&KDBX_VERSION_4_1.to_le_bytes());
         output.extend_from_slice(&header_fields);
-        output.extend_from_slice(&header_hmac);
+        output.extend_from_slice(&header_sha256); // SHA256 first
+        output.extend_from_slice(&header_hmac); // HMAC second
         output.extend_from_slice(&blocks);
 
         Ok(output)
