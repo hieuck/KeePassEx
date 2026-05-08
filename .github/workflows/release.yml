@@ -170,7 +170,7 @@ jobs:
         run: pnpm --filter @keepassex/desktop build
 
       - name: Build desktop (macOS ARM64)
-        run: pnpm --filter @keepassex/desktop tauri:build -- --target aarch64-apple-darwin --bundles dmg
+        run: pnpm --filter @keepassex/desktop tauri:build -- --target aarch64-apple-darwin -b dmg
         env:
           RUST_BACKTRACE: 1
 
