@@ -134,16 +134,16 @@ jobs:
 
   # ─── Build Desktop — macOS Universal ─────────────────────────────────────────
   build-desktop-macos:
-    name: Desktop — macOS Universal (Intel + Apple Silicon)
+    name: Desktop — macOS ARM64 (Apple Silicon)
     needs: create-release
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Rust stable + Apple targets
+      - name: Install Rust stable + Apple target
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-apple-darwin,x86_64-apple-darwin
+          targets: aarch64-apple-darwin
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
@@ -160,15 +160,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build desktop (macOS Universal)
-        run: pnpm --filter @keepassex/desktop tauri:build -- --target universal-apple-darwin
+      - name: Build desktop (macOS ARM64)
+        run: pnpm --filter @keepassex/desktop tauri:build -- --target aarch64-apple-darwin
 
       - name: Upload macOS DMG
         run: |
           RELEASE_ID="${{ needs.create-release.outputs.release_id }}"
           TOKEN="${{ secrets.GITHUB_TOKEN }}"
           REPO="${{ github.repository }}"
-          for file in apps/desktop/src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg; do
+          # Tauri builds to workspace root target/
+          for file in target/aarch64-apple-darwin/release/bundle/dmg/*.dmg; do
             [ -f "$file" ] || continue
             NAME=$(basename "$file")
             echo "Uploading: $NAME"
@@ -230,11 +231,11 @@ jobs:
               --data-binary @"$file" \
               "https://uploads.github.com/repos/$REPO/releases/$RELEASE_ID/assets?name=${name// /%20}" || echo "Skip: may already exist"
           }
-          shopt -s globstar
-          for ext in deb AppImage rpm; do
-            for file in apps/desktop/src-tauri/target/release/bundle/**/*.$ext; do
-              [ -f "$file" ] && upload_asset "$file"
-            done
+          # Tauri builds to workspace root target/, not apps/desktop/src-tauri/target/
+          for file in target/release/bundle/deb/*.deb \
+                      target/release/bundle/appimage/*.AppImage \
+                      target/release/bundle/rpm/*.rpm; do
+            [ -f "$file" ] && upload_asset "$file"
           done
 
   # ─── Build CLI — Multi-platform ──────────────────────────────────────────────
