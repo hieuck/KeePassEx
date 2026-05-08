@@ -109,6 +109,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build frontend
+        run: pnpm --filter @keepassex/desktop build
+
       - name: Build desktop (Windows)
         run: pnpm --filter @keepassex/desktop tauri:build
 
@@ -163,8 +166,13 @@ jobs:
       - name: Regenerate icons (ensure valid icns for macOS)
         run: python3 scripts/gen_icons.py
 
+      - name: Build frontend
+        run: pnpm --filter @keepassex/desktop build
+
       - name: Build desktop (macOS ARM64)
-        run: pnpm --filter @keepassex/desktop tauri:build -- --target aarch64-apple-darwin
+        run: pnpm --filter @keepassex/desktop tauri:build -- --target aarch64-apple-darwin --bundles dmg
+        env:
+          RUST_BACKTRACE: 1
 
       - name: Upload macOS DMG
         run: |
@@ -215,6 +223,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        run: pnpm --filter @keepassex/desktop build
 
       - name: Build desktop (Linux)
         run: pnpm --filter @keepassex/desktop tauri:build
