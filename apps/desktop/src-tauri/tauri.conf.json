@@ -1,7 +1,7 @@
 {
   "productName": "KeePassEx",
   "version": "0.1.0",
-  "identifier": "com.keepassex.app",
+  "identifier": "com.keepassex.desktop",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1420",
@@ -54,7 +54,7 @@
     "longDescription": "KeePassEx — Native cross-platform password manager. Offline-first, zero-trust, KDBX 4.x compatible.",
     "macOS": {
       "minimumSystemVersion": "12.0",
-      "entitlements": null,
+      "entitlements": "entitlements.plist",
       "signingIdentity": null,
       "providerShortName": null
     },
