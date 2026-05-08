@@ -157,10 +157,10 @@ export function HealthPage() {
           </div>
 
           {/* Issue lists */}
-          {report.weakPasswords.length > 0 && (
+          {(report.weakPasswords ?? []).length > 0 && (
             <IssueSection
               title={`🔓 ${t('health.weakPasswords')}`}
-              items={report.weakPasswords.map(w => ({
+              items={(report.weakPasswords ?? []).map(w => ({
                 uuid: w.entryUuid,
                 title: w.entryTitle,
                 detail: w.strengthLabel,
@@ -170,10 +170,10 @@ export function HealthPage() {
             />
           )}
 
-          {report.reusedPasswords.length > 0 && (
+          {(report.reusedPasswords ?? []).length > 0 && (
             <div className="issue-section">
               <h3 className="issue-title">♻️ {t('health.reusedPasswords')}</h3>
-              {report.reusedPasswords.map((group, i) => (
+              {(report.reusedPasswords ?? []).map((group, i) => (
                 <div key={i} className="reused-group">
                   {group.entries.map(e => (
                     <button
@@ -189,10 +189,10 @@ export function HealthPage() {
             </div>
           )}
 
-          {report.expiredEntries.length > 0 && (
+          {(report.expiredEntries ?? []).length > 0 && (
             <IssueSection
               title={`⏰ ${t('health.expiredEntries')}`}
-              items={report.expiredEntries.map(e => ({
+              items={(report.expiredEntries ?? []).map(e => ({
                 uuid: e.entryUuid,
                 title: e.entryTitle,
                 detail: e.expiredAt,
@@ -202,10 +202,10 @@ export function HealthPage() {
             />
           )}
 
-          {report.expiringSoon.length > 0 && (
+          {(report.expiringSoon ?? []).length > 0 && (
             <IssueSection
               title={`📅 ${t('health.expiringSoon')}`}
-              items={report.expiringSoon.map(e => ({
+              items={(report.expiringSoon ?? []).map(e => ({
                 uuid: e.entryUuid,
                 title: e.entryTitle,
                 detail: `${e.daysRemaining} days`,

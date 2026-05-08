@@ -94,10 +94,10 @@ export function BreachPage() {
               )}
             </div>
 
-            {report.results.length > 0 && (
+            {(report.results ?? []).length > 0 && (
               <div className="breach-list">
                 <h3 className="breach-list-title">{t('breach.breachedPasswords')}</h3>
-                {report.results.map(r => (
+                {(report.results ?? []).map(r => (
                   <div key={r.entryUuid} className="breach-item">
                     <div className="breach-item-info">
                       <span className="breach-item-icon">⚠️</span>

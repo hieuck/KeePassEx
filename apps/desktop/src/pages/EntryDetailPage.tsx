@@ -91,7 +91,7 @@ export function EntryDetailPage() {
         tags: entry.tags,
         iconId: entry.iconId,
         expiry: entry.expiry ?? '',
-        customFields: entry.customFields.map(f => ({
+        customFields: (entry.customFields ?? []).map(f => ({
           key: f.key,
           value: f.value,
           protected: f.protected,

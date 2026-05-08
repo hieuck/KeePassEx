@@ -501,7 +501,7 @@ export function VaultPage() {
                 <div className="preview-field">
                   <span className="preview-field-label">{t('entry.tags')}</span>
                   <div className="preview-tags">
-                    {previewEntry.tags.map(tag => (
+                    {(previewEntry.tags ?? []).map(tag => (
                       <span key={tag} className="preview-tag">
                         {tag}
                       </span>
