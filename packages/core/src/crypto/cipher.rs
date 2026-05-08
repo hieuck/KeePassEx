@@ -103,15 +103,19 @@ impl Cipher {
                     .map_err(|_| KeePassExError::DecryptionFailed)
             }
             CipherAlgorithm::Aes256Cbc => {
-                // AES-256-CBC with PKCS#7 padding (KDBX 3.1)
+                // AES-256-CBC without padding (KDBX 3.1 uses raw block streaming)
                 if self.key.len() < 32 || self.iv.len() < 16 {
                     return Err(KeePassExError::DecryptionFailed);
                 }
+                use aes::cipher::{BlockDecryptMut, KeyIvInit};
+                type Aes256CbcDec = cbc::Decryptor<aes::Aes256>;
                 let decryptor = Aes256CbcDec::new_from_slices(&self.key[..32], &self.iv[..16])
                     .map_err(|_| KeePassExError::DecryptionFailed)?;
+                // Use NoPadding — KDBX 3.1 does not use PKCS7 padding
+                use aes::cipher::block_padding::NoPadding;
                 let mut buf = ciphertext.to_vec();
                 decryptor
-                    .decrypt_padded_mut::<Pkcs7>(&mut buf)
+                    .decrypt_padded_mut::<NoPadding>(&mut buf)
                     .map(|s| s.to_vec())
                     .map_err(|_| KeePassExError::DecryptionFailed)
             }

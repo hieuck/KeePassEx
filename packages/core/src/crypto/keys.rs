@@ -70,25 +70,36 @@ impl MasterKey {
     }
 
     /// Derive encryption key and HMAC key from master key + master seed
+    /// KDBX 4.x: enc_key = SHA256(seed || key || 0x01), hmac_key = SHA512(seed || key || 0x01)
+    /// KDBX 3.1: enc_key = SHA256(seed || key)  (no suffix, no hmac_key)
     pub fn derive_keys(&self, master_seed: &[u8]) -> (Vec<u8>, Vec<u8>) {
         use sha2::Sha512;
 
-        // Encryption key: SHA256(master_seed || transformed_key || 0x01)
+        // KDBX 4.x encryption key: SHA256(master_seed || transformed_key || 0x01)
         let mut enc_hasher = Sha256::new();
         enc_hasher.update(master_seed);
         enc_hasher.update(&self.key);
         enc_hasher.update(&[0x01u8]);
         let enc_key = enc_hasher.finalize().to_vec();
 
-        // HMAC key: SHA512(master_seed || transformed_key)
-        // NOTE: No 0x01 suffix — that is only for the encryption key
+        // KDBX 4.x HMAC key: SHA512(master_seed || transformed_key || 0x01) — 64 bytes
         let mut hmac_hasher = Sha512::new();
         hmac_hasher.update(master_seed);
         hmac_hasher.update(&self.key);
-        let hmac_full = hmac_hasher.finalize();
-        let hmac_key = hmac_full.to_vec(); // full 64 bytes
+        hmac_hasher.update(&[0x01u8]);
+        let hmac_key = hmac_hasher.finalize().to_vec();
 
         (enc_key, hmac_key)
+    }
+
+    /// Derive encryption key for KDBX 3.1
+    /// KDBX 3.1: enc_key = SHA256(master_seed || transformed_key)
+    /// Note: transformed_key is already the AES-KDF output (32 bytes)
+    pub fn derive_key_v3(&self, master_seed: &[u8]) -> Vec<u8> {
+        let mut hasher = Sha256::new();
+        hasher.update(master_seed);
+        hasher.update(&self.key);
+        hasher.finalize().to_vec()
     }
 }
 

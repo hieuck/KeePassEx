@@ -72,7 +72,12 @@ impl KdbxReader {
         let payload = self.read_hmac_blocks(&mut cursor, &hmac_key)?;
 
         // Decrypt payload
-        let cipher = Cipher::new(cipher_algo, enc_key, encryption_iv);
+        let cipher = Cipher::new(cipher_algo.clone(), enc_key, encryption_iv);
+        tracing::debug!(
+            "Decrypting with cipher: {:?}, payload_len: {}",
+            cipher_algo,
+            payload.len()
+        );
         let decrypted = cipher.decrypt(&payload)?;
 
         // Decompress
@@ -107,17 +112,16 @@ impl KdbxReader {
         // Derive master key (AES-KDF for KDBX 3.1)
         let transformed_key = derive_master_key(composite_key, &kdf_params)?;
         let master_key = MasterKey::new(transformed_key);
-        let (enc_key, _hmac_key) = master_key.derive_keys(&master_seed);
+        // KDBX 3.1: enc_key = SHA256(masterSeed || transformedKey) — no 0x01 suffix
+        let enc_key = master_key.derive_key_v3(&master_seed);
 
-        // Skip the 32-byte header hash (KDBX 3.1 uses SHA-256, not HMAC)
-        let _header_hash = read_bytes_exact(&mut cursor, 32)?;
-
-        // Read remaining encrypted data
+        // KDBX 3.1: ciphertext starts immediately after EndOfHeader
+        // (no 32-byte header hash prefix — that's stored inside the XML, not before ciphertext)
         let pos = cursor.position() as usize;
         let encrypted = cursor.into_inner()[pos..].to_vec();
 
         // Decrypt with AES-256-CBC
-        let cipher = Cipher::new(cipher_algo, enc_key, encryption_iv);
+        let cipher = Cipher::new(cipher_algo, enc_key.clone(), encryption_iv.clone());
         let decrypted = cipher.decrypt(&encrypted)?;
 
         // Verify stream start bytes (first 32 bytes of decrypted payload)

@@ -1,8 +1,8 @@
 //! Key Derivation Functions
 
 use crate::error::{KeePassExError, Result};
-use argon2::{Argon2, Algorithm, Version, Params};
-use sha2::{Sha256, Digest};
+use argon2::{Algorithm, Argon2, Params, Version};
+use sha2::{Digest, Sha256};
 use zeroize::Zeroize;
 
 /// KDF variant
@@ -77,6 +77,8 @@ impl Kdf for Argon2Kdf {
 }
 
 /// AES-KDF implementation (for KDBX 3.1 compatibility)
+/// KeePass uses AES-CBC(key=seed, iv=data_half) to encrypt zeros,
+/// then takes the last 16 bytes as the new data half.
 pub struct AesKdf {
     pub params: AesKdfParams,
 }
@@ -92,7 +94,8 @@ impl Kdf for AesKdf {
         let mut key = [0u8; 32];
         key.copy_from_slice(&composite_key[..32]);
 
-        // Split into two 16-byte blocks and encrypt `rounds` times
+        // KeePass AES-KDF: encrypt each 16-byte half independently
+        // using AES-ECB (equivalent to AES-CBC with zero IV on each block)
         let mut block_a = aes::Block::clone_from_slice(&key[..16]);
         let mut block_b = aes::Block::clone_from_slice(&key[16..]);
 
@@ -104,7 +107,7 @@ impl Kdf for AesKdf {
         key[..16].copy_from_slice(&block_a);
         key[16..].copy_from_slice(&block_b);
 
-        // Final SHA-256
+        // Final SHA-256 of the AES-KDF output (per KeePass spec)
         let mut hasher = Sha256::new();
         hasher.update(&key);
         let result = hasher.finalize().to_vec();
