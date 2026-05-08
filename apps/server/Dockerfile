@@ -3,7 +3,7 @@
 # Build context: repository root (docker build -f apps/server/Dockerfile .)
 
 # ─── Stage 1: Build ───────────────────────────────────────────────────────────
-FROM rust:1.82-slim AS builder
+FROM rust:1.86-slim AS builder
 
 WORKDIR /build
 
