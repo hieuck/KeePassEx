@@ -112,17 +112,27 @@ def make_ico(sizes=((16,16),(32,32),(48,48),(256,256))) -> bytes:
 
 
 def make_icns() -> bytes:
-    """Create a minimal ICNS file (macOS icon)."""
-    # ICNS format: 'icns' magic + total size + icon entries
-    # We'll embed a 512x512 PNG as 'ic09' (512x512 PNG)
-    png_512 = make_png(512, 512)
-    png_1024 = make_png(1024, 1024)
+    """Create a valid ICNS file with all required sizes for macOS bundling."""
+    # Tauri requires these sizes in the icns file
+    # Type codes: is32=16, il32=32, ih32=48, it32=128, ic04=16, ic05=32,
+    #             ic07=128, ic08=256, ic09=512, ic10=1024
+    sizes_and_types = [
+        (16,   b'icp4'),   # 16x16
+        (32,   b'icp5'),   # 32x32
+        (64,   b'icp6'),   # 64x64
+        (128,  b'ic07'),   # 128x128
+        (256,  b'ic08'),   # 256x256
+        (512,  b'ic09'),   # 512x512
+        (1024, b'ic10'),   # 1024x1024 (Retina 512x512@2x)
+    ]
 
     def icns_entry(type_code: bytes, data: bytes) -> bytes:
         return type_code + struct.pack('>I', len(data) + 8) + data
 
-    entries = icns_entry(b'ic09', png_512)   # 512x512
-    entries += icns_entry(b'ic10', png_1024) # 1024x1024 (Retina)
+    entries = b''
+    for size, type_code in sizes_and_types:
+        png_data = make_png(size, size)
+        entries += icns_entry(type_code, png_data)
 
     total_size = 8 + len(entries)
     return b'icns' + struct.pack('>I', total_size) + entries
