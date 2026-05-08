@@ -175,7 +175,7 @@ export function HealthPage() {
               <h3 className="issue-title">♻️ {t('health.reusedPasswords')}</h3>
               {(report.reusedPasswords ?? []).map((group, i) => (
                 <div key={i} className="reused-group">
-                  {group.entries.map(e => (
+                  {(group.entries ?? []).map(e => (
                     <button
                       key={e.uuid}
                       className="issue-item"
