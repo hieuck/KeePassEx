@@ -123,8 +123,8 @@ jobs:
           $repo = "${{ github.repository }}"
           $headers = @{ Authorization = "Bearer $token"; "Content-Type" = "application/octet-stream" }
           $patterns = @(
-            "apps/desktop/src-tauri/target/release/bundle/msi/*.msi",
-            "apps/desktop/src-tauri/target/release/bundle/nsis/*.exe"
+            "target/release/bundle/msi/*.msi",
+            "target/release/bundle/nsis/*.exe"
           )
           foreach ($pattern in $patterns) {
             foreach ($file in (Get-ChildItem -Path $pattern -ErrorAction SilentlyContinue)) {
