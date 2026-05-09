@@ -9,6 +9,42 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 > Các thay đổi chưa được release. Sẽ trở thành v0.2.0.
 
+### Added (v0.2.0 — 2026-05-09) — continued
+
+#### 🛡️ Health Page — Exclusive Features
+
+- **`commands/health.rs`** — `get_rotation_recommendations`: password rotation engine with urgency levels (aging/soon/overdue/expired), category-aware schedules (banking 90d, email 180d, social 365d). **No competitor has proactive rotation engine.**
+- **`commands/health.rs`** — `find_duplicate_entries`: detects same password, same URL+username, same title across all entries. **No competitor has built-in duplicate detection.**
+- **`HealthPage.tsx`** — Password Rotation section with urgency color badges + Duplicate Detection section with reason labels.
+
+#### 📱 Mobile — New Screens (continued)
+
+- **`EntryHistoryScreen.tsx`** — View and restore entry history versions with expand/collapse, restore confirmation. **No competitor shows entry history on mobile.**
+- **`App.tsx`** — Added `EntryHistory` route.
+
+#### 📱 Mobile — Wired (continued)
+
+- **`EmergencyAccessScreen.tsx`** — Wired to `KeePassExCore.getEmergencyGrants/addEmergencyGrant/revokeEmergencyGrant`. Fixed hardcoded `STATUS_LABELS` → i18n keys.
+- **`PluginsScreen.tsx`** — Wired to `KeePassExCore.listPlugins/togglePlugin/uninstallPlugin`. Fixed hardcoded strings → i18n.
+
+#### 🖥️ Desktop — Wired (continued)
+
+- **`EmergencyAccessPage.tsx`** — Fully wired to real Tauri commands (was all `Promise.resolve()` stubs).
+- **`PluginsPage.tsx`** — Fully wired to real Tauri commands. Install from file, toggle, uninstall.
+- **`AnalyticsPage.tsx`** — Fixed hardcoded `'days avg'`, `'> 1 year'`, `'changed 30d'` → i18n.
+- **`PasswordPolicyPage.tsx`** — Fixed hardcoded test section strings → i18n.
+- **`AuditLogPage.tsx`**, **`BackupPage.tsx`**, **`StatisticsPage.tsx`** — Fixed hardcoded Vietnamese → `t('vault.openToView')`.
+
+#### 🔧 CI/CD
+
+- **`.github/workflows/ci.yml`** — Removed `continue-on-error: true` from ESLint (lint failures now block PRs).
+
+#### 🌍 i18n (10 languages, all in parity) — continued
+
+- `health.passwordRotation`, `passwordRotationDesc`, `duplicateEntries`, `duplicateEntriesDesc`, `duplicateSamePassword`, `duplicateSameUrlUser`, `duplicateSameTitle`
+- `passwordPolicy.testPassword`, `testPasswordDesc`, `testPasswordPlaceholder`, `enableAtLeastOne`
+- `analytics.daysAvg`, `olderThan1Year`, `changedLast30Days`
+
 ### Added (v0.2.0 — 2026-05-09)
 
 #### 🔐 Security
@@ -17,6 +53,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **`apps/server/src/rate_limit.rs`** — In-memory rate limiter (DashMap sliding window): login 5/15min, register 3/hour per IP. Returns HTTP 429 with `Retry-After`. 4 unit tests.
 - **`apps/server/src/api/auth.rs`** — Integrated rate limiting into login/register handlers. Reset on successful login.
 - **`apps/server/src/error.rs`** — Added `RateLimited(u64)` variant → HTTP 429 with `retry_after` field.
+- **`apps/server/src/main.rs`** — CORS restricted to KeePassEx origins (was `allow_origin(Any)`).
 
 #### 🖥️ Desktop
 

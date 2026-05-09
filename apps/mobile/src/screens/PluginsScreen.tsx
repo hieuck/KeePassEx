@@ -6,10 +6,13 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Switch, Alert } f
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { NativeModules } from 'react-native';
 import { useThemeStore } from '../store/theme';
 import { useTranslation } from '../store/i18n';
 import { tokens } from '@keepassex/ui';
 import type { InstalledPlugin } from '@keepassex/types';
+
+const { KeePassExCore } = NativeModules;
 
 const CATALOG = [
   {
@@ -39,18 +42,20 @@ export function PluginsScreen() {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<'installed' | 'catalog'>('installed');
 
-  const { data: plugins = [] } = useQuery<InstalledPlugin[]>({
+  const { data: plugins = [], isLoading } = useQuery<InstalledPlugin[]>({
     queryKey: ['plugins'],
-    queryFn: () => Promise.resolve([]),
+    queryFn: () => KeePassExCore.listPlugins(),
+    staleTime: 30_000,
   });
 
   const toggleMutation = useMutation({
-    mutationFn: ({ id, enabled }: { id: string; enabled: boolean }) => Promise.resolve(),
+    mutationFn: ({ id, enabled }: { id: string; enabled: boolean }) =>
+      KeePassExCore.togglePlugin(id, enabled),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['plugins'] }),
   });
 
   const uninstallMutation = useMutation({
-    mutationFn: (id: string) => Promise.resolve(),
+    mutationFn: (id: string) => KeePassExCore.uninstallPlugin(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['plugins'] }),
   });
 
@@ -137,19 +142,24 @@ export function PluginsScreen() {
                 <TouchableOpacity
                   style={[styles.uninstallBtn, { borderColor: tokens.color.danger }]}
                   onPress={() =>
-                    Alert.alert('Uninstall Plugin', `Uninstall "${plugin.manifest.name}"?`, [
-                      { text: 'Cancel', style: 'cancel' },
-                      {
-                        text: 'Uninstall',
-                        style: 'destructive',
-                        onPress: () => uninstallMutation.mutate(plugin.manifest.id),
-                      },
-                    ])
+                    Alert.alert(
+                      t('plugins.uninstall'),
+                      t('plugins.confirmUninstall', { name: plugin.manifest.name }),
+                      [
+                        { text: t('common.cancel'), style: 'cancel' },
+                        {
+                          text: t('plugins.uninstall'),
+                          style: 'destructive',
+                          onPress: () => uninstallMutation.mutate(plugin.manifest.id),
+                        },
+                      ]
+                    )
                   }
                   accessibilityRole="button"
+                  accessibilityLabel={t('plugins.uninstall')}
                 >
                   <Text style={[styles.uninstallBtnText, { color: tokens.color.danger }]}>
-                    Uninstall
+                    {t('plugins.uninstall')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -168,10 +178,16 @@ export function PluginsScreen() {
                 </View>
                 <TouchableOpacity
                   style={[styles.installBtn, { backgroundColor: theme.primary }]}
-                  onPress={() => Alert.alert('Install', `Install "${item.name}"?`)}
+                  onPress={() =>
+                    Alert.alert(t('plugins.install'), `${t('plugins.install')}: "${item.name}"?`, [
+                      { text: t('common.cancel'), style: 'cancel' },
+                      { text: t('plugins.install'), onPress: () => {} },
+                    ])
+                  }
                   accessibilityRole="button"
+                  accessibilityLabel={`${t('plugins.install')} ${item.name}`}
                 >
-                  <Text style={styles.installBtnText}>Install</Text>
+                  <Text style={styles.installBtnText}>{t('plugins.install')}</Text>
                 </TouchableOpacity>
               </View>
               <Text style={[styles.cardDesc, { color: theme.textSecondary }]}>{item.desc}</Text>

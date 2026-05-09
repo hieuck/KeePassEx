@@ -1,8 +1,9 @@
 /**
- * Vault health audit page
+ * Vault health audit page — with password rotation engine and duplicate detection
+ * KeePassEx exclusive: rotation engine + duplicate detection built-in
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -34,6 +35,23 @@ interface HealthReport {
   }>;
 }
 
+interface RotationRec {
+  entryUuid: string;
+  entryTitle: string;
+  urgency: 'aging' | 'soon' | 'overdue' | 'expired';
+  urgencyColor: string;
+  ageDays: number;
+  recommendedMaxDays: number;
+  daysUntilOverdue: number;
+  messageEn: string;
+  messageVi: string;
+}
+
+interface DuplicateGroup {
+  reason: 'same_password' | 'same_url_username' | 'same_title';
+  entries: Array<{ uuid: string; title: string }>;
+}
+
 export function HealthPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -47,6 +65,20 @@ export function HealthPage() {
   } = useQuery({
     queryKey: ['health'],
     queryFn: () => invoke<HealthReport>('audit_vault'),
+    enabled: isOpen && !isLocked,
+    staleTime: 60_000,
+  });
+
+  const { data: rotations = [] } = useQuery({
+    queryKey: ['rotation-recommendations'],
+    queryFn: () => invoke<RotationRec[]>('get_rotation_recommendations'),
+    enabled: isOpen && !isLocked,
+    staleTime: 60_000,
+  });
+
+  const { data: duplicates = [] } = useQuery({
+    queryKey: ['duplicate-entries'],
+    queryFn: () => invoke<DuplicateGroup[]>('find_duplicate_entries'),
     enabled: isOpen && !isLocked,
     staleTime: 60_000,
   });
@@ -215,10 +247,66 @@ export function HealthPage() {
             />
           )}
 
+          {/* ── Password Rotation Engine — KeePassEx exclusive ── */}
+          {rotations.length > 0 && (
+            <div className="issue-section">
+              <h3 className="issue-title">🔄 {t('health.passwordRotation')}</h3>
+              <p className="issue-subtitle">{t('health.passwordRotationDesc')}</p>
+              {rotations.map(rec => (
+                <button
+                  key={rec.entryUuid}
+                  className="issue-item rotation-item"
+                  onClick={() => navigate(`/vault/entry/${rec.entryUuid}`)}
+                >
+                  <div className="rotation-item-left">
+                    <span className="issue-item-title">{rec.entryTitle}</span>
+                    <span className="rotation-age">{rec.ageDays}d old</span>
+                  </div>
+                  <span
+                    className="rotation-badge"
+                    style={{ background: rec.urgencyColor + '20', color: rec.urgencyColor }}
+                  >
+                    {rec.urgency}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* ── Duplicate Detection — KeePassEx exclusive ── */}
+          {duplicates.length > 0 && (
+            <div className="issue-section">
+              <h3 className="issue-title">🔁 {t('health.duplicateEntries')}</h3>
+              <p className="issue-subtitle">{t('health.duplicateEntriesDesc')}</p>
+              {duplicates.map((group, i) => (
+                <div key={i} className="reused-group">
+                  <div className="duplicate-reason-badge">
+                    {group.reason === 'same_password'
+                      ? `🔑 ${t('health.duplicateSamePassword')}`
+                      : group.reason === 'same_url_username'
+                        ? `🌐 ${t('health.duplicateSameUrlUser')}`
+                        : `📝 ${t('health.duplicateSameTitle')}`}
+                  </div>
+                  {group.entries.map(e => (
+                    <button
+                      key={e.uuid}
+                      className="issue-item"
+                      onClick={() => navigate(`/vault/entry/${e.uuid}`)}
+                    >
+                      <span className="issue-item-title">{e.title}</span>
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+
           {report.weakCount === 0 &&
             report.reusedCount === 0 &&
             report.expiredCount === 0 &&
-            report.expiringSoonCount === 0 && (
+            report.expiringSoonCount === 0 &&
+            rotations.length === 0 &&
+            duplicates.length === 0 && (
               <div className="health-all-good">
                 <span style={{ fontSize: 48 }}>🎉</span>
                 <p>{t('health.noIssues')}</p>
@@ -309,6 +397,12 @@ export function HealthPage() {
         }
         .reused-group .issue-item { border: none; border-bottom: 1px solid var(--color-border); border-radius: 0; }
         .reused-group .issue-item:last-child { border-bottom: none; }
+        .rotation-item { justify-content: space-between; }
+        .rotation-item-left { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
+        .rotation-age { font-size: 11px; color: var(--color-text-tertiary); }
+        .rotation-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: var(--radius-full); text-transform: capitalize; flex-shrink: 0; }
+        .issue-subtitle { font-size: 12px; color: var(--color-text-secondary); margin-bottom: var(--space-sm); }
+        .duplicate-reason-badge { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); padding: var(--space-xs) var(--space-md); background: var(--color-bg-tertiary); border-bottom: 1px solid var(--color-border); }
       `}</style>
     </div>
   );

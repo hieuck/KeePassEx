@@ -76,6 +76,8 @@ pub fn run() {
             commands::otp::remove_entry_otp,
             // Health commands
             commands::health::audit_vault,
+            commands::health::get_rotation_recommendations,
+            commands::health::find_duplicate_entries,
             // Clipboard commands
             commands::clipboard::copy_to_clipboard,
             commands::clipboard::clear_clipboard,

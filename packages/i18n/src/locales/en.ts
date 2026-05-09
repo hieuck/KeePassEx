@@ -232,6 +232,13 @@ export const en = {
     breachFound: '{{count}} password(s) found in data breaches!',
     breachNotFound: 'No passwords found in known data breaches.',
     checking: 'Checking...',
+    passwordRotation: 'Password Rotation',
+    passwordRotationDesc: 'Passwords that should be rotated based on age and category',
+    duplicateEntries: 'Duplicate Entries',
+    duplicateEntriesDesc: 'Entries with identical passwords, URLs, or titles',
+    duplicateSamePassword: 'Same password',
+    duplicateSameUrlUser: 'Same URL + username',
+    duplicateSameTitle: 'Same title',
   },
 
   // ─── OTP ───────────────────────────────────────────────────────────────────

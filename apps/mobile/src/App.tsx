@@ -33,6 +33,7 @@ import { AnalyticsScreen } from './screens/AnalyticsScreen';
 import { ShardingScreen } from './screens/ShardingScreen';
 import { GroupsScreen } from './screens/GroupsScreen';
 import { ChangePasswordScreen } from './screens/ChangePasswordScreen';
+import { EntryHistoryScreen } from './screens/EntryHistoryScreen';
 
 export type RootStackParamList = {
   Welcome: undefined;
@@ -51,6 +52,7 @@ export type RootStackParamList = {
   Sharding: undefined;
   Groups: undefined;
   ChangePassword: undefined;
+  EntryHistory: { entryUuid: string; entryTitle: string };
 };
 
 export type TabParamList = {
@@ -245,6 +247,11 @@ export function App() {
                     name="ChangePassword"
                     component={ChangePasswordScreen}
                     options={{ presentation: 'modal' }}
+                  />
+                  <Stack.Screen
+                    name="EntryHistory"
+                    component={EntryHistoryScreen}
+                    options={{ presentation: 'card' }}
                   />
                 </>
               )}
