@@ -42,6 +42,18 @@ export function MainLayout({ onOpenPalette }: MainLayoutProps) {
     retry: false,
   });
 
+  // Recently accessed entries
+  const { data: recentEntries = [] } = useQuery({
+    queryKey: ['recently-accessed-sidebar'],
+    queryFn: () =>
+      invoke<Array<{ uuid: string; title: string; username: string }>>('get_recently_accessed', {
+        limit: 3,
+      }),
+    enabled: isOpen && !isLocked,
+    staleTime: 30_000,
+    retry: false,
+  });
+
   const urgentRotations = (rotationSummary?.overdue ?? 0) + (rotationSummary?.soon ?? 0);
 
   const handleLock = async () => {
@@ -99,6 +111,23 @@ export function MainLayout({ onOpenPalette }: MainLayoutProps) {
         <div className="sidebar-groups">
           <GroupTree />
         </div>
+
+        {/* Recently Used Entries */}
+        {recentEntries.length > 0 && (
+          <div className="sidebar-recent">
+            <span className="sidebar-recent-label">{t('vaultFilter.recentlyUsed')}</span>
+            {recentEntries.map(entry => (
+              <NavLink
+                key={entry.uuid}
+                to={`/vault/entry/${entry.uuid}`}
+                className={({ isActive }) => `recent-entry-item ${isActive ? 'active' : ''}`}
+              >
+                <span className="recent-entry-icon">🔑</span>
+                <span className="recent-entry-title">{entry.title}</span>
+              </NavLink>
+            ))}
+          </div>
+        )}
 
         {/* Vault Health Score Widget */}
         {healthScore !== undefined && (
@@ -232,6 +261,13 @@ export function MainLayout({ onOpenPalette }: MainLayoutProps) {
         .health-widget-info { display: flex; flex-direction: column; gap: 1px; }
         .health-widget-label { font-size: 11px; color: var(--color-text-secondary); font-weight: 500; }
         .health-rotation-badge { font-size: 10px; color: #f59e0b; font-weight: 600; }
+        .sidebar-recent { display: flex; flex-direction: column; gap: 1px; padding: var(--space-xs) var(--space-sm); }
+        .sidebar-recent-label { font-size: 10px; font-weight: 700; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: .08em; padding: 0 var(--space-xs) var(--space-xs); }
+        .recent-entry-item { display: flex; align-items: center; gap: 6px; padding: 4px var(--space-xs); border-radius: var(--radius-sm); font-size: 12px; color: var(--color-text-secondary); text-decoration: none; transition: background .1s; }
+        .recent-entry-item:hover { background: var(--color-bg-tertiary); color: var(--color-text); }
+        .recent-entry-item.active { background: var(--color-primary); color: white; }
+        .recent-entry-icon { font-size: 12px; flex-shrink: 0; }
+        .recent-entry-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       `}</style>
     </div>
   );

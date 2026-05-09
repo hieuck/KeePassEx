@@ -178,6 +178,28 @@ impl Vault {
             .and_then(|u| self.entries.get(&u))
     }
 
+    /// Track entry access — increments usage_count and updates accessed_at
+    /// Called when user copies password, views entry, or uses autofill
+    pub fn track_entry_access(&mut self, uuid: &Uuid) {
+        if let Some(entry) = self.entries.get_mut(uuid) {
+            entry.usage_count += 1;
+            entry.accessed_at = chrono::Utc::now();
+            // Don't mark dirty — access tracking is lightweight
+        }
+    }
+
+    /// Get most recently accessed entries (for "Recently Used" widget)
+    pub fn recently_accessed(&self, limit: usize) -> Vec<&Entry> {
+        let mut entries: Vec<&Entry> = self
+            .entries
+            .values()
+            .filter(|e| e.usage_count > 0)
+            .collect();
+        entries.sort_by(|a, b| b.accessed_at.cmp(&a.accessed_at));
+        entries.truncate(limit);
+        entries
+    }
+
     pub fn create_entry(&mut self, group_uuid: Uuid) -> Result<Uuid> {
         if !self.groups.contains_key(&group_uuid) {
             return Err(KeePassExError::GroupNotFound {

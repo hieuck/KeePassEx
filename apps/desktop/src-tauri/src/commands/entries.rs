@@ -116,6 +116,28 @@ pub fn get_entry(
 /// Get entry password (requires explicit request)
 #[tauri::command]
 pub fn get_entry_password(uuid: String, state: State<'_, AppState>) -> Result<String, String> {
+    let mut vault_lock = state.vault.write().unwrap();
+    let open_vault = vault_lock.as_mut().ok_or("No vault open")?;
+
+    if open_vault.locked {
+        return Err("Vault is locked".into());
+    }
+
+    let uuid = Uuid::parse_str(&uuid).map_err(|e| e.to_string())?;
+
+    // Track access
+    open_vault.vault.track_entry_access(&uuid);
+
+    let entry = open_vault.vault.get_entry(&uuid).ok_or("Entry not found")?;
+    Ok(entry.password.get().to_string())
+}
+
+/// Get recently accessed entries (for Recently Used widget)
+#[tauri::command]
+pub fn get_recently_accessed(
+    limit: Option<usize>,
+    state: State<'_, AppState>,
+) -> Result<Vec<EntryDto>, String> {
     let vault_lock = state.vault.read().unwrap();
     let open_vault = vault_lock.as_ref().ok_or("No vault open")?;
 
@@ -123,10 +145,8 @@ pub fn get_entry_password(uuid: String, state: State<'_, AppState>) -> Result<St
         return Err("Vault is locked".into());
     }
 
-    let uuid = Uuid::parse_str(&uuid).map_err(|e| e.to_string())?;
-    let entry = open_vault.vault.get_entry(&uuid).ok_or("Entry not found")?;
-
-    Ok(entry.password.get().to_string())
+    let entries = open_vault.vault.recently_accessed(limit.unwrap_or(5));
+    Ok(entries.into_iter().map(entry_to_dto).collect())
 }
 
 /// Create a new entry

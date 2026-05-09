@@ -51,6 +51,7 @@ pub fn run() {
             commands::entries::get_entries,
             commands::entries::get_entry,
             commands::entries::get_entry_password,
+            commands::entries::get_recently_accessed,
             commands::entries::create_entry,
             commands::entries::update_entry,
             commands::entries::delete_entry,
