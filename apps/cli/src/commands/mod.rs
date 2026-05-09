@@ -18,6 +18,7 @@ pub mod rotation;
 pub mod search;
 pub mod server;
 pub mod shard;
+pub mod show;
 pub mod stats;
 pub mod steg;
 pub mod sync;

@@ -333,6 +333,18 @@ enum Commands {
         password2: Option<String>,
     },
 
+    /// Show entry details (like keepassxc-cli show)
+    Show {
+        /// Entry UUID (or prefix)
+        uuid: String,
+        /// Show password in plaintext
+        #[arg(long)]
+        show_password: bool,
+        /// Show only a specific field: title, username, password, url, notes, or custom field name
+        #[arg(short, long)]
+        field: Option<String>,
+    },
+
     /// Show vault audit log
     Audit {
         /// Number of recent events to show
@@ -576,6 +588,12 @@ async fn main() -> anyhow::Result<()> {
         }
 
         Commands::Audit { limit } => commands::audit::run(&vault, limit, &cli.format),
+
+        Commands::Show {
+            uuid,
+            show_password,
+            field,
+        } => commands::show::run(&vault, &uuid, show_password, field.as_deref(), &cli.format),
 
         Commands::Rotation { urgency } => {
             commands::rotation::run(&vault, urgency.as_deref(), &cli.format)
