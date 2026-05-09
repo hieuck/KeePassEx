@@ -10,6 +10,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { useVaultStore } from '../store/vault';
 import { GroupTree } from '../components/GroupTree';
 import { SearchBar } from '../components/SearchBar';
+import { ExpiryBanner } from '../components/ExpiryBanner';
 
 interface MainLayoutProps {
   onOpenPalette: () => void;
@@ -190,6 +191,8 @@ export function MainLayout({ onOpenPalette }: MainLayoutProps) {
 
       {/* Main content */}
       <main className="main-content" role="main">
+        {/* Expiry notification banner */}
+        <ExpiryBanner />
         <Outlet />
       </main>
 
