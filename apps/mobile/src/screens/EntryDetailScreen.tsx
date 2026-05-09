@@ -547,11 +547,24 @@ export function EntryDetailScreen() {
               </View>
             )}
             {entry.hasAttachments && (
-              <View style={[styles.featureBadge, { backgroundColor: theme.backgroundSecondary }]}>
-                <Text style={[styles.featureBadgeText, { color: theme.textSecondary }]}>
-                  📎 {t('entry.attachments')}
+              <TouchableOpacity
+                style={[
+                  styles.featureBadge,
+                  { backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#BFDBFE' },
+                ]}
+                onPress={() =>
+                  navigation.navigate('AttachmentViewer', {
+                    entryUuid: uuid,
+                    entryTitle: entry.title,
+                  })
+                }
+                accessibilityRole="button"
+                accessibilityLabel={t('entry.attachments')}
+              >
+                <Text style={[styles.featureBadgeText, { color: '#2563EB' }]}>
+                  📎 {t('entry.attachments')} →
                 </Text>
-              </View>
+              </TouchableOpacity>
             )}
           </View>
         )}

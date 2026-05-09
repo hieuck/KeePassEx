@@ -37,6 +37,7 @@ import { EntryHistoryScreen } from './screens/EntryHistoryScreen';
 import { SecureNoteScreen } from './screens/SecureNoteScreen';
 import { RotationScreen } from './screens/RotationScreen';
 import { SecuritySettingsScreen } from './screens/SecuritySettingsScreen';
+import { AttachmentViewerScreen } from './screens/AttachmentViewerScreen';
 
 export type RootStackParamList = {
   Welcome: undefined;
@@ -59,6 +60,7 @@ export type RootStackParamList = {
   SecureNote: { entryUuid?: string };
   Rotation: undefined;
   SecuritySettings: undefined;
+  AttachmentViewer: { entryUuid: string; entryTitle: string };
 };
 
 export type TabParamList = {
@@ -273,6 +275,11 @@ export function App() {
                     name="SecuritySettings"
                     component={SecuritySettingsScreen}
                     options={{ presentation: 'modal' }}
+                  />
+                  <Stack.Screen
+                    name="AttachmentViewer"
+                    component={AttachmentViewerScreen}
+                    options={{ presentation: 'card' }}
                   />
                 </>
               )}
