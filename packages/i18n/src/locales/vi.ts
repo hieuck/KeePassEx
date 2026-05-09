@@ -1127,6 +1127,14 @@ export const vi = {
   },
 
   // ─── TUI (Terminal UI) ─────────────────────────────────────────────────────
+  secureNote: {
+    title: 'Ghi chú bảo mật',
+    new: 'Ghi chú bảo mật mới',
+    chooseTemplate: 'Chọn mẫu:',
+    words: 'từ',
+    chars: 'ký tự',
+  },
+
   tui: {
     title: 'Giao diện Terminal',
     subtitle: 'Giao diện terminal đầy đủ tính năng với phím tắt kiểu vim',

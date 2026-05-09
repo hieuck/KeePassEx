@@ -34,6 +34,7 @@ import { ShardingScreen } from './screens/ShardingScreen';
 import { GroupsScreen } from './screens/GroupsScreen';
 import { ChangePasswordScreen } from './screens/ChangePasswordScreen';
 import { EntryHistoryScreen } from './screens/EntryHistoryScreen';
+import { SecureNoteScreen } from './screens/SecureNoteScreen';
 
 export type RootStackParamList = {
   Welcome: undefined;
@@ -53,6 +54,7 @@ export type RootStackParamList = {
   Groups: undefined;
   ChangePassword: undefined;
   EntryHistory: { entryUuid: string; entryTitle: string };
+  SecureNote: { entryUuid?: string };
 };
 
 export type TabParamList = {
@@ -252,6 +254,11 @@ export function App() {
                     name="EntryHistory"
                     component={EntryHistoryScreen}
                     options={{ presentation: 'card' }}
+                  />
+                  <Stack.Screen
+                    name="SecureNote"
+                    component={SecureNoteScreen}
+                    options={{ presentation: 'modal' }}
                   />
                 </>
               )}

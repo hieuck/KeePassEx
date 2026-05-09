@@ -1128,6 +1128,14 @@ export const ja = {
   },
 
   // ─── TUI (Terminal UI) ─────────────────────────────────────────────────────
+  secureNote: {
+    title: 'セキュアノート',
+    new: '新しいセキュアノート',
+    chooseTemplate: 'テンプレートを選択：',
+    words: '語',
+    chars: '文字',
+  },
+
   tui: {
     title: 'Terminal UI',
     subtitle: 'Full-featured terminal interface with vim-style keybindings',

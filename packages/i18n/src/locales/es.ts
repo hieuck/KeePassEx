@@ -1128,6 +1128,14 @@ export const es = {
   },
 
   // ─── TUI (Terminal UI) ─────────────────────────────────────────────────────
+  secureNote: {
+    title: 'Nota segura',
+    new: 'Nueva nota segura',
+    chooseTemplate: 'Elegir plantilla:',
+    words: 'palabras',
+    chars: 'caracteres',
+  },
+
   tui: {
     title: 'Terminal UI',
     subtitle: 'Full-featured terminal interface with vim-style keybindings',

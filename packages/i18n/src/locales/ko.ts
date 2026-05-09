@@ -1128,6 +1128,14 @@ export const ko = {
   },
 
   // ─── TUI (Terminal UI) ─────────────────────────────────────────────────────
+  secureNote: {
+    title: '보안 메모',
+    new: '새 보안 메모',
+    chooseTemplate: '템플릿 선택:',
+    words: '단어',
+    chars: '문자',
+  },
+
   tui: {
     title: 'Terminal UI',
     subtitle: 'Full-featured terminal interface with vim-style keybindings',

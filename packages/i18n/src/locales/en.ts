@@ -1127,6 +1127,23 @@ export const en = {
     changedLast30Days: 'changed 30d',
   },
 
+  // ─── Secure Note ──────────────────────────────────────────────────────────
+  secureNote: {
+    title: 'Secure Note',
+    new: 'New Secure Note',
+    chooseTemplate: 'Choose a template:',
+    words: 'words',
+    chars: 'chars',
+    templates: {
+      apiKey: 'API Key',
+      creditCard: 'Credit Card',
+      bankAccount: 'Bank Account',
+      general: 'General Note',
+      recoveryCodes: 'Recovery Codes',
+      serverInfo: 'Server Info',
+    },
+  },
+
   // ─── TUI (Terminal UI) ─────────────────────────────────────────────────────
   tui: {
     title: 'Terminal UI',

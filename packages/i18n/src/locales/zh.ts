@@ -1128,6 +1128,14 @@ export const zh = {
   },
 
   // ─── TUI (Terminal UI) ─────────────────────────────────────────────────────
+  secureNote: {
+    title: '安全笔记',
+    new: '新建安全笔记',
+    chooseTemplate: '选择模板：',
+    words: '词',
+    chars: '字符',
+  },
+
   tui: {
     title: 'Terminal UI',
     subtitle: 'Full-featured terminal interface with vim-style keybindings',

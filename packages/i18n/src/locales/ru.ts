@@ -1128,6 +1128,14 @@ export const ru = {
   },
 
   // ─── TUI (Terminal UI) ─────────────────────────────────────────────────────
+  secureNote: {
+    title: 'Защищённая заметка',
+    new: 'Новая защищённая заметка',
+    chooseTemplate: 'Выбрать шаблон:',
+    words: 'слов',
+    chars: 'символов',
+  },
+
   tui: {
     title: 'Terminal UI',
     subtitle: 'Full-featured terminal interface with vim-style keybindings',
