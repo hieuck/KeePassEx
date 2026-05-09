@@ -37,6 +37,7 @@ import { CommandPalette } from './components/CommandPalette';
 import { IdleLockManager } from './components/IdleLockManager';
 import { VaultTabBar } from './components/VaultTabBar';
 import { QuickEntryCreator } from './components/QuickEntryCreator';
+import { KeyboardShortcutsHelp } from './components/KeyboardShortcutsHelp';
 import { listen } from '@tauri-apps/api/event';
 
 const queryClient = new QueryClient({
@@ -50,6 +51,7 @@ export function App() {
   const { init: initSettings } = useSettingsStore();
   const { tabs } = useTabsStore();
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   useEffect(() => {
     initSettings();
@@ -93,6 +95,15 @@ export function App() {
           });
         }
       }
+      // ? — keyboard shortcuts help
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+        const target = e.target as HTMLElement;
+        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+        if (isOpen && !isLocked) {
+          e.preventDefault();
+          setShortcutsOpen(v => !v);
+        }
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
 
@@ -126,6 +137,12 @@ export function App() {
             <CommandPalette
               open={paletteOpen && isOpen && !isLocked}
               onClose={() => setPaletteOpen(false)}
+            />
+
+            {/* Keyboard shortcuts help */}
+            <KeyboardShortcutsHelp
+              open={shortcutsOpen && isOpen && !isLocked}
+              onClose={() => setShortcutsOpen(false)}
             />
 
             {/* Quick Entry Creator — clipboard URL detection */}

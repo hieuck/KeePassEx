@@ -1138,6 +1138,31 @@ export const en = {
     dismiss: 'Dismiss',
   },
 
+  // ─── Keyboard Shortcuts ───────────────────────────────────────────────────
+  shortcuts: {
+    title: 'Keyboard Shortcuts',
+    global: 'Global',
+    entryList: 'Entry List',
+    entryDetail: 'Entry Detail',
+    navigation: 'Navigation',
+    commandPalette: 'Open command palette',
+    lockVault: 'Lock vault',
+    saveVault: 'Save vault',
+    newEntry: 'New entry',
+    showHelp: 'Show keyboard shortcuts',
+    selectAll: 'Select all entries',
+    clearSelection: 'Clear selection',
+    deleteSelected: 'Delete selected',
+    navigate: 'Navigate entries',
+    openEntry: 'Open entry',
+    copyPassword: 'Copy password',
+    copyUsername: 'Copy username',
+    copyUrl: 'Copy URL',
+    editEntry: 'Edit entry',
+    back: 'Go back',
+    pressEsc: 'Press Esc or ? to close',
+  },
+
   // ─── Secure Note ──────────────────────────────────────────────────────────
   secureNote: {
     title: 'Secure Note',
