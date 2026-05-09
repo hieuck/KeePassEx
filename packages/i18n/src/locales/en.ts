@@ -239,6 +239,9 @@ export const en = {
     duplicateSamePassword: 'Same password',
     duplicateSameUrlUser: 'Same URL + username',
     duplicateSameTitle: 'Same title',
+    passwordsRotated: 'passwords rotated successfully',
+    rotateSelected: 'Rotate {{count}} selected',
+    selectToRotate: 'Select to rotate',
   },
 
   // ─── OTP ───────────────────────────────────────────────────────────────────

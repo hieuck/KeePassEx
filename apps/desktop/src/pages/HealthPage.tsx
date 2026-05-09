@@ -1,8 +1,9 @@
 /**
  * Vault health audit page — with password rotation engine and duplicate detection
- * KeePassEx exclusive: rotation engine + duplicate detection built-in
+ * KeePassEx exclusive: rotation engine + duplicate detection + bulk rotation built-in
  */
 
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
 import { useNavigate } from 'react-router-dom';
@@ -55,6 +56,7 @@ interface DuplicateGroup {
 export function HealthPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { checkVault: checkBreaches, report: breachReport } = useBreachStore();
   const { isOpen, isLocked } = useVaultStore();
 
@@ -81,6 +83,24 @@ export function HealthPage() {
     queryFn: () => invoke<DuplicateGroup[]>('find_duplicate_entries'),
     enabled: isOpen && !isLocked,
     staleTime: 60_000,
+  });
+
+  const [selectedForRotation, setSelectedForRotation] = useState<Set<string>>(new Set());
+  const [showRotationSelect, setShowRotationSelect] = useState(false);
+
+  const bulkRotateMutation = useMutation({
+    mutationFn: (uuids: string[]) =>
+      invoke<string[]>('bulk_rotate_passwords', {
+        args: { entry_uuids: uuids, length: 20, use_symbols: true },
+      }),
+    onSuccess: rotated => {
+      queryClient.invalidateQueries({ queryKey: ['rotation-recommendations'] });
+      queryClient.invalidateQueries({ queryKey: ['entries'] });
+      invoke('save_vault').catch(console.error);
+      setSelectedForRotation(new Set());
+      setShowRotationSelect(false);
+      alert(`✅ ${rotated.length} ${t('health.passwordsRotated')}`);
+    },
   });
 
   if (!isOpen) {
@@ -250,15 +270,62 @@ export function HealthPage() {
           {/* ── Password Rotation Engine — KeePassEx exclusive ── */}
           {rotations.length > 0 && (
             <div className="issue-section">
-              <h3 className="issue-title">🔄 {t('health.passwordRotation')}</h3>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 'var(--space-sm)',
+                }}
+              >
+                <h3 className="issue-title">🔄 {t('health.passwordRotation')}</h3>
+                <div style={{ display: 'flex', gap: 'var(--space-xs)' }}>
+                  {showRotationSelect && selectedForRotation.size > 0 && (
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => bulkRotateMutation.mutate(Array.from(selectedForRotation))}
+                      disabled={bulkRotateMutation.isPending}
+                    >
+                      {bulkRotateMutation.isPending
+                        ? '⏳'
+                        : `🔄 ${t('health.rotateSelected', { count: selectedForRotation.size })}`}
+                    </button>
+                  )}
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => {
+                      setShowRotationSelect(v => !v);
+                      setSelectedForRotation(new Set());
+                    }}
+                  >
+                    {showRotationSelect ? t('common.cancel') : t('health.selectToRotate')}
+                  </button>
+                </div>
+              </div>
               <p className="issue-subtitle">{t('health.passwordRotationDesc')}</p>
               {rotations.map(rec => (
                 <button
                   key={rec.entryUuid}
-                  className="issue-item rotation-item"
-                  onClick={() => navigate(`/vault/entry/${rec.entryUuid}`)}
+                  className={`issue-item rotation-item${showRotationSelect && selectedForRotation.has(rec.entryUuid) ? ' rotation-selected' : ''}`}
+                  onClick={() => {
+                    if (showRotationSelect) {
+                      setSelectedForRotation(prev => {
+                        const next = new Set(prev);
+                        if (next.has(rec.entryUuid)) next.delete(rec.entryUuid);
+                        else next.add(rec.entryUuid);
+                        return next;
+                      });
+                    } else {
+                      navigate(`/vault/entry/${rec.entryUuid}`);
+                    }
+                  }}
                 >
                   <div className="rotation-item-left">
+                    {showRotationSelect && (
+                      <span className="rotation-checkbox">
+                        {selectedForRotation.has(rec.entryUuid) ? '☑' : '☐'}
+                      </span>
+                    )}
                     <span className="issue-item-title">{rec.entryTitle}</span>
                     <span className="rotation-age">{rec.ageDays}d old</span>
                   </div>
@@ -401,6 +468,8 @@ export function HealthPage() {
         .rotation-item-left { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
         .rotation-age { font-size: 11px; color: var(--color-text-tertiary); }
         .rotation-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: var(--radius-full); text-transform: capitalize; flex-shrink: 0; }
+        .rotation-selected { background: rgba(37,99,235,0.08) !important; border-color: var(--color-primary) !important; }
+        .rotation-checkbox { font-size: 16px; margin-right: 4px; }
         .issue-subtitle { font-size: 12px; color: var(--color-text-secondary); margin-bottom: var(--space-sm); }
         .duplicate-reason-badge { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); padding: var(--space-xs) var(--space-md); background: var(--color-bg-tertiary); border-bottom: 1px solid var(--color-border); }
       `}</style>

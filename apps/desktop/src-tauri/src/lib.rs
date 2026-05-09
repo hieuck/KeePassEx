@@ -150,8 +150,9 @@ pub fn run() {
             commands::team_cmd::change_team_member_role,
             commands::team_cmd::remove_team_member,
             commands::team_cmd::set_entry_permission,
-            // Password advisor commands
-            commands::password_advisor_cmd::advise_password_strength,
+            // Rotation commands
+            commands::rotation_cmd::get_rotation_summary,
+            commands::rotation_cmd::bulk_rotate_passwords,
             // AI password suggestion commands
             commands::ai_cmd::suggest_passwords_cmd,
             // Field reference commands
