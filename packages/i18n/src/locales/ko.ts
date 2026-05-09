@@ -1038,6 +1038,23 @@ export const ko = {
   },
 
   // ─── Team Vault ────────────────────────────────────────────────────────────
+  security: {
+    argon2Title: 'KDF 매개변수 (Argon2id)',
+    argon2Desc: '키 파생 함수 매개변수를 조정합니다. 값이 높을수록 더 안전하지만 잠금 해제가 느립니다.',
+    argon2Memory: '메모리',
+    argon2Iterations: '반복 횟수',
+    argon2Parallelism: '병렬성',
+    argon2EstimatedTime: '예상 잠금 해제 시간',
+    argon2Note: '최신 하드웨어에서',
+    argon2Apply: '적용 및 저장',
+  },
+
+  vaultSettings: {
+    defaultUsername: '기본 사용자 이름',
+    historyMaxItems: '항목당 최대 기록 수',
+    historyMaxSize: '최대 기록 크기(MB)',
+  },
+
   team: {
     title: 'Team Vault',
     subtitle: 'Share vault access with your team',

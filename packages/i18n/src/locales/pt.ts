@@ -1038,6 +1038,23 @@ export const pt = {
   },
 
   // ─── Team Vault ────────────────────────────────────────────────────────────
+  security: {
+    argon2Title: 'Parâmetros KDF (Argon2id)',
+    argon2Desc: 'Ajuste os parâmetros da função de derivação de chave. Valores mais altos = mais seguro mas desbloqueio mais lento.',
+    argon2Memory: 'Memória',
+    argon2Iterations: 'Iterações',
+    argon2Parallelism: 'Paralelismo',
+    argon2EstimatedTime: 'Tempo estimado de desbloqueio',
+    argon2Note: 'em hardware moderno',
+    argon2Apply: 'Aplicar e salvar',
+  },
+
+  vaultSettings: {
+    defaultUsername: 'Nome de usuário padrão',
+    historyMaxItems: 'Máx. itens de histórico por entrada',
+    historyMaxSize: 'Tamanho máx. do histórico (MB)',
+  },
+
   team: {
     title: 'Team Vault',
     subtitle: 'Share vault access with your team',

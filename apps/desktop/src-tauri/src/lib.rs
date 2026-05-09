@@ -43,6 +43,7 @@ pub fn run() {
             commands::vault::lock_vault,
             commands::vault::change_credentials,
             commands::vault::get_vault_meta,
+            commands::vault::update_vault_meta,
             commands::vault::open_vault_tab,
             commands::vault::close_vault_tab,
             commands::vault::lock_vault_tab,

@@ -1037,6 +1037,26 @@ export const en = {
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
+  // ─── Security Settings ─────────────────────────────────────────────────────
+  security: {
+    argon2Title: 'KDF Parameters (Argon2id)',
+    argon2Desc:
+      'Adjust the key derivation function parameters. Higher values = more secure but slower to unlock.',
+    argon2Memory: 'Memory',
+    argon2Iterations: 'Iterations',
+    argon2Parallelism: 'Parallelism',
+    argon2EstimatedTime: 'Estimated unlock time',
+    argon2Note: 'on modern hardware',
+    argon2Apply: 'Apply & Save',
+  },
+
+  // ─── Vault Settings ────────────────────────────────────────────────────────
+  vaultSettings: {
+    defaultUsername: 'Default Username',
+    historyMaxItems: 'Max history items per entry',
+    historyMaxSize: 'Max history size (MB)',
+  },
+
   // ─── Team Vault ────────────────────────────────────────────────────────────
   team: {
     title: 'Team Vault',

@@ -246,6 +246,45 @@ pub fn get_vault_meta(state: State<'_, AppState>) -> Result<VaultMetaDto, String
     })
 }
 
+/// Update vault metadata (name, description, settings)
+#[tauri::command]
+pub fn update_vault_meta(
+    name: Option<String>,
+    description: Option<String>,
+    history_max_items: Option<i32>,
+    recycle_bin_enabled: Option<bool>,
+    default_username: Option<String>,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    let mut vault_lock = state.vault.write().unwrap();
+    let open_vault = vault_lock.as_mut().ok_or("No vault open")?;
+
+    if open_vault.locked {
+        return Err("Vault is locked".into());
+    }
+
+    if let Some(n) = name {
+        if !n.trim().is_empty() {
+            open_vault.vault.meta.name = n;
+        }
+    }
+    if let Some(d) = description {
+        open_vault.vault.meta.description = d;
+    }
+    if let Some(h) = history_max_items {
+        open_vault.vault.meta.history_max_items = h;
+    }
+    if let Some(rb) = recycle_bin_enabled {
+        open_vault.vault.meta.recycle_bin_enabled = rb;
+    }
+    if let Some(u) = default_username {
+        open_vault.vault.meta.default_username = u;
+    }
+
+    open_vault.vault.dirty = true;
+    Ok(())
+}
+
 // ─── Multi-vault tab commands ─────────────────────────────────────────────────
 // These are aliases used by the tabs store for multi-vault support.
 // Currently backed by the same single-vault state; a future version will

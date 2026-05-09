@@ -1038,6 +1038,23 @@ export const ja = {
   },
 
   // ─── Team Vault ────────────────────────────────────────────────────────────
+  security: {
+    argon2Title: 'KDFパラメータ (Argon2id)',
+    argon2Desc: 'キー導出関数のパラメータを調整します。値が高いほど安全ですが解錠が遅くなります。',
+    argon2Memory: 'メモリ',
+    argon2Iterations: '反復回数',
+    argon2Parallelism: '並列度',
+    argon2EstimatedTime: '推定解錠時間',
+    argon2Note: '現代のハードウェアで',
+    argon2Apply: '適用して保存',
+  },
+
+  vaultSettings: {
+    defaultUsername: 'デフォルトユーザー名',
+    historyMaxItems: 'エントリごとの最大履歴数',
+    historyMaxSize: '最大履歴サイズ(MB)',
+  },
+
   team: {
     title: 'Team Vault',
     subtitle: 'Share vault access with your team',

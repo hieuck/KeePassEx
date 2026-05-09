@@ -1038,6 +1038,23 @@ export const ru = {
   },
 
   // ─── Team Vault ────────────────────────────────────────────────────────────
+  security: {
+    argon2Title: 'Параметры KDF (Argon2id)',
+    argon2Desc: 'Настройте параметры функции вывода ключа. Более высокие значения = безопаснее, но медленнее разблокировка.',
+    argon2Memory: 'Память',
+    argon2Iterations: 'Итерации',
+    argon2Parallelism: 'Параллелизм',
+    argon2EstimatedTime: 'Расчётное время разблокировки',
+    argon2Note: 'на современном железе',
+    argon2Apply: 'Применить и сохранить',
+  },
+
+  vaultSettings: {
+    defaultUsername: 'Имя пользователя по умолчанию',
+    historyMaxItems: 'Макс. элементов истории на запись',
+    historyMaxSize: 'Макс. размер истории (МБ)',
+  },
+
   team: {
     title: 'Team Vault',
     subtitle: 'Share vault access with your team',

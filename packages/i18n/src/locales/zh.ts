@@ -1038,6 +1038,23 @@ export const zh = {
   },
 
   // ─── Team Vault ────────────────────────────────────────────────────────────
+  security: {
+    argon2Title: 'KDF参数 (Argon2id)',
+    argon2Desc: '调整密钥派生函数参数。值越高=越安全但解锁越慢。',
+    argon2Memory: '内存',
+    argon2Iterations: '迭代次数',
+    argon2Parallelism: '并行度',
+    argon2EstimatedTime: '预计解锁时间',
+    argon2Note: '在现代硬件上',
+    argon2Apply: '应用并保存',
+  },
+
+  vaultSettings: {
+    defaultUsername: '默认用户名',
+    historyMaxItems: '每条目最大历史记录数',
+    historyMaxSize: '最大历史记录大小(MB)',
+  },
+
   team: {
     title: 'Team Vault',
     subtitle: 'Share vault access with your team',

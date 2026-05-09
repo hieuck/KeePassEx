@@ -1037,6 +1037,23 @@ export const vi = {
   },
 
   // ─── Team Vault ────────────────────────────────────────────────────────────
+  security: {
+    argon2Title: 'Tham số KDF (Argon2id)',
+    argon2Desc: 'Điều chỉnh hàm dẫn xuất khóa. Giá trị cao hơn = bảo mật hơn nhưng mở khóa chậm hơn.',
+    argon2Memory: 'Bộ nhớ',
+    argon2Iterations: 'Số vòng lặp',
+    argon2Parallelism: 'Song song',
+    argon2EstimatedTime: 'Thời gian mở khóa ước tính',
+    argon2Note: 'trên phần cứng hiện đại',
+    argon2Apply: 'Áp dụng & Lưu',
+  },
+
+  vaultSettings: {
+    defaultUsername: 'Tên đăng nhập mặc định',
+    historyMaxItems: 'Số mục lịch sử tối đa mỗi mục',
+    historyMaxSize: 'Kích thước lịch sử tối đa (MB)',
+  },
+
   team: {
     title: 'Kho nhóm',
     subtitle: 'Chia sẻ quyền truy cập kho với nhóm của bạn',
