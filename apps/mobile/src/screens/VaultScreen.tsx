@@ -268,17 +268,18 @@ function SwipeableEntryRow({ entry, theme, isSelected, isMultiSelect,
   onPress: () => void; onLongPress: () => void; onCopyPassword: () => void;
   onEdit: () => void; onDelete: () => void; onToggleFavorite: () => void;
 }) {
+  const { t } = useTranslation();
   const renderLeft = () => (
     <View style={styles.swipeLeft}>
       <TouchableOpacity style={[styles.swipeAction, { backgroundColor: '#2563EB' }]}
-        onPress={onCopyPassword} accessibilityRole=button accessibilityLabel=Copy password>
-        <Text style={styles.swipeActionText}>Copy</Text>
+        onPress={onCopyPassword} accessibilityRole="button" accessibilityLabel={t('entry.copyPassword')}>
+        <Text style={styles.swipeActionText}>{t('swipe.copyPassword')}</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.swipeAction, { backgroundColor: entry.isFavorite ? '#6B7280' : '#F59E0B' }]}
-        onPress={onToggleFavorite} accessibilityRole=button
-        accessibilityLabel={entry.isFavorite ? 'Remove favorite' : 'Add favorite'}>
-        <Text style={styles.swipeActionText}>{entry.isFavorite ? 'Unfav' : 'Fav'}</Text>
+        onPress={onToggleFavorite} accessibilityRole="button"
+        accessibilityLabel={entry.isFavorite ? t('swipe.unfavorite') : t('swipe.favorite')}>
+        <Text style={styles.swipeActionText}>{entry.isFavorite ? t('swipe.unfavorite') : t('swipe.favorite')}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -286,12 +287,12 @@ function SwipeableEntryRow({ entry, theme, isSelected, isMultiSelect,
   const renderRight = () => (
     <View style={styles.swipeRight}>
       <TouchableOpacity style={[styles.swipeAction, { backgroundColor: '#10B981' }]}
-        onPress={onEdit} accessibilityRole=button accessibilityLabel=Edit entry>
-        <Text style={styles.swipeActionText}>Edit</Text>
+        onPress={onEdit} accessibilityRole="button" accessibilityLabel={t('common.edit')}>
+        <Text style={styles.swipeActionText}>{t('swipe.edit')}</Text>
       </TouchableOpacity>
       <TouchableOpacity style={[styles.swipeAction, { backgroundColor: '#EF4444' }]}
-        onPress={onDelete} accessibilityRole=button accessibilityLabel=Delete entry>
-        <Text style={styles.swipeActionText}>Delete</Text>
+        onPress={onDelete} accessibilityRole="button" accessibilityLabel={t('common.delete')}>
+        <Text style={styles.swipeActionText}>{t('swipe.delete')}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -303,13 +304,13 @@ function SwipeableEntryRow({ entry, theme, isSelected, isMultiSelect,
         style={[styles.entryItem,
           { backgroundColor: isSelected ? theme.primary + '18' : theme.surface }]}
         onPress={onPress} onLongPress={onLongPress} delayLongPress={400}
-        accessibilityRole=button accessibilityLabel={entry.title + ', ' + entry.username}
+        accessibilityRole="button" accessibilityLabel={entry.title + ', ' + entry.username}
         accessibilityState={{ selected: isSelected }}>
         {isMultiSelect && (
           <View style={[styles.checkbox,
             { borderColor: isSelected ? theme.primary : theme.border },
             isSelected && { backgroundColor: theme.primary }]}>
-            {isSelected && <Text style={styles.checkmark}>check</Text>}
+            {isSelected && <Text style={styles.checkmark}>✓</Text>}
           </View>
         )}
         <View style={[styles.entryIcon, { backgroundColor: theme.backgroundTertiary }]}>
@@ -320,7 +321,7 @@ function SwipeableEntryRow({ entry, theme, isSelected, isMultiSelect,
             <Text style={[styles.entryTitle,
               { color: entry.isExpired ? theme.textTertiary : theme.text },
               entry.isExpired && styles.strikethrough]} numberOfLines={1}>
-              {entry.isFavorite ? '* ' : ''}{entry.title}
+              {entry.isFavorite ? '⭐ ' : ''}{entry.title}
             </Text>
             <View style={styles.badges}>
               {entry.hasOtp && <View style={styles.badge}><Text style={styles.badgeText}>OTP</Text></View>}
@@ -337,12 +338,11 @@ function SwipeableEntryRow({ entry, theme, isSelected, isMultiSelect,
             </Text>
           ) : null}
         </View>
-          <TouchableOpacity style={styles.copyButton} onPress={onCopyPassword}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            accessibilityRole=button accessibilityLabel={'Copy password for ' + entry.title}>
-            <Text style={[styles.copyIcon, { color: theme.textTertiary }]}>copy</Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity style={styles.copyButton} onPress={onCopyPassword}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityRole="button" accessibilityLabel={'Copy password for ' + entry.title}>
+          <Text style={[styles.copyIcon, { color: theme.textTertiary }]}>⎘</Text>
+        </TouchableOpacity>
       </TouchableOpacity>
     </Swipeable>
   );
