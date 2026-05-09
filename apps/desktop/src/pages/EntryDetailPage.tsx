@@ -12,6 +12,7 @@ import { OtpSetupDialog } from '../components/OtpSetupDialog';
 import { CustomFieldEditor, type CustomField } from '../components/CustomFieldEditor';
 import { AttachmentViewer, type Attachment } from '../components/AttachmentViewer';
 import { TagInput } from '../components/TagInput';
+import { EntryIconPicker } from '../components/EntryIconPicker';
 import { OtpDisplay } from '@keepassex/ui';
 import { PasswordField } from '@keepassex/ui';
 import { EntryHistoryViewer } from '@keepassex/ui';
@@ -29,6 +30,7 @@ export function EntryDetailPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
   const [showOtpSetup, setShowOtpSetup] = useState(false);
+  const [showIconPicker, setShowIconPicker] = useState(false);
   const [form, setForm] = useState({
     title: '',
     username: '',
@@ -242,12 +244,33 @@ export function EntryDetailPage() {
         />
       )}
 
+      {/* Icon Picker */}
+      {showIconPicker && editing && (
+        <EntryIconPicker
+          currentIconId={form.iconId}
+          onSelect={iconId => setForm(f => ({ ...f, iconId }))}
+          onClose={() => setShowIconPicker(false)}
+        />
+      )}
+
       {/* Header */}
       <div className="entry-detail-header">
         <button className="btn-icon" onClick={() => navigate(-1)} aria-label={t('common.back')}>
           ←
         </button>
-        <h2 className="entry-detail-title">{isNew ? t('entry.new') : (entry?.title ?? '')}</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', flex: 1 }}>
+          {editing ? (
+            <button
+              className="entry-icon-btn"
+              onClick={() => setShowIconPicker(true)}
+              title={t('entry.icon')}
+              aria-label={t('entry.icon')}
+            >
+              {form.iconId === 0 ? '🔑' : `#${form.iconId}`}
+            </button>
+          ) : null}
+          <h2 className="entry-detail-title">{isNew ? t('entry.new') : (entry?.title ?? '')}</h2>
+        </div>
         <div className="entry-detail-actions">
           {!isNew && !editing && (
             <>
@@ -584,6 +607,12 @@ export function EntryDetailPage() {
           border-bottom:1px solid var(--color-border); flex-shrink:0;
         }
         .entry-detail-title { flex:1; font-size:16px; font-weight:600; }
+        .entry-icon-btn {
+          background: var(--color-bg-secondary); border: 1px solid var(--color-border);
+          border-radius: var(--radius-sm); padding: 4px 8px; cursor: pointer;
+          font-size: 18px; flex-shrink: 0; transition: background .1s;
+        }
+        .entry-icon-btn:hover { background: var(--color-bg-tertiary); }
         .entry-detail-actions { display:flex; gap:var(--space-sm); }
         .entry-tabs {
           display:flex; gap:2px; padding:0 var(--space-xl);
