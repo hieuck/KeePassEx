@@ -8,6 +8,7 @@ pub mod edit;
 pub mod export;
 pub mod generate;
 pub mod get;
+pub mod group;
 pub mod hardware_key;
 pub mod health;
 pub mod import;

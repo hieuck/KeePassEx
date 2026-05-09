@@ -21,6 +21,46 @@ use clap::{Parser, Subcommand};
 use colored::Colorize;
 
 #[derive(Subcommand)]
+enum GroupAction {
+    /// List all groups in the vault
+    List,
+    /// Create a new group
+    Create {
+        /// Group name
+        name: String,
+        /// Parent group UUID (default: root)
+        #[arg(long)]
+        parent: Option<String>,
+    },
+    /// Rename a group
+    Rename {
+        /// Group UUID (or prefix)
+        uuid: String,
+        /// New name
+        name: String,
+    },
+    /// Delete a group
+    Delete {
+        /// Group UUID (or prefix)
+        uuid: String,
+        /// Permanently delete (skip recycle bin)
+        #[arg(long)]
+        permanent: bool,
+        /// Skip confirmation
+        #[arg(long)]
+        force: bool,
+    },
+    /// Move a group to a different parent
+    Move {
+        /// Group UUID (or prefix)
+        uuid: String,
+        /// New parent group UUID
+        #[arg(long)]
+        parent: String,
+    },
+}
+
+#[derive(Subcommand)]
 enum TemplateAction {
     /// List all available templates
     List,
@@ -321,6 +361,13 @@ enum Commands {
         clear: u64,
     },
 
+    /// Manage vault groups (folders)
+    #[command(alias = "grp")]
+    Group {
+        #[command(subcommand)]
+        action: GroupAction,
+    },
+
     /// Manage KeePassEx self-hosted sync server
     #[command(alias = "srv")]
     Server {
@@ -535,6 +582,35 @@ async fn main() -> anyhow::Result<()> {
         }
 
         Commands::Clip { uuid, field, clear } => commands::clip::run(&vault, &uuid, &field, clear),
+
+        Commands::Group { action } => match action {
+            GroupAction::List => commands::group::run_list(&vault, &cli.format),
+            GroupAction::Create { name, parent } => commands::group::run_create(
+                &mut vault,
+                &vault_path_str,
+                &password,
+                &name,
+                parent.as_deref(),
+            ),
+            GroupAction::Rename { uuid, name } => {
+                commands::group::run_rename(&mut vault, &vault_path_str, &password, &uuid, &name)
+            }
+            GroupAction::Delete {
+                uuid,
+                permanent,
+                force,
+            } => commands::group::run_delete(
+                &mut vault,
+                &vault_path_str,
+                &password,
+                &uuid,
+                permanent,
+                force,
+            ),
+            GroupAction::Move { uuid, parent } => {
+                commands::group::run_move(&mut vault, &vault_path_str, &password, &uuid, &parent)
+            }
+        },
 
         // Server commands are handled before vault open — unreachable here
         Commands::Server { .. } => unreachable!("Server commands handled before vault open"),
