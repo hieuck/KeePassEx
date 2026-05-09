@@ -9,9 +9,49 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 > Các thay đổi chưa được release. Sẽ trở thành v0.2.0.
 
-### Added (v0.2.0 — 2026-05-09) — continued
+### Added (v0.2.0 — 2026-05-09) — continued (session 3)
 
-#### 🛡️ Health Page — Exclusive Features
+#### 🖥️ Desktop
+
+- **`components/KeyboardShortcutsHelp.tsx`** — Keyboard shortcuts overlay (? key). 4 groups: Global/Entry List/Entry Detail/Navigation. Mac-aware (⌘ vs Ctrl). Animated, accessible. **KeePassXC has this; KeePassEx now matches it.**
+- **`components/QuickEntryCreator.tsx`** — Clipboard URL detection: floating card when URL detected in clipboard, pre-fills domain/title, generates password, saves entry. **KeePassEx exclusive.**
+- **`App.tsx`** — Global shortcuts: Ctrl+L (lock), Ctrl+S (save), ? (shortcuts help). Integrated QuickEntryCreator and KeyboardShortcutsHelp.
+- **`commands/rotation_cmd.rs`** — `get_rotation_summary`, `bulk_rotate_passwords`: rotate multiple passwords in one operation. **KeePassEx exclusive.**
+- **`HealthPage.tsx`** — Bulk rotation UI: checkbox selection, "Rotate N selected" button.
+- **`commands/clipboard.rs`** — `read_clipboard_text` for URL detection.
+- **`commands/vault.rs`** — `update_vault_meta` for vault name/description/settings.
+- **`SecurityPage.tsx`** — Rewritten: Argon2id parameter tuning (memory presets, iterations, parallelism, estimated time), vault settings (name, description, recycle bin, history), PQC section.
+
+#### 📱 Mobile
+
+- **`SecuritySettingsScreen.tsx`** — Argon2id parameter tuning on mobile. **No competitor has this.**
+- **`EntryDetailScreen.tsx`** — Quick action bar: History, OTP, Open URL, Copy Password in 1 tap.
+- **`RotationScreen.tsx`** — Password rotation recommendations with urgency filter chips.
+- **`SecureNoteScreen.tsx`** — Full-screen secure note editor with 6 templates.
+- **`EntryHistoryScreen.tsx`** — View and restore entry history versions.
+- **`GroupsScreen.tsx`** — Full group management (create/rename/delete).
+- **`ChangePasswordScreen.tsx`** — Master password change with strength meter.
+- **`SettingsScreen.tsx`** — Added links to SecuritySettings, Rotation, Groups, ChangePassword.
+
+#### ⌨️ CLI
+
+- **`commands/show.rs`** — `kpx show <uuid>`: display entry details (like `keepassxc-cli show`). Supports `--show-password`, `--field`, `--format json`.
+- **`commands/rotation.rs`** — `kpx rotation`: password rotation recommendations with urgency filter.
+- **`commands/clip.rs`** — `kpx clip <uuid>`: copy field to clipboard with auto-clear.
+- **`commands/group.rs`** — `kpx group list/create/rename/delete/move`: full group management.
+
+#### 🌐 Server
+
+- **`api/health.rs`** — `uptime_seconds` in health response, `features` object in server info (zero_knowledge, e2e_encrypted, websocket_sync, vault_versioning, admin_api, rate_limiting).
+
+#### 🌍 i18n (10 languages, all in parity)
+
+- `shortcuts.*` (21 keys) — keyboard shortcuts help
+- `quickEntry.*` (4 keys) — clipboard URL detection
+- `secureNote.*` (5 keys) — secure note editor
+- `rotation.allGood/allGoodDesc/noFilterResults`
+- `health.passwordsRotated/rotateSelected/selectToRotate`
+- `security.argon2*/vaultSettings.*` (14 keys)
 
 - **`commands/health.rs`** — `get_rotation_recommendations`: password rotation engine with urgency levels (aging/soon/overdue/expired), category-aware schedules (banking 90d, email 180d, social 365d). **No competitor has proactive rotation engine.**
 - **`commands/health.rs`** — `find_duplicate_entries`: detects same password, same URL+username, same title across all entries. **No competitor has built-in duplicate detection.**
