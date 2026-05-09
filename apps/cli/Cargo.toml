@@ -28,3 +28,4 @@ uuid.workspace = true
 zeroize.workspace = true
 chrono.workspace = true
 reqwest.workspace = true
+arboard = "3"

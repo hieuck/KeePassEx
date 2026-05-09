@@ -300,6 +300,27 @@ enum Commands {
         limit: usize,
     },
 
+    /// Show password rotation recommendations
+    #[command(alias = "rotate")]
+    Rotation {
+        /// Filter by urgency: aging, soon, overdue, expired
+        #[arg(long)]
+        urgency: Option<String>,
+    },
+
+    /// Copy entry field to clipboard with auto-clear
+    #[command(alias = "cp")]
+    Clip {
+        /// Entry UUID (or prefix)
+        uuid: String,
+        /// Field to copy: password (default), username, url, otp, notes, or custom field name
+        #[arg(short, long, default_value = "password")]
+        field: String,
+        /// Clear clipboard after N seconds (0 = no auto-clear)
+        #[arg(long, default_value = "10")]
+        clear: u64,
+    },
+
     /// Manage KeePassEx self-hosted sync server
     #[command(alias = "srv")]
     Server {
@@ -508,6 +529,12 @@ async fn main() -> anyhow::Result<()> {
         }
 
         Commands::Audit { limit } => commands::audit::run(&vault, limit, &cli.format),
+
+        Commands::Rotation { urgency } => {
+            commands::rotation::run(&vault, urgency.as_deref(), &cli.format)
+        }
+
+        Commands::Clip { uuid, field, clear } => commands::clip::run(&vault, &uuid, &field, clear),
 
         // Server commands are handled before vault open — unreachable here
         Commands::Server { .. } => unreachable!("Server commands handled before vault open"),

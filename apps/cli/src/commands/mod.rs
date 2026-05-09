@@ -1,6 +1,7 @@
 pub mod add;
 pub mod audit;
 pub mod breach;
+pub mod clip;
 pub mod compare;
 pub mod delete;
 pub mod edit;
@@ -12,6 +13,7 @@ pub mod health;
 pub mod import;
 pub mod list;
 pub mod otp;
+pub mod rotation;
 pub mod search;
 pub mod server;
 pub mod shard;
