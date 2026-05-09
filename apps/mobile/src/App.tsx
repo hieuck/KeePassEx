@@ -36,6 +36,7 @@ import { ChangePasswordScreen } from './screens/ChangePasswordScreen';
 import { EntryHistoryScreen } from './screens/EntryHistoryScreen';
 import { SecureNoteScreen } from './screens/SecureNoteScreen';
 import { RotationScreen } from './screens/RotationScreen';
+import { SecuritySettingsScreen } from './screens/SecuritySettingsScreen';
 
 export type RootStackParamList = {
   Welcome: undefined;
@@ -57,6 +58,7 @@ export type RootStackParamList = {
   EntryHistory: { entryUuid: string; entryTitle: string };
   SecureNote: { entryUuid?: string };
   Rotation: undefined;
+  SecuritySettings: undefined;
 };
 
 export type TabParamList = {
@@ -266,6 +268,11 @@ export function App() {
                     name="Rotation"
                     component={RotationScreen}
                     options={{ presentation: 'card' }}
+                  />
+                  <Stack.Screen
+                    name="SecuritySettings"
+                    component={SecuritySettingsScreen}
+                    options={{ presentation: 'modal' }}
                   />
                 </>
               )}

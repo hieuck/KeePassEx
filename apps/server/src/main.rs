@@ -115,6 +115,9 @@ async fn main() -> Result<()> {
     let db = Arc::new(Database::new(&cli.db).await?);
     db.migrate().await?;
 
+    // Initialize server start time for uptime tracking
+    crate::api::health::init_start_time();
+
     // Build router
     let app = build_router(config, db);
 
