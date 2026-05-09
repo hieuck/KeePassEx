@@ -24,4 +24,5 @@ pub mod show;
 pub mod stats;
 pub mod steg;
 pub mod sync;
+pub mod tag;
 pub mod template;

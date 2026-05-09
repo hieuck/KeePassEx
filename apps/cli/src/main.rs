@@ -21,6 +21,38 @@ use clap::{Parser, Subcommand};
 use colored::Colorize;
 
 #[derive(Subcommand)]
+enum TagAction {
+    /// List all tags with entry counts
+    List,
+    /// Add a tag to an entry
+    Add {
+        /// Entry UUID (or prefix)
+        uuid: String,
+        /// Tag to add
+        tag: String,
+    },
+    /// Remove a tag from an entry
+    Remove {
+        /// Entry UUID (or prefix)
+        uuid: String,
+        /// Tag to remove
+        tag: String,
+    },
+    /// List entries with a specific tag
+    Entries {
+        /// Tag name
+        tag: String,
+    },
+    /// Rename a tag across all entries
+    Rename {
+        /// Current tag name
+        old: String,
+        /// New tag name
+        new: String,
+    },
+}
+
+#[derive(Subcommand)]
 enum GroupAction {
     /// List all groups in the vault
     List,
@@ -331,6 +363,12 @@ enum Commands {
         /// Password for second vault (defaults to same as first)
         #[arg(long)]
         password2: Option<String>,
+    },
+
+    /// Manage entry tags
+    Tag {
+        #[command(subcommand)]
+        action: TagAction,
     },
 
     /// Advanced entry search (more powerful than list --search)
@@ -679,6 +717,20 @@ async fn main() -> anyhow::Result<()> {
         ),
 
         Commands::Clip { uuid, field, clear } => commands::clip::run(&vault, &uuid, &field, clear),
+
+        Commands::Tag { action } => match action {
+            TagAction::List => commands::tag::run_list(&vault, &cli.format),
+            TagAction::Add { uuid, tag } => {
+                commands::tag::run_add(&mut vault, &vault_path_str, &password, &uuid, &tag)
+            }
+            TagAction::Remove { uuid, tag } => {
+                commands::tag::run_remove(&mut vault, &vault_path_str, &password, &uuid, &tag)
+            }
+            TagAction::Entries { tag } => commands::tag::run_entries(&vault, &tag, &cli.format),
+            TagAction::Rename { old, new } => {
+                commands::tag::run_rename(&mut vault, &vault_path_str, &password, &old, &new)
+            }
+        },
 
         Commands::Group { action } => match action {
             GroupAction::List => commands::group::run_list(&vault, &cli.format),
