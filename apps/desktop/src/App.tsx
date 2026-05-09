@@ -63,9 +63,35 @@ export function App() {
 
     // Global keyboard shortcut: Cmd/Ctrl+K → command palette
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+K — command palette
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         if (isOpen && !isLocked) setPaletteOpen(p => !p);
+      }
+      // Ctrl+L — lock vault
+      if ((e.metaKey || e.ctrlKey) && e.key === 'l') {
+        e.preventDefault();
+        if (isOpen && !isLocked) {
+          useVaultStore.getState().lockVault();
+        }
+      }
+      // Ctrl+N — new entry (when vault open)
+      if ((e.metaKey || e.ctrlKey) && e.key === 'n' && !e.shiftKey) {
+        const target = e.target as HTMLElement;
+        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+        if (isOpen && !isLocked) {
+          e.preventDefault();
+          // Navigate to new entry — handled by VaultPage keyboard handler
+        }
+      }
+      // Ctrl+S — save vault
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        if (isOpen && !isLocked) {
+          e.preventDefault();
+          import('@tauri-apps/api/core').then(({ invoke }) => {
+            invoke('save_vault').catch(console.error);
+          });
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
