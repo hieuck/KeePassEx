@@ -333,6 +333,19 @@ enum Commands {
         password2: Option<String>,
     },
 
+    /// Change entry password
+    #[command(alias = "pw")]
+    Passwd {
+        /// Entry UUID (or prefix)
+        uuid: String,
+        /// Auto-generate a strong password
+        #[arg(long)]
+        generate: bool,
+        /// Password length (when --generate)
+        #[arg(long, default_value = "20")]
+        length: usize,
+    },
+
     /// Show entry details (like keepassxc-cli show)
     Show {
         /// Entry UUID (or prefix)
@@ -594,6 +607,22 @@ async fn main() -> anyhow::Result<()> {
             show_password,
             field,
         } => commands::show::run(&vault, &uuid, show_password, field.as_deref(), &cli.format),
+
+        Commands::Passwd {
+            uuid,
+            generate,
+            length,
+        } => {
+            commands::passwd::run(
+                &mut vault,
+                &vault_path_str,
+                &password,
+                &uuid,
+                generate,
+                length,
+            )
+            .await
+        }
 
         Commands::Rotation { urgency } => {
             commands::rotation::run(&vault, urgency.as_deref(), &cli.format)
