@@ -206,6 +206,74 @@ export function EntryDetailScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Quick action bar */}
+      <View
+        style={[
+          styles.actionBar,
+          { borderBottomColor: theme.border, backgroundColor: theme.surface },
+        ]}
+      >
+        <TouchableOpacity
+          style={styles.actionBarBtn}
+          onPress={() =>
+            navigation.navigate('EntryHistory', { entryUuid: uuid, entryTitle: entry.title })
+          }
+          accessibilityRole="button"
+          accessibilityLabel={t('entry.history')}
+        >
+          <Text style={styles.actionBarIcon}>📋</Text>
+          <Text style={[styles.actionBarLabel, { color: theme.textSecondary }]}>
+            {t('entry.history')}
+          </Text>
+        </TouchableOpacity>
+        {entry.hasOtp && (
+          <TouchableOpacity
+            style={styles.actionBarBtn}
+            onPress={() => navigation.navigate('OtpDetail', { entryUuid: uuid })}
+            accessibilityRole="button"
+            accessibilityLabel={t('otp.title')}
+          >
+            <Text style={styles.actionBarIcon}>⏱</Text>
+            <Text style={[styles.actionBarLabel, { color: theme.textSecondary }]}>
+              {t('otp.title')}
+            </Text>
+          </TouchableOpacity>
+        )}
+        {entry.url ? (
+          <TouchableOpacity
+            style={styles.actionBarBtn}
+            onPress={handleOpenUrl}
+            accessibilityRole="button"
+            accessibilityLabel={t('entry.openUrl')}
+          >
+            <Text style={styles.actionBarIcon}>🔗</Text>
+            <Text style={[styles.actionBarLabel, { color: theme.textSecondary }]}>
+              {t('entry.openUrl')}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
+        <TouchableOpacity
+          style={styles.actionBarBtn}
+          onPress={() => {
+            KeePassExCore.getEntryPassword(uuid)
+              .then((pw: string) => copyToClipboard(pw, 'password'))
+              .catch(() => {});
+          }}
+          accessibilityRole="button"
+          accessibilityLabel={t('entry.copyPassword')}
+        >
+          <Text style={styles.actionBarIcon}>{copiedField === 'password' ? '✓' : '⎘'}</Text>
+          <Text
+            style={[
+              styles.actionBarLabel,
+              { color: copiedField === 'password' ? '#16A34A' : theme.textSecondary },
+            ]}
+          >
+            {t('entry.copyPassword')}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -690,4 +758,17 @@ const styles = StyleSheet.create({
     marginTop: tokens.space.md,
   },
   deleteBtnText: { fontSize: tokens.fontSize.md, fontWeight: tokens.fontWeight.medium },
+  actionBar: {
+    flexDirection: 'row',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingVertical: tokens.space.sm,
+  },
+  actionBarBtn: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 3,
+    paddingVertical: tokens.space.xs,
+  },
+  actionBarIcon: { fontSize: 20 },
+  actionBarLabel: { fontSize: 10, fontWeight: '500' },
 });
