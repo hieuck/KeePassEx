@@ -82,6 +82,7 @@ pub fn run() {
             // Clipboard commands
             commands::clipboard::copy_to_clipboard,
             commands::clipboard::clear_clipboard,
+            commands::clipboard::read_clipboard_text,
             // SSH Agent commands
             commands::ssh::start_ssh_agent,
             commands::ssh::stop_ssh_agent,

@@ -1128,6 +1128,13 @@ export const ru = {
   },
 
   // ─── TUI (Terminal UI) ─────────────────────────────────────────────────────
+  quickEntry: {
+    title: 'Сохранить в KeePassEx?',
+    subtitle: 'URL обнаружен в буфере обмена',
+    saveNow: 'Сохранить запись',
+    dismiss: 'Закрыть',
+  },
+
   secureNote: {
     title: 'Защищённая заметка',
     new: 'Новая защищённая заметка',

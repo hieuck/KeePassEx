@@ -1128,6 +1128,13 @@ export const ko = {
   },
 
   // ─── TUI (Terminal UI) ─────────────────────────────────────────────────────
+  quickEntry: {
+    title: 'KeePassEx에 저장?',
+    subtitle: '클립보드에서 URL 감지됨',
+    saveNow: '항목 저장',
+    dismiss: '닫기',
+  },
+
   secureNote: {
     title: '보안 메모',
     new: '새 보안 메모',

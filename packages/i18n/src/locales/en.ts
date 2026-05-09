@@ -1127,6 +1127,14 @@ export const en = {
     changedLast30Days: 'changed 30d',
   },
 
+  // ─── Quick Entry Creator ──────────────────────────────────────────────────
+  quickEntry: {
+    title: 'Save to KeePassEx?',
+    subtitle: 'URL detected in clipboard',
+    saveNow: 'Save Entry',
+    dismiss: 'Dismiss',
+  },
+
   // ─── Secure Note ──────────────────────────────────────────────────────────
   secureNote: {
     title: 'Secure Note',

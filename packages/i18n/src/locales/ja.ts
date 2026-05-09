@@ -1128,6 +1128,13 @@ export const ja = {
   },
 
   // ─── TUI (Terminal UI) ─────────────────────────────────────────────────────
+  quickEntry: {
+    title: 'KeePassExに保存?',
+    subtitle: 'クリップボードでURLを検出',
+    saveNow: 'エントリを保存',
+    dismiss: '閉じる',
+  },
+
   secureNote: {
     title: 'セキュアノート',
     new: '新しいセキュアノート',

@@ -1127,6 +1127,13 @@ export const vi = {
   },
 
   // ─── TUI (Terminal UI) ─────────────────────────────────────────────────────
+  quickEntry: {
+    title: 'Lưu vào KeePassEx?',
+    subtitle: 'Phát hiện URL trong clipboard',
+    saveNow: 'Lưu mục',
+    dismiss: 'Bỏ qua',
+  },
+
   secureNote: {
     title: 'Ghi chú bảo mật',
     new: 'Ghi chú bảo mật mới',

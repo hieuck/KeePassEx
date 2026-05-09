@@ -1128,6 +1128,13 @@ export const zh = {
   },
 
   // ─── TUI (Terminal UI) ─────────────────────────────────────────────────────
+  quickEntry: {
+    title: '保存到KeePassEx?',
+    subtitle: '在剪贴板中检测到URL',
+    saveNow: '保存条目',
+    dismiss: '忽略',
+  },
+
   secureNote: {
     title: '安全笔记',
     new: '新建安全笔记',

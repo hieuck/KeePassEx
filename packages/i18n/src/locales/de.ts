@@ -1128,6 +1128,13 @@ export const de = {
   },
 
   // ─── TUI (Terminal UI) ─────────────────────────────────────────────────────
+  quickEntry: {
+    title: 'In KeePassEx speichern?',
+    subtitle: 'URL in Zwischenablage erkannt',
+    saveNow: 'Eintrag speichern',
+    dismiss: 'Verwerfen',
+  },
+
   secureNote: {
     title: 'Sichere Notiz',
     new: 'Neue sichere Notiz',

@@ -36,6 +36,7 @@ import { TeamPage } from './pages/TeamPage';
 import { CommandPalette } from './components/CommandPalette';
 import { IdleLockManager } from './components/IdleLockManager';
 import { VaultTabBar } from './components/VaultTabBar';
+import { QuickEntryCreator } from './components/QuickEntryCreator';
 import { listen } from '@tauri-apps/api/event';
 
 const queryClient = new QueryClient({
@@ -100,6 +101,9 @@ export function App() {
               open={paletteOpen && isOpen && !isLocked}
               onClose={() => setPaletteOpen(false)}
             />
+
+            {/* Quick Entry Creator — clipboard URL detection */}
+            {isOpen && !isLocked && <QuickEntryCreator />}
 
             <Routes>
               {/* Welcome / Open vault */}

@@ -1,7 +1,7 @@
 //! Clipboard commands with auto-clear
 
-use tauri::State;
 use crate::state::AppState;
+use tauri::State;
 
 #[tauri::command]
 pub async fn copy_to_clipboard(
@@ -12,7 +12,9 @@ pub async fn copy_to_clipboard(
 ) -> Result<(), String> {
     use tauri_plugin_clipboard_manager::ClipboardExt;
 
-    app.clipboard().write_text(text).map_err(|e| e.to_string())?;
+    app.clipboard()
+        .write_text(text)
+        .map_err(|e| e.to_string())?;
 
     // Schedule auto-clear
     let delay = clear_after_seconds
@@ -33,5 +35,14 @@ pub async fn copy_to_clipboard(
 #[tauri::command]
 pub fn clear_clipboard(app: tauri::AppHandle) -> Result<(), String> {
     use tauri_plugin_clipboard_manager::ClipboardExt;
-    app.clipboard().write_text("".to_string()).map_err(|e| e.to_string())
+    app.clipboard()
+        .write_text("".to_string())
+        .map_err(|e| e.to_string())
+}
+
+/// Read text from clipboard (for QuickEntryCreator URL detection)
+#[tauri::command]
+pub fn read_clipboard_text(app: tauri::AppHandle) -> Result<String, String> {
+    use tauri_plugin_clipboard_manager::ClipboardExt;
+    app.clipboard().read_text().map_err(|e| e.to_string())
 }

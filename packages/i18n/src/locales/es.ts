@@ -1128,6 +1128,13 @@ export const es = {
   },
 
   // ─── TUI (Terminal UI) ─────────────────────────────────────────────────────
+  quickEntry: {
+    title: '¿Guardar en KeePassEx?',
+    subtitle: 'URL detectada en portapapeles',
+    saveNow: 'Guardar entrada',
+    dismiss: 'Descartar',
+  },
+
   secureNote: {
     title: 'Nota segura',
     new: 'Nueva nota segura',
