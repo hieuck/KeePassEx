@@ -91,6 +91,10 @@ export const ja = {
     changePassword: 'マスターパスワードを変更',
     currentPassword: '現在のパスワード',
     newPassword: '新しいパスワード',
+    passwordChanged: 'マスターパスワードが正常に変更されました',
+    passwordsMatch: 'パスワードが一致します',
+    changePasswordNotice: 'マスターパスワードを変更するとボールトが再暗号化されます。新しいパスワードを覚えておいてください。',
+    openToView: 'このページを表示するには保管庫を開いてください',
   },
 
   // ─── Entry ─────────────────────────────────────────────────────────────────
@@ -142,6 +146,7 @@ export const ja = {
     sortByModified: '最終更新',
     sortByCreated: '作成日',
     confirmDelete: '"{{title}}"を削除しますか？',
+    deleteWithContent: 'このグループには{{entries}}件と{{groups}}個のサブグループがあります。',
     confirmDeleteDesc: 'このエントリはごみ箱に移動されます。',
     confirmDeletePermanent: '"{{title}}"を完全に削除しますか？',
     confirmDeletePermanentDesc: 'この操作は元に戻せません。',
@@ -158,6 +163,7 @@ export const ja = {
     icon: 'アイコン',
     allEntries: 'すべてのエントリ',
     confirmDelete: 'グループ"{{name}}"を削除しますか？',
+    deleteWithContent: 'このグループには{{entries}}件と{{groups}}個のサブグループがあります。',
     confirmDeleteDesc: 'すべてのエントリとサブグループがごみ箱に移動されます。',
   },
 
@@ -709,6 +715,7 @@ export const ja = {
     tagSelected: 'Tag selected',
     exportSelected: 'Export selected',
     confirmDelete: 'Delete {{count}} entries?',
+    deleteWithContent: 'このグループには{{entries}}件と{{groups}}個のサブグループがあります。',
     confirmDeleteDesc: 'These entries will be moved to the recycle bin.',
   },
 
@@ -815,7 +822,11 @@ export const ja = {
       forbidUsername: 'Cannot contain username',
       forbidTitle: 'Cannot contain entry title',
       forbidSequential: 'No {{n}}+ sequential characters',
-      forbidRepeated: 'No {{n}}+ repeated characters',
+      testPassword: 'パスワードをテスト',
+    testPasswordDesc: '有効なすべてのポリシーに対してパスワードをテスト',
+    testPasswordPlaceholder: 'テストするパスワードを入力...',
+    enableAtLeastOne: 'テストするには少なくとも1つのポリシーを有効にしてください。',
+    forbidRepeated: 'No {{n}}+ repeated characters',
     },
   },
 
@@ -847,6 +858,9 @@ export const ja = {
     backupSuccess: 'Backup created successfully',
     backupFailed: 'Backup failed: {{error}}',
     restoreSuccess: 'Vault restored from backup',
+    daysAvg: '日平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30日以内に変更',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -925,6 +939,9 @@ export const ja = {
     securityNote: 'Security note',
     securityNoteDesc:
       'The vault is encrypted with ChaCha20-Poly1305 before embedding. Without the steganography password, the vault cannot be extracted.',
+    daysAvg: '日平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30日以内に変更',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -969,6 +986,9 @@ export const ja = {
     suggestion3: 'Cloud storage (encrypted)',
     suggestion4: 'Hardware security key',
     suggestion5: 'Printed QR code in a safe deposit box',
+    daysAvg: '日平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30日以内に変更',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -997,6 +1017,9 @@ export const ja = {
     whyKyber: 'Why Kyber-768?',
     whyKyberDesc:
       'CRYSTALS-Kyber was selected by NIST as the post-quantum key encapsulation standard (FIPS 203). It provides 128-bit post-quantum security.',
+    daysAvg: '日平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30日以内に変更',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1037,6 +1060,9 @@ export const ja = {
     commentDeleted: 'Comment deleted',
     activityLog: 'Team Activity',
     noActivity: 'No recent activity',
+    daysAvg: '日平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30日以内に変更',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1064,6 +1090,9 @@ export const ja = {
     averageAge: 'Average password age: {{days}} days',
     oldestPassword: 'Oldest password: {{days}} days',
     totalCopies: '{{count}} total copies',
+    daysAvg: '日平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30日以内に変更',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1088,6 +1117,9 @@ export const ja = {
     commandMode_key: ': — Command mode',
     help: '? — Help',
     quit: 'q — Quit',
+    daysAvg: '日平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30日以内に変更',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1111,6 +1143,9 @@ export const ja = {
     example2: 'find weak passwords in Banking',
     example3: 'entries with OTP created last month',
     example4: 'passwords not used in 6 months',
+    daysAvg: '日平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30日以内に変更',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1144,6 +1179,9 @@ export const ja = {
       security: 'Security',
       other: 'Other',
     },
+    daysAvg: '日平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30日以内に変更',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1165,6 +1203,9 @@ export const ja = {
       email: 'Email/Work: every 180 days',
       social: 'Social/Shopping: every 365 days',
     },
+    daysAvg: '日平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30日以内に変更',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1181,6 +1222,9 @@ export const ja = {
     setHint: 'Set hint',
     showHint: 'Show hint',
     wrongPassword: 'Wrong password (ZKPV pre-check failed)',
+    daysAvg: '日平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30日以内に変更',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1215,6 +1259,9 @@ export const ja = {
     codeRepeatedChars: 'Repeated characters',
     codeLowEntropy: 'Low entropy',
     codeStrong: 'Password is strong',
+    daysAvg: '日平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30日以内に変更',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1231,6 +1278,9 @@ export const ja = {
     vaultCount: '{{count}} 個のボルトが開いています',
     vaultCount_plural: '{{count}} 個のボルトが開いています',
     dragToReorder: 'ドラッグして並び替え',
+    daysAvg: '日平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30日以内に変更',
     uniqueFeature: 'KeePassEx独自機能',
   },
 
@@ -1254,6 +1304,9 @@ export const ja = {
     notFound: '参照されたエントリが見つかりません',
     syntax: '構文：{REF:P@I:エントリUUID}',
     example: '例：重複せずにエントリ間でパスワードを共有',
+    daysAvg: '日平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30日以内に変更',
     uniqueFeature: 'KeePass互換機能',
   },
 
@@ -1270,6 +1323,9 @@ export const ja = {
     alreadyHasIcon: 'エントリにはすでにカスタムアイコンがあります',
     source: 'ソース：{{source}}',
     clearIcon: 'カスタムアイコンを削除',
+    daysAvg: '日平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30日以内に変更',
     uniqueFeature: '自動アイコン取得',
   },
 
@@ -1292,6 +1348,9 @@ export const ja = {
     copied: 'コピーしました！',
     lockVault: 'ボルトをロック',
     shortcut: 'ショートカット：⌘⇧K',
+    daysAvg: '日平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30日以内に変更',
     uniqueFeature: 'KeePassEx独自機能 — 競合他社にはない',
   },
 
@@ -1328,6 +1387,9 @@ export const ja = {
     selfHostedDesc: 'データはあなたのサーバーに保存されます。サードパーティのクラウドなし。',
     zeroKnowledge: 'ゼロ知識',
     zeroKnowledgeDesc: 'The server cannot read your vault. All encryption is client-side.',
+    daysAvg: '日平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30日以内に変更',
     uniqueFeature: 'KeePassEx独自機能 — セルフホスト同期を提供する競合他社はない',
   },
 } as const;

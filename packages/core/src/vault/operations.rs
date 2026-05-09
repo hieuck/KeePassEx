@@ -1,9 +1,9 @@
 //! High-level vault operations: open, save, lock, merge
 
-use crate::error::{KeePassExError, Result};
-use crate::vault::Vault;
-use crate::kdbx::{KdbxReader, KdbxWriter};
 use crate::crypto::keys::CompositeKey;
+use crate::error::{KeePassExError, Result};
+use crate::kdbx::{KdbxReader, KdbxWriter};
+use crate::vault::Vault;
 use std::path::Path;
 
 /// Credentials for opening a vault
@@ -49,8 +49,14 @@ pub async fn open_vault(path: &Path, credentials: &VaultCredentials) -> Result<V
     let composite_key = credentials.build_composite_key()?;
     let raw_key = composite_key.build()?;
 
-    let reader = KdbxReader::new();
-    reader.read(&data, &raw_key)
+    // Argon2 KDF is CPU-intensive (can take 1-60s depending on params).
+    // Run on a dedicated blocking thread to avoid starving the async runtime.
+    tokio::task::spawn_blocking(move || {
+        let reader = KdbxReader::new();
+        reader.read(&data, &raw_key)
+    })
+    .await
+    .map_err(|e| KeePassExError::Other(format!("Task join error: {}", e)))?
 }
 
 /// Save a vault to file
@@ -58,6 +64,8 @@ pub async fn save_vault(vault: &Vault, path: &Path, credentials: &VaultCredentia
     let composite_key = credentials.build_composite_key()?;
     let raw_key = composite_key.build()?;
 
+    // Serialize vault to bytes synchronously (fast, no KDF)
+    // Then run KDF + encrypt on a blocking thread
     let writer = KdbxWriter::new();
     let data = writer.write(vault, &raw_key)?;
 

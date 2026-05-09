@@ -49,7 +49,7 @@ function connectNative(): browser.Runtime.Port {
 }
 
 async function sendNativeMessage(action: string, payload?: unknown): Promise<NativeResponse> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const id = crypto.randomUUID();
     const message: NativeMessage = { id, action, payload };
 
@@ -75,55 +75,136 @@ async function sendNativeMessage(action: string, payload?: unknown): Promise<Nat
 
 // ─── Message Handlers ─────────────────────────────────────────────────────────
 
-browser.runtime.onMessage.addListener(async (message: { action: string; payload?: unknown }, sender) => {
-  switch (message.action) {
-    case 'GET_CREDENTIALS_FOR_URL': {
-      const { url } = message.payload as { url: string };
-      return sendNativeMessage('getCredentialsForUrl', { url });
-    }
+// Track recently used entries (in-memory, persisted to storage)
+const MAX_RECENT = 5;
 
-    case 'AUTOFILL': {
-      const { entryUuid, tabId } = message.payload as { entryUuid: string; tabId: number };
-      const response = await sendNativeMessage('getEntryForAutofill', { uuid: entryUuid });
-      if (response.success && response.data) {
-        // Send credentials to content script
-        await browser.tabs.sendMessage(tabId, {
-          action: 'FILL_CREDENTIALS',
-          payload: response.data,
-        });
+async function getRecentEntries(): Promise<string[]> {
+  const result = await browser.storage.local.get('recentEntries');
+  return (result.recentEntries as string[]) ?? [];
+}
+
+async function trackUsage(entryUuid: string): Promise<void> {
+  const recent = await getRecentEntries();
+  const updated = [entryUuid, ...recent.filter(id => id !== entryUuid)].slice(0, MAX_RECENT);
+  await browser.storage.local.set({ recentEntries: updated });
+}
+
+async function getPendingSave(): Promise<{ username: string; url: string } | null> {
+  const result = await browser.storage.local.get('pendingSave');
+  return (result.pendingSave as { username: string; url: string }) ?? null;
+}
+
+browser.runtime.onMessage.addListener(
+  async (message: { action: string; payload?: unknown }, sender) => {
+    switch (message.action) {
+      case 'GET_CREDENTIALS_FOR_URL': {
+        const { url } = message.payload as { url: string };
+        return sendNativeMessage('getCredentialsForUrl', { url });
       }
-      return response;
-    }
 
-    case 'COPY_PASSWORD': {
-      const { entryUuid } = message.payload as { entryUuid: string };
-      const response = await sendNativeMessage('getEntryPassword', { uuid: entryUuid });
-      if (response.success && response.data) {
-        await browser.tabs.sendMessage(sender.tab!.id!, {
-          action: 'COPY_TO_CLIPBOARD',
-          payload: { text: response.data },
-        });
+      case 'AUTOFILL': {
+        const { entryUuid, tabId } = message.payload as { entryUuid: string; tabId: number };
+        const response = await sendNativeMessage('getEntryForAutofill', { uuid: entryUuid });
+        if (response.success && response.data) {
+          await browser.tabs.sendMessage(tabId, {
+            action: 'FILL_CREDENTIALS',
+            payload: response.data,
+          });
+        }
+        return response;
       }
-      return response;
-    }
 
-    case 'GENERATE_OTP': {
-      const { entryUuid } = message.payload as { entryUuid: string };
-      return sendNativeMessage('generateTotp', { uuid: entryUuid });
-    }
+      case 'COPY_PASSWORD': {
+        const { entryUuid } = message.payload as { entryUuid: string };
+        const response = await sendNativeMessage('getEntryPassword', { uuid: entryUuid });
+        if (response.success && response.data) {
+          await browser.tabs.sendMessage(sender.tab!.id!, {
+            action: 'COPY_TO_CLIPBOARD',
+            payload: { text: response.data },
+          });
+        }
+        return response;
+      }
 
-    case 'CHECK_NATIVE_HOST': {
-      return sendNativeMessage('ping');
-    }
+      case 'GENERATE_OTP': {
+        const { entryUuid } = message.payload as { entryUuid: string };
+        return sendNativeMessage('generateTotp', { uuid: entryUuid });
+      }
 
-    case 'GET_VAULT_STATUS': {
-      return sendNativeMessage('getVaultStatus');
-    }
+      case 'CHECK_NATIVE_HOST': {
+        return sendNativeMessage('ping');
+      }
 
-    default:
-      return { success: false, error: `Unknown action: ${message.action}` };
+      case 'GET_VAULT_STATUS': {
+        return sendNativeMessage('getVaultStatus');
+      }
+
+      // ── Previously missing handlers ──────────────────────────────────────────
+
+      case 'SEARCH_ENTRIES': {
+        const { query } = message.payload as { query: string };
+        return sendNativeMessage('searchEntries', { query });
+      }
+
+      case 'GET_RECENT_ENTRIES': {
+        const { limit = 5 } = (message.payload as { limit?: number }) ?? {};
+        const recentUuids = await getRecentEntries();
+        if (recentUuids.length === 0) return { id: '', success: true, data: [] };
+
+        // Fetch entry details for each recent UUID
+        const entries = await Promise.all(
+          recentUuids
+            .slice(0, limit)
+            .map(uuid =>
+              sendNativeMessage('getEntry', { uuid }).then(r => (r.success ? r.data : null))
+            )
+        );
+        return { id: '', success: true, data: entries.filter(Boolean) };
+      }
+
+      case 'SAVE_CREDENTIALS': {
+        const { username, url, password } = message.payload as {
+          username: string;
+          url: string;
+          password?: string;
+        };
+        // Clear pending save
+        await browser.storage.local.remove('pendingSave');
+        // Forward to native host to create entry
+        return sendNativeMessage('saveCredentials', { username, url, password });
+      }
+
+      case 'TRACK_USAGE': {
+        const { entryUuid } = message.payload as { entryUuid: string };
+        await trackUsage(entryUuid);
+        return { id: '', success: true };
+      }
+
+      case 'OPEN_APP': {
+        // Open the KeePassEx desktop app via native messaging
+        await sendNativeMessage('openApp', {});
+        return { id: '', success: true };
+      }
+
+      case 'GENERATE_PASSWORD': {
+        const { mode = 'random', length = 20 } =
+          (message.payload as {
+            mode?: string;
+            length?: number;
+          }) ?? {};
+        return sendNativeMessage('generatePassword', { mode, length });
+      }
+
+      case 'GET_PENDING_SAVE': {
+        const pending = await getPendingSave();
+        return { id: '', success: true, data: pending };
+      }
+
+      default:
+        return { success: false, error: `Unknown action: ${message.action}` };
+    }
   }
-});
+);
 
 // ─── Context Menu ─────────────────────────────────────────────────────────────
 
@@ -171,7 +252,7 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
 
 // ─── Keyboard Shortcut ────────────────────────────────────────────────────────
 
-browser.commands.onCommand.addListener(async (command) => {
+browser.commands.onCommand.addListener(async command => {
   if (command === 'autofill') {
     const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
     if (!tab?.id || !tab.url) return;

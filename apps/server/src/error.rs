@@ -25,6 +25,9 @@ pub enum ServerError {
     #[error("Vault too large (max {max_mb}MB)")]
     VaultTooLarge { max_mb: u64 },
 
+    #[error("Rate limit exceeded — retry after {0} seconds")]
+    RateLimited(u64),
+
     #[error("Database error: {0}")]
     Database(#[from] sqlx::Error),
 
@@ -52,6 +55,17 @@ impl IntoResponse for ServerError {
                 StatusCode::PAYLOAD_TOO_LARGE,
                 format!("Vault too large (max {}MB)", max_mb),
             ),
+            Self::RateLimited(retry_after) => {
+                // Return 429 with Retry-After header info in body
+                return (
+                    StatusCode::TOO_MANY_REQUESTS,
+                    Json(json!({
+                        "error": format!("Too many requests — retry after {} seconds", retry_after),
+                        "retry_after": retry_after,
+                    })),
+                )
+                    .into_response();
+            }
             Self::Database(e) => {
                 tracing::error!("Database error: {}", e);
                 (

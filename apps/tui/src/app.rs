@@ -74,7 +74,7 @@ pub struct App {
     pub mode: AppMode,
     pub active_panel: Panel,
 
-    // Data
+    // Data — loaded from real vault
     pub groups: Vec<TuiGroup>,
     pub entries: Vec<TuiEntry>,
     pub selected_group_idx: usize,
@@ -102,105 +102,168 @@ pub struct App {
     pub vault_path: String,
     pub entry_count: usize,
     pub is_modified: bool,
+
+    // Vault data (kept in memory for copy operations)
+    vault: keepassex_core::Vault,
 }
 
 impl App {
-    pub async fn new(vault_path: &str, password: &str, theme: &str) -> Result<Self> {
-        // In production: open vault and load entries
-        // For now: create with mock data to demonstrate TUI structure
-        let mock_entries = vec![
-            TuiEntry {
-                uuid: "uuid-1".into(),
-                title: "GitHub".into(),
-                username: "user@example.com".into(),
-                url: "https://github.com".into(),
-                has_otp: true,
-                has_passkey: false,
-                is_expired: false,
-                is_favorite: true,
-                group_name: "Development".into(),
-                modified_ago: "2 days ago".into(),
-            },
-            TuiEntry {
-                uuid: "uuid-2".into(),
-                title: "Gmail".into(),
-                username: "user@gmail.com".into(),
-                url: "https://gmail.com".into(),
-                has_otp: true,
-                has_passkey: true,
-                is_expired: false,
-                is_favorite: false,
-                group_name: "Email".into(),
-                modified_ago: "1 week ago".into(),
-            },
-            TuiEntry {
-                uuid: "uuid-3".into(),
-                title: "Bank Account".into(),
-                username: "user123".into(),
-                url: "https://bank.example.com".into(),
-                has_otp: false,
-                has_passkey: false,
-                is_expired: true,
-                is_favorite: false,
-                group_name: "Banking".into(),
-                modified_ago: "3 months ago".into(),
-            },
-        ];
+    pub async fn new(
+        vault_path: &str,
+        password: &str,
+        key_file: Option<&str>,
+        theme: &str,
+    ) -> Result<Self> {
+        use keepassex_core::crypto::keys::KeyFile;
+        use keepassex_core::vault::operations::{open_vault, VaultCredentials};
+        use std::path::Path;
 
-        let mock_groups = vec![
-            TuiGroup {
-                uuid: "g-root".into(),
-                name: "All Entries".into(),
-                entry_count: 3,
-                depth: 0,
-                is_expanded: true,
-            },
-            TuiGroup {
-                uuid: "g-dev".into(),
-                name: "Development".into(),
-                entry_count: 1,
-                depth: 1,
-                is_expanded: true,
-            },
-            TuiGroup {
-                uuid: "g-email".into(),
-                name: "Email".into(),
-                entry_count: 1,
-                depth: 1,
-                is_expanded: false,
-            },
-            TuiGroup {
-                uuid: "g-bank".into(),
-                name: "Banking".into(),
-                entry_count: 1,
-                depth: 1,
-                is_expanded: false,
-            },
-        ];
+        // Build credentials
+        let mut credentials = VaultCredentials {
+            password: Some(password.to_string()),
+            key_file_data: None,
+            hardware_key_response: None,
+        };
+
+        if let Some(kf_path) = key_file {
+            let kf_data = tokio::fs::read(kf_path)
+                .await
+                .map_err(|e| anyhow::anyhow!("Cannot read key file: {}", e))?;
+            credentials.key_file_data = Some(kf_data);
+        }
+
+        // Open vault using core engine
+        let vault = open_vault(Path::new(vault_path), &credentials)
+            .await
+            .map_err(|e| anyhow::anyhow!("Failed to open vault: {}", e))?;
+
+        // Build TUI groups from vault
+        let groups = Self::build_groups(&vault);
+
+        // Build TUI entries from all vault entries
+        let entries = Self::build_entries(&vault);
+
+        let vault_name = vault.meta.name.clone();
+        let entry_count = vault.entry_count();
+        let first_entry = entries.first().cloned();
 
         Ok(App {
             should_quit: false,
             mode: AppMode::Normal,
             active_panel: Panel::Entries,
-            groups: mock_groups,
-            entries: mock_entries.clone(),
+            groups,
+            entries: entries.clone(),
             selected_group_idx: 0,
             selected_entry_idx: 0,
-            selected_entry: mock_entries.first().cloned(),
+            selected_entry: first_entry,
             search_query: String::new(),
             search_results: vec![],
             command_input: String::new(),
             status: Some(StatusMessage {
-                text: format!("Opened: {}", vault_path),
+                text: format!("✓ Opened: {} ({} entries)", vault_name, entry_count),
                 is_error: false,
             }),
             clipboard_countdown: None,
             theme: theme.to_string(),
-            vault_name: "KeePassEx Vault".into(),
+            vault_name,
             vault_path: vault_path.to_string(),
-            entry_count: 3,
+            entry_count,
             is_modified: false,
+            vault,
         })
+    }
+
+    fn build_groups(vault: &keepassex_core::Vault) -> Vec<TuiGroup> {
+        let mut groups = Vec::new();
+
+        // Root group first
+        let root_uuid = vault.root_group_uuid;
+        if let Some(root) = vault.get_group(&root_uuid) {
+            groups.push(TuiGroup {
+                uuid: root_uuid.to_string(),
+                name: root.name.clone(),
+                entry_count: vault.get_group_entries(&root_uuid).len(),
+                depth: 0,
+                is_expanded: true,
+            });
+
+            // Child groups (depth 1)
+            for group in vault.all_groups() {
+                if group.parent_uuid == Some(root_uuid) {
+                    let entry_count = vault.get_group_entries_recursive(&group.uuid).len();
+                    groups.push(TuiGroup {
+                        uuid: group.uuid.to_string(),
+                        name: group.name.clone(),
+                        entry_count,
+                        depth: 1,
+                        is_expanded: group.is_expanded,
+                    });
+                }
+            }
+        }
+
+        groups
+    }
+
+    fn build_entries(vault: &keepassex_core::Vault) -> Vec<TuiEntry> {
+        vault
+            .all_entries()
+            .map(|entry| {
+                let group_name = vault
+                    .get_group(&entry.group_uuid)
+                    .map(|g| g.name.clone())
+                    .unwrap_or_default();
+
+                let modified_ago = format_time_ago(entry.modified_at);
+
+                TuiEntry {
+                    uuid: entry.uuid.to_string(),
+                    title: entry.title.get().to_string(),
+                    username: entry.username.get().to_string(),
+                    url: entry.url.clone(),
+                    has_otp: entry.otp.is_some(),
+                    has_passkey: !entry.passkeys.is_empty(),
+                    is_expired: entry.check_expired(),
+                    is_favorite: entry.tags.iter().any(|t| {
+                        t.eq_ignore_ascii_case("favorite") || t.eq_ignore_ascii_case("starred")
+                    }),
+                    group_name,
+                    modified_ago,
+                }
+            })
+            .collect()
+    }
+
+    fn build_entries_for_group(vault: &keepassex_core::Vault, group_uuid: &str) -> Vec<TuiEntry> {
+        if let Ok(uuid) = uuid::Uuid::parse_str(group_uuid) {
+            vault
+                .get_group_entries_recursive(&uuid)
+                .iter()
+                .map(|entry| {
+                    let group_name = vault
+                        .get_group(&entry.group_uuid)
+                        .map(|g| g.name.clone())
+                        .unwrap_or_default();
+                    TuiEntry {
+                        uuid: entry.uuid.to_string(),
+                        title: entry.title.get().to_string(),
+                        username: entry.username.get().to_string(),
+                        url: entry.url.clone(),
+                        has_otp: entry.otp.is_some(),
+                        has_passkey: !entry.passkeys.is_empty(),
+                        is_expired: entry.check_expired(),
+                        is_favorite: entry
+                            .tags
+                            .iter()
+                            .any(|t| t.eq_ignore_ascii_case("favorite")),
+                        group_name,
+                        modified_ago: format_time_ago(entry.modified_at),
+                    }
+                })
+                .collect()
+        } else {
+            vec![]
+        }
     }
 
     /// Handle a key event. Returns true if app should exit.
@@ -434,7 +497,10 @@ impl App {
     }
 
     fn new_entry(&mut self) {
-        self.set_status("New entry: not yet implemented in TUI (use desktop app)", false);
+        self.set_status(
+            "New entry: not yet implemented in TUI (use desktop app)",
+            false,
+        );
     }
 
     fn confirm_delete(&mut self) {
@@ -446,22 +512,40 @@ impl App {
 
     async fn copy_password(&mut self) -> Result<()> {
         if let Some(entry) = &self.selected_entry {
-            // In production: copy actual password from vault
-            self.set_status(
-                &format!("Password for '{}' copied (clears in 10s)", entry.title),
-                false,
-            );
-            self.clipboard_countdown = Some(10);
+            let uuid_str = entry.uuid.clone();
+            let title = entry.title.clone();
+            if let Ok(parsed_uuid) = uuid::Uuid::parse_str(&uuid_str) {
+                if let Some(vault_entry) = self.vault.get_entry(&parsed_uuid) {
+                    let password = vault_entry.password.get().to_string();
+                    if !password.is_empty() {
+                        if let Ok(mut clipboard) = arboard::Clipboard::new() {
+                            let _ = clipboard.set_text(&password);
+                        }
+                        self.set_status(
+                            &format!("✓ Password for '{}' copied (clears in 10s)", title),
+                            false,
+                        );
+                        self.clipboard_countdown = Some(10);
+                    } else {
+                        self.set_status("No password set for this entry", true);
+                    }
+                }
+            }
         }
         Ok(())
     }
 
     async fn copy_username(&mut self) -> Result<()> {
         if let Some(entry) = &self.selected_entry {
-            self.set_status(
-                &format!("Username '{}' copied", entry.username),
-                false,
-            );
+            let username = entry.username.clone();
+            if !username.is_empty() {
+                if let Ok(mut clipboard) = arboard::Clipboard::new() {
+                    let _ = clipboard.set_text(&username);
+                }
+                self.set_status(&format!("✓ Username '{}' copied", username), false);
+            } else {
+                self.set_status("No username set for this entry", true);
+            }
         }
         Ok(())
     }
@@ -477,17 +561,40 @@ impl App {
 
     fn execute_search(&mut self) {
         let q = self.search_query.to_lowercase();
-        self.search_results = self
-            .entries
+        if q.is_empty() {
+            self.search_results.clear();
+            return;
+        }
+
+        // Use vault search engine
+        let query = keepassex_core::types::SearchQuery::new(&self.search_query);
+        let results = self.vault.search(&query);
+        self.search_results = results
             .iter()
-            .filter(|e| {
-                e.title.to_lowercase().contains(&q)
-                    || e.username.to_lowercase().contains(&q)
-                    || e.url.to_lowercase().contains(&q)
-                    || e.group_name.to_lowercase().contains(&q)
+            .map(|entry| {
+                let group_name = self
+                    .vault
+                    .get_group(&entry.group_uuid)
+                    .map(|g| g.name.clone())
+                    .unwrap_or_default();
+                TuiEntry {
+                    uuid: entry.uuid.to_string(),
+                    title: entry.title.get().to_string(),
+                    username: entry.username.get().to_string(),
+                    url: entry.url.clone(),
+                    has_otp: entry.otp.is_some(),
+                    has_passkey: !entry.passkeys.is_empty(),
+                    is_expired: entry.check_expired(),
+                    is_favorite: entry
+                        .tags
+                        .iter()
+                        .any(|t| t.eq_ignore_ascii_case("favorite")),
+                    group_name,
+                    modified_ago: format_time_ago(entry.modified_at),
+                }
             })
-            .cloned()
             .collect();
+
         self.selected_entry_idx = 0;
         self.selected_entry = self.search_results.first().cloned();
     }
@@ -518,5 +625,28 @@ impl App {
             text: msg.to_string(),
             is_error,
         });
+    }
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+fn format_time_ago(dt: chrono::DateTime<chrono::Utc>) -> String {
+    let now = chrono::Utc::now();
+    let diff = now.signed_duration_since(dt);
+
+    if diff.num_seconds() < 60 {
+        "just now".to_string()
+    } else if diff.num_minutes() < 60 {
+        format!("{}m ago", diff.num_minutes())
+    } else if diff.num_hours() < 24 {
+        format!("{}h ago", diff.num_hours())
+    } else if diff.num_days() < 7 {
+        format!("{}d ago", diff.num_days())
+    } else if diff.num_weeks() < 5 {
+        format!("{}w ago", diff.num_weeks())
+    } else if diff.num_days() < 365 {
+        format!("{}mo ago", diff.num_days() / 30)
+    } else {
+        format!("{}y ago", diff.num_days() / 365)
     }
 }

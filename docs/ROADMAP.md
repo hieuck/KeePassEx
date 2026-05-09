@@ -144,17 +144,28 @@
 
 ### Security
 
-- [ ] **Memory encryption** — encrypt vault in memory between operations (mlock + custom allocator)
+- [x] **Memory encryption** — XOR-based memory obfuscation (`ProtectedMemory`) + OS memory locking (`LockedBuffer`) — `packages/core/src/crypto/memory_protection.rs`
+- [x] **Server rate limiting** — 5 login attempts/15min, 3 register/hour per IP — `apps/server/src/rate_limit.rs`
+- [ ] **Secure memory allocator** — prevent sensitive data in swap (requires OS-level mlock integration)
 - [ ] **Key file rotation** — generate new key file, re-encrypt vault
-- [ ] **Master password change UI** — desktop + mobile (currently CLI only)
 - [ ] **Argon2id parameter tuning UI** — let users adjust memory/iterations
 
 ### New Features
 
+- [x] **Passkey CRUD UI** — full add/remove passkeys in desktop entry detail — `apps/desktop/src/pages/EntryDetailPage.tsx`
+- [x] **SSH key entry UI** — full add/edit/remove SSH keys in desktop entry detail
+- [x] **Auto-type keyboard simulation** — `enigo` crate, cross-platform, all KeePass placeholders
+- [x] **OTP save from UI** — `set_entry_otp` Tauri command wired to OtpSetupDialog
+- [x] **Multi-vault tab commands** — `open_vault_tab`, `close_vault_tab`, `lock_vault_tab`
+- [x] **NL search integrated** — `NaturalLanguageSearch` component now rendered in VaultPage
+- [x] **Mobile group management** — `GroupsScreen` with create/rename/delete
+- [x] **Mobile master password change** — `ChangePasswordScreen` with strength meter
+- [x] **TUI real vault loading** — `App::new()` now opens actual KDBX file via core engine
+- [x] **CLI audit command** — reads actual vault audit log (was stub)
+- [x] **Browser extension search** — 7 missing handlers fixed
 - [ ] **Vault sharing** — share specific entries/groups (E2EE, not full vault)
 - [ ] **Secure notes** — rich text with markdown support
 - [ ] **Duplicate entry detection** — find and merge duplicates
-- [x] **AI password suggestions** — on-device, no network (`packages/core/src/ai/`)
 - [ ] **Offline breach database** — bundled top-1M breached passwords
 
 ### Platform

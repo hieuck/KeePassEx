@@ -200,10 +200,15 @@ export function EntryDetailPage() {
   };
 
   const handleOtpSave = async (uri: string) => {
-    // Save OTP URI to entry via custom field or dedicated OTP field
-    // In production: invoke('set_entry_otp', { uuid, uri })
+    if (uuid && uuid !== 'new') {
+      try {
+        await invoke('set_entry_otp', { entryUuid: uuid, uri });
+        queryClient.invalidateQueries({ queryKey: ['entry', uuid] });
+      } catch (e) {
+        console.error('Failed to save OTP:', e);
+      }
+    }
     setShowOtpSetup(false);
-    queryClient.invalidateQueries({ queryKey: ['entry', uuid] });
   };
 
   const addTag = () => {
@@ -248,6 +253,13 @@ export function EntryDetailPage() {
             <>
               <button className="btn btn-secondary" onClick={() => setEditing(true)}>
                 {t('common.edit')}
+              </button>
+              <button
+                className="btn btn-secondary"
+                title={t('entry.autoType')}
+                onClick={() => invoke('auto_type_entry', { entryUuid: uuid })}
+              >
+                ⌨️ {t('entry.autoType')}
               </button>
               <button
                 className="btn btn-danger"
@@ -558,26 +570,10 @@ export function EntryDetailPage() {
         )}
 
         {/* ── Passkeys tab ── */}
-        {activeTab === 'passkeys' && !isNew && (
-          <div className="passkeys-section">
-            <p className="section-desc">{t('passkey.title')}</p>
-            <div className="passkey-placeholder">
-              <span>🔑</span>
-              <p>{t('passkey.noPasskeys')}</p>
-            </div>
-          </div>
-        )}
+        {activeTab === 'passkeys' && !isNew && <PasskeysTab entryUuid={uuid ?? ''} />}
 
         {/* ── SSH tab ── */}
-        {activeTab === 'ssh' && !isNew && (
-          <div className="ssh-section">
-            <p className="section-desc">{t('ssh.title')}</p>
-            <div className="ssh-placeholder">
-              <span>🔐</span>
-              <p>{t('ssh.agentStopped')}</p>
-            </div>
-          </div>
-        )}
+        {activeTab === 'ssh' && !isNew && <SshKeyTab entryUuid={uuid ?? ''} />}
       </div>
 
       <style>{`
@@ -742,6 +738,566 @@ function FieldRow({
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+// ─── Passkeys Tab ─────────────────────────────────────────────────────────────
+
+interface PasskeyDto {
+  index: number;
+  credentialId: string;
+  rpId: string;
+  rpName: string;
+  userName: string;
+  userDisplayName: string;
+  signCount: number;
+  createdAt: string;
+  lastUsedAt?: string;
+  backupEligible: boolean;
+  backupState: boolean;
+}
+
+function PasskeysTab({ entryUuid }: { entryUuid: string }) {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addForm, setAddForm] = useState({
+    rpId: '',
+    rpName: '',
+    userName: '',
+    userDisplayName: '',
+    credentialId: '',
+    userId: '',
+    privateKeyPem: '',
+    backupEligible: false,
+  });
+
+  const { data: passkeys = [], isLoading } = useQuery({
+    queryKey: ['passkeys', entryUuid],
+    queryFn: () => invoke<PasskeyDto[]>('get_entry_passkeys', { entryUuid }),
+    enabled: !!entryUuid,
+  });
+
+  const addMutation = useMutation({
+    mutationFn: () =>
+      invoke('add_entry_passkey', {
+        args: {
+          entry_uuid: entryUuid,
+          credential_id:
+            addForm.credentialId ||
+            Array.from(crypto.getRandomValues(new Uint8Array(16)))
+              .map(b => b.toString(16).padStart(2, '0'))
+              .join(''),
+          rp_id: addForm.rpId,
+          rp_name: addForm.rpName,
+          user_id:
+            addForm.userId ||
+            Array.from(crypto.getRandomValues(new Uint8Array(16)))
+              .map(b => b.toString(16).padStart(2, '0'))
+              .join(''),
+          user_name: addForm.userName,
+          user_display_name: addForm.userDisplayName,
+          private_key_pem: addForm.privateKeyPem,
+          backup_eligible: addForm.backupEligible,
+        },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['passkeys', entryUuid] });
+      queryClient.invalidateQueries({ queryKey: ['entry', entryUuid] });
+      setShowAddForm(false);
+      setAddForm({
+        rpId: '',
+        rpName: '',
+        userName: '',
+        userDisplayName: '',
+        credentialId: '',
+        userId: '',
+        privateKeyPem: '',
+        backupEligible: false,
+      });
+    },
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: (index: number) =>
+      invoke('remove_entry_passkey', { entryUuid, passkeyIndex: index }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['passkeys', entryUuid] });
+      queryClient.invalidateQueries({ queryKey: ['entry', entryUuid] });
+    },
+  });
+
+  return (
+    <div className="passkeys-section">
+      <div className="section-header">
+        <h3 className="section-title">🔑 {t('passkey.title')}</h3>
+        <button className="btn btn-primary btn-sm" onClick={() => setShowAddForm(v => !v)}>
+          {showAddForm ? t('common.cancel') : `+ ${t('passkey.add')}`}
+        </button>
+      </div>
+
+      <p className="section-desc" style={{ marginBottom: 'var(--space-md)' }}>
+        {t('passkey.description')}
+      </p>
+
+      {/* Add form */}
+      {showAddForm && (
+        <div className="passkey-add-form">
+          <div className="form-row-2">
+            <div className="field-row">
+              <label className="field-label">{t('passkey.rpId')}</label>
+              <input
+                className="form-input"
+                placeholder="example.com"
+                value={addForm.rpId}
+                onChange={e => setAddForm(f => ({ ...f, rpId: e.target.value }))}
+              />
+            </div>
+            <div className="field-row">
+              <label className="field-label">{t('passkey.rpName')}</label>
+              <input
+                className="form-input"
+                placeholder="Example"
+                value={addForm.rpName}
+                onChange={e => setAddForm(f => ({ ...f, rpName: e.target.value }))}
+              />
+            </div>
+          </div>
+          <div className="form-row-2">
+            <div className="field-row">
+              <label className="field-label">{t('entry.username')}</label>
+              <input
+                className="form-input"
+                placeholder="user@example.com"
+                value={addForm.userName}
+                onChange={e => setAddForm(f => ({ ...f, userName: e.target.value }))}
+              />
+            </div>
+            <div className="field-row">
+              <label className="field-label">{t('passkey.displayName')}</label>
+              <input
+                className="form-input"
+                placeholder="User Name"
+                value={addForm.userDisplayName}
+                onChange={e => setAddForm(f => ({ ...f, userDisplayName: e.target.value }))}
+              />
+            </div>
+          </div>
+          <div className="field-row">
+            <label className="field-label">{t('passkey.privateKey')}</label>
+            <textarea
+              className="form-input form-textarea"
+              placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"
+              value={addForm.privateKeyPem}
+              onChange={e => setAddForm(f => ({ ...f, privateKeyPem: e.target.value }))}
+              rows={4}
+            />
+          </div>
+          <label className="check-option">
+            <input
+              type="checkbox"
+              checked={addForm.backupEligible}
+              onChange={e => setAddForm(f => ({ ...f, backupEligible: e.target.checked }))}
+            />
+            <span>{t('passkey.backupEligible')}</span>
+          </label>
+          <button
+            className="btn btn-primary"
+            onClick={() => addMutation.mutate()}
+            disabled={addMutation.isPending || !addForm.rpId || !addForm.userName}
+          >
+            {addMutation.isPending ? '...' : t('passkey.save')}
+          </button>
+        </div>
+      )}
+
+      {/* Passkey list */}
+      {isLoading ? (
+        <p style={{ color: 'var(--color-text-tertiary)', fontSize: 13 }}>{t('common.loading')}</p>
+      ) : passkeys.length === 0 ? (
+        <div className="empty-section">
+          <span style={{ fontSize: 32 }}>🔑</span>
+          <p>{t('passkey.noPasskeys')}</p>
+          <p style={{ fontSize: 12 }}>{t('passkey.noPasskeysHint')}</p>
+        </div>
+      ) : (
+        <div className="passkey-list">
+          {passkeys.map(pk => (
+            <div key={pk.index} className="passkey-item">
+              <div className="passkey-item-icon">🔑</div>
+              <div className="passkey-item-info">
+                <div className="passkey-item-rp">
+                  <strong>{pk.rpName || pk.rpId}</strong>
+                  <span className="passkey-item-domain">{pk.rpId}</span>
+                </div>
+                <div className="passkey-item-user">{pk.userDisplayName || pk.userName}</div>
+                <div className="passkey-item-meta">
+                  {t('entry.sortByCreated')}: {new Date(pk.createdAt).toLocaleDateString()}
+                  {pk.lastUsedAt &&
+                    ` · ${t('passkey.lastUsed')}: ${new Date(pk.lastUsedAt).toLocaleDateString()}`}
+                  {` · ${t('passkey.signCount')}: ${pk.signCount}`}
+                </div>
+              </div>
+              <div className="passkey-item-badges">
+                {pk.backupEligible && (
+                  <span className="badge badge-green">{t('passkey.backupEligible')}</span>
+                )}
+                {pk.backupState && (
+                  <span className="badge badge-blue">{t('passkey.backedUp')}</span>
+                )}
+              </div>
+              <button
+                className="btn-icon"
+                onClick={() => {
+                  if (confirm(t('passkey.confirmRemove'))) removeMutation.mutate(pk.index);
+                }}
+                aria-label={t('common.delete')}
+                title={t('common.delete')}
+              >
+                🗑
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <style>{`
+        .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--space-sm); }
+        .section-title { font-size:14px; font-weight:600; }
+        .passkey-add-form { background:var(--color-bg-secondary); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-lg); display:flex; flex-direction:column; gap:var(--space-md); margin-bottom:var(--space-lg); }
+        .form-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md); }
+        .passkey-list { display:flex; flex-direction:column; gap:var(--space-sm); }
+        .passkey-item { display:flex; align-items:center; gap:var(--space-md); padding:var(--space-md); background:var(--color-bg-secondary); border:1px solid var(--color-border); border-radius:var(--radius-md); }
+        .passkey-item-icon { font-size:24px; flex-shrink:0; }
+        .passkey-item-info { flex:1; min-width:0; }
+        .passkey-item-rp { display:flex; align-items:center; gap:var(--space-sm); }
+        .passkey-item-domain { font-size:12px; color:var(--color-text-tertiary); }
+        .passkey-item-user { font-size:13px; color:var(--color-text-secondary); }
+        .passkey-item-meta { font-size:11px; color:var(--color-text-tertiary); margin-top:2px; }
+        .passkey-item-badges { display:flex; gap:4px; flex-shrink:0; }
+        .badge { font-size:10px; font-weight:600; padding:2px 6px; border-radius:var(--radius-full); }
+        .badge-green { background:#f0fdf4; color:#16a34a; }
+        .badge-blue { background:#eff6ff; color:#2563eb; }
+        .empty-section { display:flex; flex-direction:column; align-items:center; gap:var(--space-md); padding:var(--space-2xl); color:var(--color-text-tertiary); font-size:13px; background:var(--color-bg-secondary); border-radius:var(--radius-md); border:1px dashed var(--color-border); text-align:center; }
+        .check-option { display:flex; align-items:center; gap:var(--space-sm); font-size:13px; cursor:pointer; }
+      `}</style>
+    </div>
+  );
+}
+
+// ─── SSH Key Tab ──────────────────────────────────────────────────────────────
+
+interface SshKeyDto {
+  keyType: string;
+  publicKey: string;
+  comment: string;
+  fingerprint: string;
+  addToAgent: boolean;
+  agentDuration?: number;
+  confirmBeforeUse: boolean;
+}
+
+function SshKeyTab({ entryUuid }: { entryUuid: string }) {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [showPrivateKey, setShowPrivateKey] = useState(false);
+  const [privateKey, setPrivateKey] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [form, setForm] = useState({
+    privateKey: '',
+    publicKey: '',
+    comment: '',
+    keyType: 'ed25519',
+    addToAgent: true,
+    agentDuration: undefined as number | undefined,
+    confirmBeforeUse: false,
+  });
+
+  const { data: sshKey, isLoading } = useQuery({
+    queryKey: ['ssh-key', entryUuid],
+    queryFn: () => invoke<SshKeyDto | null>('get_entry_ssh_key', { entryUuid }),
+    enabled: !!entryUuid,
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: () =>
+      invoke('set_entry_ssh_key', {
+        args: {
+          entry_uuid: entryUuid,
+          private_key: form.privateKey,
+          public_key: form.publicKey,
+          comment: form.comment,
+          key_type: form.keyType,
+          add_to_agent: form.addToAgent,
+          agent_duration: form.agentDuration ?? null,
+          confirm_before_use: form.confirmBeforeUse,
+        },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ssh-key', entryUuid] });
+      queryClient.invalidateQueries({ queryKey: ['entry', entryUuid] });
+      setEditing(false);
+    },
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: () => invoke('remove_entry_ssh_key', { entryUuid }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ssh-key', entryUuid] });
+      queryClient.invalidateQueries({ queryKey: ['entry', entryUuid] });
+    },
+  });
+
+  const loadToAgent = useMutation({
+    mutationFn: () => invoke('load_ssh_key_to_agent', { entryUuid }),
+  });
+
+  const revealPrivateKey = async () => {
+    const pk = await invoke<string>('get_entry_ssh_private_key', { entryUuid });
+    setPrivateKey(pk);
+    setShowPrivateKey(true);
+  };
+
+  const copyPublicKey = async () => {
+    if (sshKey?.publicKey) {
+      await invoke('copy_to_clipboard', { text: sshKey.publicKey, clearAfterSeconds: 30 });
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  if (isLoading)
+    return (
+      <p style={{ color: 'var(--color-text-tertiary)', fontSize: 13 }}>{t('common.loading')}</p>
+    );
+
+  return (
+    <div className="ssh-section">
+      <div className="section-header">
+        <h3 className="section-title">🔐 {t('ssh.title')}</h3>
+        <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
+          {sshKey && !editing && (
+            <>
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={() => loadToAgent.mutate()}
+                disabled={loadToAgent.isPending}
+              >
+                {loadToAgent.isPending ? '...' : `⚡ ${t('ssh.addToAgent')}`}
+              </button>
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={() => {
+                  setForm({
+                    privateKey: '',
+                    publicKey: sshKey.publicKey,
+                    comment: sshKey.comment,
+                    keyType: sshKey.keyType,
+                    addToAgent: sshKey.addToAgent,
+                    agentDuration: sshKey.agentDuration,
+                    confirmBeforeUse: sshKey.confirmBeforeUse,
+                  });
+                  setEditing(true);
+                }}
+              >
+                {t('common.edit')}
+              </button>
+              <button
+                className="btn btn-danger btn-sm"
+                onClick={() => {
+                  if (confirm(t('ssh.confirmRemove'))) removeMutation.mutate();
+                }}
+              >
+                {t('common.delete')}
+              </button>
+            </>
+          )}
+          {!sshKey && !editing && (
+            <button className="btn btn-primary btn-sm" onClick={() => setEditing(true)}>
+              + {t('ssh.addKey')}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Edit form */}
+      {editing && (
+        <div className="ssh-edit-form">
+          <div className="field-row">
+            <label className="field-label">{t('ssh.keyType')}</label>
+            <select
+              className="form-input"
+              value={form.keyType}
+              onChange={e => setForm(f => ({ ...f, keyType: e.target.value }))}
+            >
+              <option value="ed25519">Ed25519 (recommended)</option>
+              <option value="rsa4096">RSA 4096-bit</option>
+              <option value="ecdsa-p256">ECDSA P-256</option>
+              <option value="ecdsa-p384">ECDSA P-384</option>
+            </select>
+          </div>
+          <div className="field-row">
+            <label className="field-label">{t('ssh.privateKey')}</label>
+            <textarea
+              className="form-input form-textarea"
+              placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----"
+              value={form.privateKey}
+              onChange={e => setForm(f => ({ ...f, privateKey: e.target.value }))}
+              rows={6}
+            />
+          </div>
+          <div className="field-row">
+            <label className="field-label">{t('ssh.publicKey')}</label>
+            <textarea
+              className="form-input form-textarea"
+              placeholder="ssh-ed25519 AAAA... comment"
+              value={form.publicKey}
+              onChange={e => setForm(f => ({ ...f, publicKey: e.target.value }))}
+              rows={3}
+            />
+          </div>
+          <div className="field-row">
+            <label className="field-label">{t('ssh.comment')}</label>
+            <input
+              className="form-input"
+              placeholder="user@hostname"
+              value={form.comment}
+              onChange={e => setForm(f => ({ ...f, comment: e.target.value }))}
+            />
+          </div>
+          <label className="check-option">
+            <input
+              type="checkbox"
+              checked={form.addToAgent}
+              onChange={e => setForm(f => ({ ...f, addToAgent: e.target.checked }))}
+            />
+            <span>{t('ssh.addToAgent')}</span>
+          </label>
+          {form.addToAgent && (
+            <div className="field-row">
+              <label className="field-label">
+                {t('ssh.agentDuration')} ({t('common.seconds')}, {t('ssh.emptyForever')})
+              </label>
+              <input
+                className="form-input"
+                type="number"
+                min={0}
+                placeholder="∞"
+                value={form.agentDuration ?? ''}
+                onChange={e =>
+                  setForm(f => ({
+                    ...f,
+                    agentDuration: e.target.value ? Number(e.target.value) : undefined,
+                  }))
+                }
+                style={{ width: 120 }}
+              />
+            </div>
+          )}
+          <label className="check-option">
+            <input
+              type="checkbox"
+              checked={form.confirmBeforeUse}
+              onChange={e => setForm(f => ({ ...f, confirmBeforeUse: e.target.checked }))}
+            />
+            <span>{t('ssh.confirmBeforeUse')}</span>
+          </label>
+          <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
+            <button
+              className="btn btn-primary"
+              onClick={() => saveMutation.mutate()}
+              disabled={saveMutation.isPending || !form.privateKey || !form.publicKey}
+            >
+              {saveMutation.isPending ? '...' : t('common.save')}
+            </button>
+            <button className="btn btn-secondary" onClick={() => setEditing(false)}>
+              {t('common.cancel')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* SSH key display */}
+      {sshKey && !editing && (
+        <div className="ssh-key-display">
+          <div className="ssh-key-header">
+            <span className="ssh-key-type-badge">{sshKey.keyType}</span>
+            <span className="ssh-key-comment">{sshKey.comment}</span>
+          </div>
+          <div className="ssh-fingerprint">
+            <span className="field-label">{t('ssh.fingerprint')}</span>
+            <code className="ssh-fingerprint-value">{sshKey.fingerprint}</code>
+          </div>
+          <div className="ssh-public-key-row">
+            <span className="field-label">{t('ssh.publicKey')}</span>
+            <div className="ssh-public-key-actions">
+              <code className="ssh-public-key-preview">{sshKey.publicKey.slice(0, 40)}...</code>
+              <button
+                className={`btn-icon ${copied ? 'copied' : ''}`}
+                onClick={copyPublicKey}
+                aria-label={t('entry.copyPassword')}
+              >
+                {copied ? '✓' : '⎘'}
+              </button>
+            </div>
+          </div>
+          <div className="ssh-private-key-row">
+            <span className="field-label">{t('ssh.privateKey')}</span>
+            <div style={{ display: 'flex', gap: 'var(--space-sm)', alignItems: 'center' }}>
+              {showPrivateKey ? (
+                <code className="ssh-private-key-value">{privateKey.slice(0, 30)}...</code>
+              ) : (
+                <span style={{ color: 'var(--color-text-tertiary)', fontSize: 13 }}>
+                  ••••••••••••
+                </span>
+              )}
+              <button
+                className="btn-icon"
+                onClick={showPrivateKey ? () => setShowPrivateKey(false) : revealPrivateKey}
+              >
+                {showPrivateKey ? '🙈' : '👁'}
+              </button>
+            </div>
+          </div>
+          <div className="ssh-settings">
+            {sshKey.addToAgent && <span className="badge badge-green">{t('ssh.addToAgent')}</span>}
+            {sshKey.confirmBeforeUse && (
+              <span className="badge badge-blue">{t('ssh.confirmBeforeUse')}</span>
+            )}
+            {sshKey.agentDuration && (
+              <span className="badge badge-blue">{sshKey.agentDuration}s</span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {!sshKey && !editing && (
+        <div className="empty-section">
+          <span style={{ fontSize: 32 }}>🔐</span>
+          <p>{t('ssh.noKey')}</p>
+          <p style={{ fontSize: 12 }}>{t('ssh.noKeyHint')}</p>
+        </div>
+      )}
+
+      <style>{`
+        .ssh-edit-form { background:var(--color-bg-secondary); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-lg); display:flex; flex-direction:column; gap:var(--space-md); margin-bottom:var(--space-lg); }
+        .ssh-key-display { background:var(--color-bg-secondary); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-lg); display:flex; flex-direction:column; gap:var(--space-md); }
+        .ssh-key-header { display:flex; align-items:center; gap:var(--space-sm); }
+        .ssh-key-type-badge { background:var(--color-primary); color:white; font-size:11px; font-weight:700; padding:2px 8px; border-radius:var(--radius-full); }
+        .ssh-key-comment { font-size:13px; color:var(--color-text-secondary); }
+        .ssh-fingerprint { display:flex; flex-direction:column; gap:4px; }
+        .ssh-fingerprint-value { font-family:'SF Mono','Consolas',monospace; font-size:12px; color:var(--color-text); background:var(--color-bg-tertiary); padding:4px 8px; border-radius:var(--radius-sm); word-break:break-all; }
+        .ssh-public-key-row { display:flex; flex-direction:column; gap:4px; }
+        .ssh-public-key-actions { display:flex; align-items:center; gap:var(--space-sm); }
+        .ssh-public-key-preview { font-family:'SF Mono','Consolas',monospace; font-size:12px; color:var(--color-text-secondary); }
+        .ssh-private-key-row { display:flex; flex-direction:column; gap:4px; }
+        .ssh-private-key-value { font-family:'SF Mono','Consolas',monospace; font-size:12px; color:var(--color-text); }
+        .ssh-settings { display:flex; gap:4px; flex-wrap:wrap; }
+        .btn-danger { background:var(--color-danger); color:white; border:none; padding:var(--space-xs) var(--space-md); border-radius:var(--radius-md); cursor:pointer; font-size:12px; }
+        .btn-danger:hover { opacity:0.9; }
+      `}</style>
     </div>
   );
 }

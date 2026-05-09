@@ -70,19 +70,24 @@ impl MasterKey {
     }
 
     /// Derive encryption key and HMAC key from master key + master seed
-    /// KDBX 4.x: enc_key = SHA256(seed || key || 0x01), hmac_key = SHA512(seed || key || 0x01)
+    ///
+    /// Per KeePassXC source (Kdbx4Reader.cpp):
+    ///   finalKey  = SHA256(masterSeed || transformedDatabaseKey)          — NO 0x01 suffix
+    ///   hmacKey   = SHA512(masterSeed || transformedDatabaseKey || 0x01)  — WITH 0x01 suffix
+    ///
     /// KDBX 3.1: enc_key = SHA256(seed || key)  (no suffix, no hmac_key)
     pub fn derive_keys(&self, master_seed: &[u8]) -> (Vec<u8>, Vec<u8>) {
         use sha2::Sha512;
 
-        // KDBX 4.x encryption key: SHA256(master_seed || transformed_key || 0x01)
+        // KDBX 4.x encryption key: SHA256(master_seed || transformed_key)  — NO 0x01 suffix
+        // See: Kdbx4Reader.cpp line ~50: hash.addData(masterSeed); hash.addData(transformedDatabaseKey()); finalKey = hash.result();
         let mut enc_hasher = Sha256::new();
         enc_hasher.update(master_seed);
         enc_hasher.update(&self.key);
-        enc_hasher.update(&[0x01u8]);
         let enc_key = enc_hasher.finalize().to_vec();
 
         // KDBX 4.x HMAC key: SHA512(master_seed || transformed_key || 0x01) — 64 bytes
+        // See: KeePass2.cpp: hmacKeyHash.addData(masterSeed); hmacKeyHash.addData(transformedMasterKey); hmacKeyHash.addData(QByteArray(1, '\x01'));
         let mut hmac_hasher = Sha512::new();
         hmac_hasher.update(master_seed);
         hmac_hasher.update(&self.key);

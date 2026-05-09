@@ -55,7 +55,7 @@ export function PasswordPolicyPage() {
         }}
       >
         <span style={{ fontSize: 48 }}>🔐</span>
-        <p>Mở kho mật khẩu để xem trang này</p>
+        {t('vault.openToView')}
       </div>
     );
   }
@@ -115,21 +115,21 @@ export function PasswordPolicyPage() {
         </div>
 
         <div className="policy-section">
-          <h3>Test a Password</h3>
-          <p className="policy-section-desc">Test a password against all enabled policies</p>
+          <h3>{t('passwordPolicy.testPassword')}</h3>
+          <p className="policy-section-desc">{t('passwordPolicy.testPasswordDesc')}</p>
           <div className="test-input-row">
             <input
               type={showTestPassword ? 'text' : 'password'}
               className="form-input test-input"
               value={testPassword}
               onChange={e => setTestPassword(e.target.value)}
-              placeholder="Enter password to test..."
+              placeholder={t('passwordPolicy.testPasswordPlaceholder')}
               autoComplete="new-password"
             />
             <button
               className="btn-icon"
               onClick={() => setShowTestPassword(v => !v)}
-              aria-label={showTestPassword ? 'Hide' : 'Show'}
+              aria-label={showTestPassword ? t('entry.hidePassword') : t('entry.showPassword')}
             >
               {showTestPassword ? '🙈' : '👁'}
             </button>
@@ -138,11 +138,13 @@ export function PasswordPolicyPage() {
               onClick={() => testMutation.mutate(testPassword)}
               disabled={!testPassword || testMutation.isPending || enabledCount === 0}
             >
-              Test
+              {t('common.confirm')}
             </button>
           </div>
 
-          {enabledCount === 0 && <p className="test-hint">Enable at least one policy to test.</p>}
+          {enabledCount === 0 && (
+            <p className="test-hint">{t('passwordPolicy.enableAtLeastOne')}</p>
+          )}
 
           {testResults.length > 0 && (
             <div className="test-results">

@@ -245,3 +245,43 @@ pub fn get_vault_meta(state: State<'_, AppState>) -> Result<VaultMetaDto, String
         path: open_vault.path.to_string_lossy().to_string(),
     })
 }
+
+// ─── Multi-vault tab commands ─────────────────────────────────────────────────
+// These are aliases used by the tabs store for multi-vault support.
+// Currently backed by the same single-vault state; a future version will
+// support indexed vault slots.
+
+/// Open a vault in a tab (alias for open_vault, used by tabs store)
+#[tauri::command]
+pub async fn open_vault_tab(
+    args: OpenVaultArgs,
+    state: State<'_, AppState>,
+) -> Result<VaultMetaDto, String> {
+    open_vault(args, state).await
+}
+
+/// Close a vault tab by path
+#[tauri::command]
+pub fn close_vault_tab(path: String, state: State<'_, AppState>) -> Result<(), String> {
+    let mut vault_lock = state.vault.write().unwrap();
+    if let Some(ref ov) = *vault_lock {
+        if ov.path.to_string_lossy() == path {
+            *vault_lock = None;
+        }
+    }
+    Ok(())
+}
+
+/// Lock a vault tab by path
+#[tauri::command]
+pub fn lock_vault_tab(path: String, state: State<'_, AppState>) -> Result<(), String> {
+    let mut vault_lock = state.vault.write().unwrap();
+    if let Some(ref mut ov) = *vault_lock {
+        if ov.path.to_string_lossy() == path {
+            ov.locked = true;
+            use zeroize::Zeroize;
+            ov.master_key_hash.zeroize();
+        }
+    }
+    Ok(())
+}

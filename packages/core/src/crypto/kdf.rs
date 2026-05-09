@@ -12,9 +12,19 @@ pub enum KdfParams {
     AesKdf(AesKdfParams),
 }
 
-/// Argon2id parameters (KDBX 4.x default)
+/// Argon2 variant
+#[derive(Debug, Clone, PartialEq)]
+pub enum Argon2Variant {
+    /// Argon2d — UUID: ef636ddf-8c29-444b-91f7-a9a403e30a0c
+    Argon2d,
+    /// Argon2id — UUID: 9e298b19-56db-4773-b23d-fc3ec6f0a1e6
+    Argon2id,
+}
+
+/// Argon2 parameters (KDBX 4.x default)
 #[derive(Debug, Clone)]
 pub struct ArgonParams {
+    pub variant: Argon2Variant,
     pub salt: Vec<u8>,
     pub iterations: u32,
     pub memory_kb: u32,
@@ -27,6 +37,7 @@ pub struct ArgonParams {
 impl Default for ArgonParams {
     fn default() -> Self {
         Self {
+            variant: Argon2Variant::Argon2id,
             salt: vec![0u8; 32],
             iterations: 2,
             memory_kb: 65536, // 64 MB
@@ -65,7 +76,17 @@ impl Kdf for Argon2Kdf {
         )
         .map_err(|e| KeePassExError::KdfFailed(e.to_string()))?;
 
-        let argon2 = Argon2::new(Algorithm::Argon2id, Version::V0x13, params);
+        let algorithm = match self.params.variant {
+            Argon2Variant::Argon2d => Algorithm::Argon2d,
+            Argon2Variant::Argon2id => Algorithm::Argon2id,
+        };
+
+        let version = match self.params.version {
+            0x10 => Version::V0x10,
+            _ => Version::V0x13,
+        };
+
+        let argon2 = Argon2::new(algorithm, version, params);
 
         let mut output = vec![0u8; 32];
         argon2

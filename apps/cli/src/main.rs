@@ -507,7 +507,7 @@ async fn main() -> anyhow::Result<()> {
             .await
         }
 
-        Commands::Audit { limit } => commands::audit::run(&vault_path_str, limit, &cli.format),
+        Commands::Audit { limit } => commands::audit::run(&vault, limit, &cli.format),
 
         // Server commands are handled before vault open — unreachable here
         Commands::Server { .. } => unreachable!("Server commands handled before vault open"),

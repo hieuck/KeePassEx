@@ -43,6 +43,9 @@ pub fn run() {
             commands::vault::lock_vault,
             commands::vault::change_credentials,
             commands::vault::get_vault_meta,
+            commands::vault::open_vault_tab,
+            commands::vault::close_vault_tab,
+            commands::vault::lock_vault_tab,
             // Entry commands
             commands::entries::get_entries,
             commands::entries::get_entry,
@@ -69,6 +72,8 @@ pub fn run() {
             // OTP commands
             commands::otp::generate_totp,
             commands::otp::parse_otp_uri,
+            commands::otp::set_entry_otp,
+            commands::otp::remove_entry_otp,
             // Health commands
             commands::health::audit_vault,
             // Clipboard commands
@@ -161,6 +166,30 @@ pub fn run() {
             // Updater commands
             commands::updater_cmd::check_for_updates,
             commands::updater_cmd::get_app_version,
+            // Auto-type command
+            commands::autotype_cmd::auto_type_entry,
+            // Emergency Access commands
+            commands::emergency_access_cmd::get_emergency_grants,
+            commands::emergency_access_cmd::add_emergency_grant,
+            commands::emergency_access_cmd::revoke_emergency_grant,
+            commands::emergency_access_cmd::approve_emergency_request,
+            commands::emergency_access_cmd::delete_emergency_grant,
+            // Plugin commands
+            commands::plugins_cmd::list_plugins,
+            commands::plugins_cmd::toggle_plugin,
+            commands::plugins_cmd::uninstall_plugin,
+            commands::plugins_cmd::install_plugin_from_file,
+            // Passkey commands
+            commands::passkey_cmd::get_entry_passkeys,
+            commands::passkey_cmd::add_entry_passkey,
+            commands::passkey_cmd::remove_entry_passkey,
+            commands::passkey_cmd::get_passkey_registration_options,
+            // SSH entry commands
+            commands::ssh_entry_cmd::get_entry_ssh_key,
+            commands::ssh_entry_cmd::set_entry_ssh_key,
+            commands::ssh_entry_cmd::remove_entry_ssh_key,
+            commands::ssh_entry_cmd::get_entry_ssh_private_key,
+            commands::ssh_entry_cmd::load_ssh_key_to_agent,
         ])
         .setup(|app| {
             // Load persisted settings

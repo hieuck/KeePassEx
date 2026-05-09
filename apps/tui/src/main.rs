@@ -20,9 +20,9 @@
 //! - :            — Command mode (vim-style)
 
 mod app;
-mod ui;
-mod events;
 mod commands;
+mod events;
+mod ui;
 
 use anyhow::Result;
 use clap::Parser;
@@ -91,7 +91,7 @@ async fn main() -> Result<()> {
     let mut terminal = Terminal::new(backend)?;
 
     // Create app
-    let mut app = App::new(&vault_path, &password, &cli.theme).await?;
+    let mut app = App::new(&vault_path, &password, cli.key_file.as_deref(), &cli.theme).await?;
 
     // Main event loop
     let result = run_app(&mut terminal, &mut app).await;

@@ -65,7 +65,7 @@ export function HealthPage() {
         }}
       >
         <span style={{ fontSize: 48 }}>🔐</span>
-        <p>Mở kho mật khẩu để xem trang này</p>
+        <p>{t('vault.openToView')}</p>
       </div>
     );
   }

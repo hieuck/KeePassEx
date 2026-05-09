@@ -455,8 +455,9 @@ fn parse_kdf_variant_map(data: &[u8]) -> Result<KdfParams> {
     let mut kdf_uuid: Option<Vec<u8>> = None;
     let mut salt: Option<Vec<u8>> = None;
     let mut iterations: u64 = 2;
-    let mut memory: u64 = 65536;
+    let mut memory: u64 = 65536 * 1024; // bytes (KeePassXC stores bytes)
     let mut parallelism: u64 = 2;
+    let mut argon2_version: u32 = 0x13;
     let mut rounds: u64 = 6000;
 
     loop {
@@ -475,27 +476,54 @@ fn parse_kdf_variant_map(data: &[u8]) -> Result<KdfParams> {
         match (type_id, key.as_str()) {
             (0x42, "$UUID") => kdf_uuid = Some(val),
             (0x42, "S") => salt = Some(val),
+            // Argon2 params (UInt64 = 0x05)
             (0x05, "I") => iterations = u64::from_le_bytes(val.try_into().unwrap_or([0; 8])),
             (0x05, "M") => memory = u64::from_le_bytes(val.try_into().unwrap_or([0; 8])),
             (0x05, "P") => parallelism = u64::from_le_bytes(val.try_into().unwrap_or([0; 8])),
+            // Argon2 version (UInt32 = 0x04)
+            (0x04, "V") => {
+                if val.len() == 4 {
+                    argon2_version = u32::from_le_bytes(val.try_into().unwrap_or([0; 4]));
+                }
+            }
+            // AES-KDF rounds (UInt64 = 0x05)
             (0x05, "R") => rounds = u64::from_le_bytes(val.try_into().unwrap_or([0; 8])),
             _ => {}
         }
     }
 
-    // Argon2 UUID: 0xEF636DDF8C29444B91F7A9A403E30A0C
-    let argon2_uuid = [
+    // KeePassXC UUIDs (from KeePass2.cpp):
+    // Argon2d  UUID: ef636ddf-8c29-444b-91f7-a9a403e30a0c
+    // Argon2id UUID: 9e298b19-56db-4773-b23d-fc3ec6f0a1e6
+    // AES-KDF  UUID: 7c02bb82-79a7-4ac0-927d-114a00648238
+    let argon2d_uuid = [
         0xEF, 0x63, 0x6D, 0xDF, 0x8C, 0x29, 0x44, 0x4B, 0x91, 0xF7, 0xA9, 0xA4, 0x03, 0xE3, 0x0A,
         0x0C,
     ];
+    let argon2id_uuid = [
+        0x9E, 0x29, 0x8B, 0x19, 0x56, 0xDB, 0x47, 0x73, 0xB2, 0x3D, 0xFC, 0x3E, 0xC6, 0xF0, 0xA1,
+        0xE6,
+    ];
 
-    if kdf_uuid.as_deref() == Some(&argon2_uuid) {
+    let uuid_bytes = kdf_uuid.as_deref().unwrap_or(&[]);
+
+    if uuid_bytes == argon2d_uuid || uuid_bytes == argon2id_uuid {
+        let variant = if uuid_bytes == argon2id_uuid {
+            crate::crypto::kdf::Argon2Variant::Argon2id
+        } else {
+            crate::crypto::kdf::Argon2Variant::Argon2d
+        };
+
+        // KeePassXC stores memory in bytes; argon2 crate expects KiB
+        let memory_kb = (memory / 1024) as u32;
+
         Ok(KdfParams::Argon2(ArgonParams {
+            variant,
             salt: salt.unwrap_or_else(|| vec![0u8; 32]),
             iterations: iterations as u32,
-            memory_kb: (memory / 1024) as u32,
+            memory_kb,
             parallelism: parallelism as u32,
-            version: 19,
+            version: argon2_version,
             secret_key: None,
             associated_data: None,
         }))

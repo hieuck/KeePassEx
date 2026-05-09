@@ -49,6 +49,7 @@ export const en = {
     copied: 'Copied!',
     copiedToClipboard: 'Copied to clipboard',
     clearingIn: 'Clearing in {{seconds}}s',
+    seconds: 'seconds',
   },
 
   // ─── Vault ─────────────────────────────────────────────────────────────────
@@ -90,6 +91,11 @@ export const en = {
     changePassword: 'Change Master Password',
     currentPassword: 'Current Password',
     newPassword: 'New Password',
+    openToView: 'Open a vault to view this page',
+    passwordChanged: 'Master password changed successfully',
+    passwordsMatch: 'Passwords match',
+    changePasswordNotice:
+      'Changing your master password will re-encrypt the vault. Make sure to remember your new password — it cannot be recovered.',
   },
 
   // ─── Entry ─────────────────────────────────────────────────────────────────
@@ -152,12 +158,17 @@ export const en = {
     edit: 'Edit Group',
     delete: 'Delete Group',
     move: 'Move Group',
+    rename: 'Rename Group',
+    create: 'New Group',
+    manage: 'Manage Groups',
     name: 'Group Name',
     notes: 'Notes',
     icon: 'Icon',
     allEntries: 'All Entries',
     confirmDelete: 'Delete group "{{name}}"?',
     confirmDeleteDesc: 'All entries and sub-groups will be moved to the recycle bin.',
+    deleteWithContent:
+      'This group contains {{entries}} entries and {{groups}} sub-groups. All will be moved to the recycle bin.',
   },
 
   // ─── Password Generator ────────────────────────────────────────────────────
@@ -246,18 +257,29 @@ export const en = {
     title: 'Passkeys',
     add: 'Add Passkey',
     delete: 'Delete Passkey',
-    rpId: 'Website',
+    rpId: 'Website (RP ID)',
+    rpName: 'Website Name',
     username: 'Username',
+    displayName: 'Display Name',
+    privateKey: 'Private Key (PEM)',
     createdAt: 'Created',
     lastUsed: 'Last Used',
     signCount: 'Sign Count',
     noPasskeys: 'No passkeys stored',
+    noPasskeysHint: 'Passkeys are stored securely inside your KDBX vault',
     usePasskey: 'Use Passkey',
+    save: 'Save Passkey',
+    backupEligible: 'Backup eligible',
+    backedUp: 'Backed up',
+    confirmRemove: 'Remove this passkey?',
+    description:
+      'Passkeys are stored encrypted inside your vault — portable and offline, unlike platform keystores.',
   },
 
   // ─── SSH ───────────────────────────────────────────────────────────────────
   ssh: {
     title: 'SSH Keys',
+    addKey: 'Add SSH Key',
     addToAgent: 'Add to SSH Agent',
     removeFromAgent: 'Remove from Agent',
     agentRunning: 'SSH Agent running',
@@ -266,12 +288,17 @@ export const en = {
     fingerprint: 'Fingerprint',
     comment: 'Comment',
     publicKey: 'Public Key',
+    privateKey: 'Private Key',
     copyPublicKey: 'Copy Public Key',
     confirmBeforeUse: 'Confirm before use',
     agentDuration: 'Agent duration',
     agentDurationForever: 'Forever',
     agentDurationMinutes: '{{minutes}} minutes',
     loadedKeys: '{{count}} key(s) loaded',
+    noKey: 'No SSH key stored',
+    noKeyHint: 'Store your SSH private key securely inside the vault',
+    confirmRemove: 'Remove SSH key from this entry?',
+    emptyForever: 'empty = forever',
   },
 
   // ─── Sync ──────────────────────────────────────────────────────────────────
@@ -816,6 +843,10 @@ export const en = {
       forbidSequential: 'No {{n}}+ sequential characters',
       forbidRepeated: 'No {{n}}+ repeated characters',
     },
+    testPassword: 'Test a Password',
+    testPasswordDesc: 'Test a password against all enabled policies',
+    testPasswordPlaceholder: 'Enter password to test...',
+    enableAtLeastOne: 'Enable at least one policy to test.',
   },
 
   // ─── Scheduled Backup ─────────────────────────────────────────────────────
@@ -1064,6 +1095,9 @@ export const en = {
     oldestPassword: 'Oldest password: {{days}} days',
     totalCopies: '{{count}} total copies',
     uniqueFeature: 'Exclusive KeePassEx feature',
+    daysAvg: 'days avg',
+    olderThan1Year: '> 1 year',
+    changedLast30Days: 'changed 30d',
   },
 
   // ─── TUI (Terminal UI) ─────────────────────────────────────────────────────

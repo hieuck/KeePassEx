@@ -91,6 +91,10 @@ export const ko = {
     changePassword: '마스터 비밀번호 변경',
     currentPassword: '현재 비밀번호',
     newPassword: '새 비밀번호',
+    passwordChanged: '마스터 비밀번호가 성공적으로 변경되었습니다',
+    passwordsMatch: '비밀번호가 일치합니다',
+    changePasswordNotice: '마스터 비밀번호를 변경하면 보관함이 다시 암호화됩니다. 새 비밀번호를 기억하세요.',
+    openToView: '이 페이지를 보려면 보관함을 여세요',
   },
 
   // ─── Entry ─────────────────────────────────────────────────────────────────
@@ -142,6 +146,7 @@ export const ko = {
     sortByModified: '최종 수정',
     sortByCreated: '생성일',
     confirmDelete: '"{{title}}"을(를) 삭제하시겠습니까?',
+    deleteWithContent: '이 그룹에는 {{entries}}개 항목과 {{groups}}개 하위 그룹이 있습니다.',
     confirmDeleteDesc: '이 항목은 휴지통으로 이동됩니다.',
     confirmDeletePermanent: '"{{title}}"을(를) 영구적으로 삭제하시겠습니까?',
     confirmDeletePermanentDesc: '이 작업은 취소할 수 없습니다.',
@@ -158,6 +163,7 @@ export const ko = {
     icon: '아이콘',
     allEntries: '모든 항목',
     confirmDelete: '"{{name}}" 그룹을 삭제하시겠습니까?',
+    deleteWithContent: '이 그룹에는 {{entries}}개 항목과 {{groups}}개 하위 그룹이 있습니다.',
     confirmDeleteDesc: '모든 항목과 하위 그룹이 휴지통으로 이동됩니다.',
   },
 
@@ -709,6 +715,7 @@ export const ko = {
     tagSelected: 'Tag selected',
     exportSelected: 'Export selected',
     confirmDelete: 'Delete {{count}} entries?',
+    deleteWithContent: '이 그룹에는 {{entries}}개 항목과 {{groups}}개 하위 그룹이 있습니다.',
     confirmDeleteDesc: 'These entries will be moved to the recycle bin.',
   },
 
@@ -815,7 +822,11 @@ export const ko = {
       forbidUsername: 'Cannot contain username',
       forbidTitle: 'Cannot contain entry title',
       forbidSequential: 'No {{n}}+ sequential characters',
-      forbidRepeated: 'No {{n}}+ repeated characters',
+      testPassword: '비밀번호 테스트',
+    testPasswordDesc: '활성화된 모든 정책에 대해 비밀번호 테스트',
+    testPasswordPlaceholder: '테스트할 비밀번호 입력...',
+    enableAtLeastOne: '테스트하려면 하나 이상의 정책을 활성화하세요.',
+    forbidRepeated: 'No {{n}}+ repeated characters',
     },
   },
 
@@ -847,6 +858,9 @@ export const ko = {
     backupSuccess: 'Backup created successfully',
     backupFailed: 'Backup failed: {{error}}',
     restoreSuccess: 'Vault restored from backup',
+    daysAvg: '일 평균',
+    olderThan1Year: '> 1년',
+    changedLast30Days: '30일 내 변경',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -925,6 +939,9 @@ export const ko = {
     securityNote: 'Security note',
     securityNoteDesc:
       'The vault is encrypted with ChaCha20-Poly1305 before embedding. Without the steganography password, the vault cannot be extracted.',
+    daysAvg: '일 평균',
+    olderThan1Year: '> 1년',
+    changedLast30Days: '30일 내 변경',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -969,6 +986,9 @@ export const ko = {
     suggestion3: 'Cloud storage (encrypted)',
     suggestion4: 'Hardware security key',
     suggestion5: 'Printed QR code in a safe deposit box',
+    daysAvg: '일 평균',
+    olderThan1Year: '> 1년',
+    changedLast30Days: '30일 내 변경',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -997,6 +1017,9 @@ export const ko = {
     whyKyber: 'Why Kyber-768?',
     whyKyberDesc:
       'CRYSTALS-Kyber was selected by NIST as the post-quantum key encapsulation standard (FIPS 203). It provides 128-bit post-quantum security.',
+    daysAvg: '일 평균',
+    olderThan1Year: '> 1년',
+    changedLast30Days: '30일 내 변경',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1037,6 +1060,9 @@ export const ko = {
     commentDeleted: 'Comment deleted',
     activityLog: 'Team Activity',
     noActivity: 'No recent activity',
+    daysAvg: '일 평균',
+    olderThan1Year: '> 1년',
+    changedLast30Days: '30일 내 변경',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1064,6 +1090,9 @@ export const ko = {
     averageAge: 'Average password age: {{days}} days',
     oldestPassword: 'Oldest password: {{days}} days',
     totalCopies: '{{count}} total copies',
+    daysAvg: '일 평균',
+    olderThan1Year: '> 1년',
+    changedLast30Days: '30일 내 변경',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1088,6 +1117,9 @@ export const ko = {
     commandMode_key: ': — Command mode',
     help: '? — Help',
     quit: 'q — Quit',
+    daysAvg: '일 평균',
+    olderThan1Year: '> 1년',
+    changedLast30Days: '30일 내 변경',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1111,6 +1143,9 @@ export const ko = {
     example2: 'find weak passwords in Banking',
     example3: 'entries with OTP created last month',
     example4: 'passwords not used in 6 months',
+    daysAvg: '일 평균',
+    olderThan1Year: '> 1년',
+    changedLast30Days: '30일 내 변경',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1144,6 +1179,9 @@ export const ko = {
       security: 'Security',
       other: 'Other',
     },
+    daysAvg: '일 평균',
+    olderThan1Year: '> 1년',
+    changedLast30Days: '30일 내 변경',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1165,6 +1203,9 @@ export const ko = {
       email: 'Email/Work: every 180 days',
       social: 'Social/Shopping: every 365 days',
     },
+    daysAvg: '일 평균',
+    olderThan1Year: '> 1년',
+    changedLast30Days: '30일 내 변경',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1181,6 +1222,9 @@ export const ko = {
     setHint: 'Set hint',
     showHint: 'Show hint',
     wrongPassword: 'Wrong password (ZKPV pre-check failed)',
+    daysAvg: '일 평균',
+    olderThan1Year: '> 1년',
+    changedLast30Days: '30일 내 변경',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1215,6 +1259,9 @@ export const ko = {
     codeRepeatedChars: 'Repeated characters',
     codeLowEntropy: 'Low entropy',
     codeStrong: 'Password is strong',
+    daysAvg: '일 평균',
+    olderThan1Year: '> 1년',
+    changedLast30Days: '30일 내 변경',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1231,6 +1278,9 @@ export const ko = {
     vaultCount: '{{count}}개 볼트 열림',
     vaultCount_plural: '{{count}}개 볼트 열림',
     dragToReorder: '드래그하여 순서 변경',
+    daysAvg: '일 평균',
+    olderThan1Year: '> 1년',
+    changedLast30Days: '30일 내 변경',
     uniqueFeature: 'KeePassEx 고유 기능',
   },
 
@@ -1254,6 +1304,9 @@ export const ko = {
     notFound: '참조된 항목을 찾을 수 없습니다',
     syntax: '구문: {REF:P@I:항목UUID}',
     example: '예: 중복 없이 항목 간에 비밀번호 공유',
+    daysAvg: '일 평균',
+    olderThan1Year: '> 1년',
+    changedLast30Days: '30일 내 변경',
     uniqueFeature: 'KeePass 호환 기능',
   },
 
@@ -1270,6 +1323,9 @@ export const ko = {
     alreadyHasIcon: '항목에 이미 사용자 정의 아이콘이 있습니다',
     source: '출처: {{source}}',
     clearIcon: '사용자 정의 아이콘 제거',
+    daysAvg: '일 평균',
+    olderThan1Year: '> 1년',
+    changedLast30Days: '30일 내 변경',
     uniqueFeature: '자동 아이콘 가져오기',
   },
 
@@ -1292,6 +1348,9 @@ export const ko = {
     copied: '복사됨!',
     lockVault: '볼트 잠금',
     shortcut: '단축키: ⌘⇧K',
+    daysAvg: '일 평균',
+    olderThan1Year: '> 1년',
+    changedLast30Days: '30일 내 변경',
     uniqueFeature: 'KeePassEx 고유 기능 — 경쟁사에는 없음',
   },
 
@@ -1328,6 +1387,9 @@ export const ko = {
     selfHostedDesc: '데이터가 내 서버에 저장됩니다. 타사 클라우드 없음.',
     zeroKnowledge: '제로 지식',
     zeroKnowledgeDesc: 'The server cannot read your vault. All encryption is client-side.',
+    daysAvg: '일 평균',
+    olderThan1Year: '> 1년',
+    changedLast30Days: '30일 내 변경',
     uniqueFeature: 'KeePassEx 고유 기능 — 자체 호스팅 동기화를 제공하는 경쟁사 없음',
   },
 } as const;

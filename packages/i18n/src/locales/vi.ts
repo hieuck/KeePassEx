@@ -91,6 +91,10 @@ export const vi = {
     changePassword: 'Đổi mật khẩu chính',
     currentPassword: 'Mật khẩu hiện tại',
     newPassword: 'Mật khẩu mới',
+    passwordChanged: 'Đã đổi mật khẩu chính thành công',
+    passwordsMatch: 'Mật khẩu khớp',
+    changePasswordNotice: 'Đổi mật khẩu chính sẽ mã hóa lại kho. Hãy nhớ mật khẩu mới — không thể khôi phục.',
+    openToView: 'Mở kho mật khẩu để xem trang này',
   },
 
   // ─── Entry ─────────────────────────────────────────────────────────────────
@@ -142,6 +146,7 @@ export const vi = {
     sortByModified: 'Lần sửa cuối',
     sortByCreated: 'Ngày tạo',
     confirmDelete: 'Xóa "{{title}}"?',
+    deleteWithContent: 'Nhóm này có {{entries}} mục và {{groups}} nhóm con. Tất cả sẽ vào thùng rác.',
     confirmDeleteDesc: 'Mục này sẽ được chuyển vào thùng rác.',
     confirmDeletePermanent: 'Xóa vĩnh viễn "{{title}}"?',
     confirmDeletePermanentDesc: 'Hành động này không thể hoàn tác.',
@@ -158,6 +163,7 @@ export const vi = {
     icon: 'Biểu tượng',
     allEntries: 'Tất cả mục',
     confirmDelete: 'Xóa nhóm "{{name}}"?',
+    deleteWithContent: 'Nhóm này có {{entries}} mục và {{groups}} nhóm con. Tất cả sẽ vào thùng rác.',
     confirmDeleteDesc: 'Tất cả mục và nhóm con sẽ được chuyển vào thùng rác.',
   },
 
@@ -710,6 +716,7 @@ export const vi = {
     tagSelected: 'Gắn thẻ đã chọn',
     exportSelected: 'Xuất đã chọn',
     confirmDelete: 'Xóa {{count}} mục?',
+    deleteWithContent: 'Nhóm này có {{entries}} mục và {{groups}} nhóm con. Tất cả sẽ vào thùng rác.',
     confirmDeleteDesc: 'Các mục này sẽ được chuyển vào thùng rác.',
   },
 
@@ -815,7 +822,11 @@ export const vi = {
       forbidUsername: 'Không chứa tên đăng nhập',
       forbidTitle: 'Không chứa tiêu đề mục',
       forbidSequential: 'Không có {{n}}+ ký tự liên tiếp',
-      forbidRepeated: 'Không có {{n}}+ ký tự lặp lại',
+      testPassword: 'Kiểm tra mật khẩu',
+    testPasswordDesc: 'Kiểm tra mật khẩu với tất cả chính sách đã bật',
+    testPasswordPlaceholder: 'Nhập mật khẩu để kiểm tra...',
+    enableAtLeastOne: 'Bật ít nhất một chính sách để kiểm tra.',
+    forbidRepeated: 'Không có {{n}}+ ký tự lặp lại',
     },
   },
 
@@ -847,6 +858,9 @@ export const vi = {
     backupSuccess: 'Đã tạo bản sao lưu thành công',
     backupFailed: 'Sao lưu thất bại: {{error}}',
     restoreSuccess: 'Đã khôi phục kho từ bản sao lưu',
+    daysAvg: 'ngày trung bình',
+    olderThan1Year: '> 1 năm',
+    changedLast30Days: 'đổi 30 ngày',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -924,6 +938,9 @@ export const vi = {
     securityNote: 'Lưu ý bảo mật',
     securityNoteDesc:
       'Kho được mã hóa bằng ChaCha20-Poly1305 trước khi nhúng. Không có mật khẩu steganography, kho không thể trích xuất được.',
+    daysAvg: 'ngày trung bình',
+    olderThan1Year: '> 1 năm',
+    changedLast30Days: 'đổi 30 ngày',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -968,6 +985,9 @@ export const vi = {
     suggestion3: 'Lưu trữ đám mây (đã mã hóa)',
     suggestion4: 'Khóa bảo mật phần cứng',
     suggestion5: 'Mã QR in ra giấy trong két ngân hàng',
+    daysAvg: 'ngày trung bình',
+    olderThan1Year: '> 1 năm',
+    changedLast30Days: 'đổi 30 ngày',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -996,6 +1016,9 @@ export const vi = {
     whyKyber: 'Tại sao Kyber-768?',
     whyKyberDesc:
       'CRYSTALS-Kyber được NIST chọn làm chuẩn key encapsulation hậu lượng tử (FIPS 203). Nó cung cấp bảo mật 128-bit hậu lượng tử.',
+    daysAvg: 'ngày trung bình',
+    olderThan1Year: '> 1 năm',
+    changedLast30Days: 'đổi 30 ngày',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1036,6 +1059,9 @@ export const vi = {
     commentDeleted: 'Đã xóa bình luận',
     activityLog: 'Hoạt động nhóm',
     noActivity: 'Không có hoạt động gần đây',
+    daysAvg: 'ngày trung bình',
+    olderThan1Year: '> 1 năm',
+    changedLast30Days: 'đổi 30 ngày',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1063,6 +1089,9 @@ export const vi = {
     averageAge: 'Tuổi mật khẩu trung bình: {{days}} ngày',
     oldestPassword: 'Mật khẩu cũ nhất: {{days}} ngày',
     totalCopies: '{{count}} lần sao chép',
+    daysAvg: 'ngày trung bình',
+    olderThan1Year: '> 1 năm',
+    changedLast30Days: 'đổi 30 ngày',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1087,6 +1116,9 @@ export const vi = {
     commandMode_key: ': — Chế độ lệnh',
     help: '? — Trợ giúp',
     quit: 'q — Thoát',
+    daysAvg: 'ngày trung bình',
+    olderThan1Year: '> 1 năm',
+    changedLast30Days: 'đổi 30 ngày',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1110,6 +1142,9 @@ export const vi = {
     example2: 'mật khẩu yếu trong nhóm Ngân hàng',
     example3: 'mục có OTP tạo tháng trước',
     example4: 'mật khẩu chưa dùng 6 tháng',
+    daysAvg: 'ngày trung bình',
+    olderThan1Year: '> 1 năm',
+    changedLast30Days: 'đổi 30 ngày',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1143,6 +1178,9 @@ export const vi = {
       security: 'Bảo mật',
       other: 'Khác',
     },
+    daysAvg: 'ngày trung bình',
+    olderThan1Year: '> 1 năm',
+    changedLast30Days: 'đổi 30 ngày',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1164,6 +1202,9 @@ export const vi = {
       email: 'Email/Công việc: mỗi 180 ngày',
       social: 'Mạng xã hội/Mua sắm: mỗi 365 ngày',
     },
+    daysAvg: 'ngày trung bình',
+    olderThan1Year: '> 1 năm',
+    changedLast30Days: 'đổi 30 ngày',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1180,6 +1221,9 @@ export const vi = {
     setHint: 'Đặt gợi ý',
     showHint: 'Hiện gợi ý',
     wrongPassword: 'Sai mật khẩu (kiểm tra ZKPV thất bại)',
+    daysAvg: 'ngày trung bình',
+    olderThan1Year: '> 1 năm',
+    changedLast30Days: 'đổi 30 ngày',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1214,6 +1258,9 @@ export const vi = {
     codeRepeatedChars: 'Ký tự lặp lại',
     codeLowEntropy: 'Entropy thấp',
     codeStrong: 'Mật khẩu mạnh',
+    daysAvg: 'ngày trung bình',
+    olderThan1Year: '> 1 năm',
+    changedLast30Days: 'đổi 30 ngày',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1230,6 +1277,9 @@ export const vi = {
     vaultCount: '{{count}} kho đang mở',
     vaultCount_plural: '{{count}} kho đang mở',
     dragToReorder: 'Kéo để sắp xếp lại',
+    daysAvg: 'ngày trung bình',
+    olderThan1Year: '> 1 năm',
+    changedLast30Days: 'đổi 30 ngày',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1253,6 +1303,9 @@ export const vi = {
     notFound: 'Không tìm thấy mục được tham chiếu',
     syntax: 'Cú pháp: {REF:P@I:entry-uuid}',
     example: 'Ví dụ: chia sẻ mật khẩu giữa các mục mà không cần sao chép',
+    daysAvg: 'ngày trung bình',
+    olderThan1Year: '> 1 năm',
+    changedLast30Days: 'đổi 30 ngày',
     uniqueFeature: 'Tính năng tương thích KeePass',
   },
 
@@ -1269,6 +1322,9 @@ export const vi = {
     alreadyHasIcon: 'Mục đã có biểu tượng tùy chỉnh',
     source: 'Nguồn: {{source}}',
     clearIcon: 'Xóa biểu tượng tùy chỉnh',
+    daysAvg: 'ngày trung bình',
+    olderThan1Year: '> 1 năm',
+    changedLast30Days: 'đổi 30 ngày',
     uniqueFeature: 'Tự động tải biểu tượng',
   },
 
@@ -1291,6 +1347,9 @@ export const vi = {
     copied: 'Đã sao chép!',
     lockVault: 'Khóa kho',
     shortcut: 'Phím tắt: ⌘⇧K',
+    daysAvg: 'ngày trung bình',
+    olderThan1Year: '> 1 năm',
+    changedLast30Days: 'đổi 30 ngày',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx — không đối thủ nào có',
   },
 
@@ -1327,6 +1386,9 @@ export const vi = {
     selfHostedDesc: 'Dữ liệu của bạn ở trên máy chủ của bạn. Không có đám mây bên thứ ba.',
     zeroKnowledge: 'Không tiết lộ',
     zeroKnowledgeDesc: 'Máy chủ không thể đọc kho của bạn. Tất cả mã hóa ở phía máy khách.',
+    daysAvg: 'ngày trung bình',
+    olderThan1Year: '> 1 năm',
+    changedLast30Days: 'đổi 30 ngày',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx — không đối thủ nào có đồng bộ tự lưu trữ',
   },
 } as const;

@@ -44,6 +44,13 @@ pub async fn register(
     headers: HeaderMap,
     Json(req): Json<RegisterRequest>,
 ) -> Result<Json<AuthResponse>> {
+    let ip = extract_ip(&headers).unwrap_or_else(|| "unknown".to_string());
+
+    // Rate limit: 3 registrations per hour per IP
+    if let Err(retry_after) = state.rate_limiters.register.check(&ip) {
+        return Err(ServerError::RateLimited(retry_after));
+    }
+
     // Validate email
     if !req.email.contains('@') || req.email.len() < 3 {
         return Err(ServerError::BadRequest("Invalid email address".into()));
@@ -75,16 +82,15 @@ pub async fn register(
     let token_hash = hash_token(&refresh_token);
     let expires_at = Utc::now()
         + Duration::seconds(crate::config::ServerConfig::REFRESH_TOKEN_EXPIRY_SECS as i64);
-    let ip = extract_ip(&headers);
     state
         .db
-        .create_session(&user.id, &token_hash, expires_at, ip.as_deref())
+        .create_session(&user.id, &token_hash, expires_at, Some(ip.as_str()))
         .await?;
 
     // Audit log
     state
         .db
-        .log_event(Some(&user.id), "user_registered", ip.as_deref(), None)
+        .log_event(Some(&user.id), "user_registered", Some(ip.as_str()), None)
         .await?;
 
     tracing::info!("New user registered: {}", user.email);
@@ -105,7 +111,13 @@ pub async fn login(
     headers: HeaderMap,
     Json(req): Json<LoginRequest>,
 ) -> Result<Json<AuthResponse>> {
-    let ip = extract_ip(&headers);
+    let ip = extract_ip(&headers).unwrap_or_else(|| "unknown".to_string());
+
+    // Rate limit: 5 login attempts per 15 minutes per IP
+    if let Err(retry_after) = state.rate_limiters.login.check(&ip) {
+        tracing::warn!("Rate limit exceeded for IP: {}", ip);
+        return Err(ServerError::RateLimited(retry_after));
+    }
 
     // Find user
     let user = state
@@ -118,10 +130,13 @@ pub async fn login(
     if !verify_password(&req.password, &user.password_hash)? {
         state
             .db
-            .log_event(Some(&user.id), "login_failed", ip.as_deref(), None)
+            .log_event(Some(&user.id), "login_failed", Some(&ip), None)
             .await?;
         return Err(ServerError::Unauthorized);
     }
+
+    // Reset rate limit on successful login
+    state.rate_limiters.login.reset(&ip);
 
     // Generate tokens
     let access_token = generate_access_token(&user.id, &user.email, &state.config)?;
@@ -133,7 +148,7 @@ pub async fn login(
         + Duration::seconds(crate::config::ServerConfig::REFRESH_TOKEN_EXPIRY_SECS as i64);
     state
         .db
-        .create_session(&user.id, &token_hash, expires_at, ip.as_deref())
+        .create_session(&user.id, &token_hash, expires_at, Some(ip.as_str()))
         .await?;
 
     // Update last login
@@ -141,7 +156,7 @@ pub async fn login(
 
     state
         .db
-        .log_event(Some(&user.id), "login_success", ip.as_deref(), None)
+        .log_event(Some(&user.id), "login_success", Some(ip.as_str()), None)
         .await?;
 
     Ok(Json(AuthResponse {

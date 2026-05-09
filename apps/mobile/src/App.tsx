@@ -31,6 +31,8 @@ import { EmergencyAccessScreen } from './screens/EmergencyAccessScreen';
 import { PluginsScreen } from './screens/PluginsScreen';
 import { AnalyticsScreen } from './screens/AnalyticsScreen';
 import { ShardingScreen } from './screens/ShardingScreen';
+import { GroupsScreen } from './screens/GroupsScreen';
+import { ChangePasswordScreen } from './screens/ChangePasswordScreen';
 
 export type RootStackParamList = {
   Welcome: undefined;
@@ -47,6 +49,8 @@ export type RootStackParamList = {
   Plugins: undefined;
   Analytics: undefined;
   Sharding: undefined;
+  Groups: undefined;
+  ChangePassword: undefined;
 };
 
 export type TabParamList = {
@@ -230,6 +234,16 @@ export function App() {
                   <Stack.Screen
                     name="Sharding"
                     component={ShardingScreen}
+                    options={{ presentation: 'modal' }}
+                  />
+                  <Stack.Screen
+                    name="Groups"
+                    component={GroupsScreen}
+                    options={{ presentation: 'modal' }}
+                  />
+                  <Stack.Screen
+                    name="ChangePassword"
+                    component={ChangePasswordScreen}
                     options={{ presentation: 'modal' }}
                   />
                 </>

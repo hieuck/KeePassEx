@@ -91,6 +91,10 @@ export const ru = {
     changePassword: 'Изменить мастер-пароль',
     currentPassword: 'Текущий пароль',
     newPassword: 'Новый пароль',
+    passwordChanged: 'Мастер-пароль успешно изменён',
+    passwordsMatch: 'Пароли совпадают',
+    changePasswordNotice: 'Изменение мастер-пароля повторно зашифрует хранилище. Запомните новый пароль.',
+    openToView: 'Откройте хранилище для просмотра этой страницы',
   },
 
   // ─── Entry ─────────────────────────────────────────────────────────────────
@@ -142,6 +146,7 @@ export const ru = {
     sortByModified: 'Дате изменения',
     sortByCreated: 'Дате создания',
     confirmDelete: 'Удалить "{{title}}"?',
+    deleteWithContent: 'Эта группа содержит {{entries}} записей и {{groups}} подгрупп.',
     confirmDeleteDesc: 'Эта запись будет перемещена в корзину.',
     confirmDeletePermanent: 'Безвозвратно удалить "{{title}}"?',
     confirmDeletePermanentDesc: 'Это действие нельзя отменить.',
@@ -158,6 +163,7 @@ export const ru = {
     icon: 'Значок',
     allEntries: 'Все записи',
     confirmDelete: 'Удалить группу "{{name}}"?',
+    deleteWithContent: 'Эта группа содержит {{entries}} записей и {{groups}} подгрупп.',
     confirmDeleteDesc: 'Все записи и подгруппы будут перемещены в корзину.',
   },
 
@@ -709,6 +715,7 @@ export const ru = {
     tagSelected: 'Tag selected',
     exportSelected: 'Export selected',
     confirmDelete: 'Delete {{count}} entries?',
+    deleteWithContent: 'Эта группа содержит {{entries}} записей и {{groups}} подгрупп.',
     confirmDeleteDesc: 'These entries will be moved to the recycle bin.',
   },
 
@@ -815,7 +822,11 @@ export const ru = {
       forbidUsername: 'Cannot contain username',
       forbidTitle: 'Cannot contain entry title',
       forbidSequential: 'No {{n}}+ sequential characters',
-      forbidRepeated: 'No {{n}}+ repeated characters',
+      testPassword: 'Проверить пароль',
+    testPasswordDesc: 'Проверить пароль по всем включённым политикам',
+    testPasswordPlaceholder: 'Введите пароль для проверки...',
+    enableAtLeastOne: 'Включите хотя бы одну политику для проверки.',
+    forbidRepeated: 'No {{n}}+ repeated characters',
     },
   },
 
@@ -847,6 +858,9 @@ export const ru = {
     backupSuccess: 'Backup created successfully',
     backupFailed: 'Backup failed: {{error}}',
     restoreSuccess: 'Vault restored from backup',
+    daysAvg: 'дней ср.',
+    olderThan1Year: '> 1 года',
+    changedLast30Days: 'изменено 30д',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -925,6 +939,9 @@ export const ru = {
     securityNote: 'Security note',
     securityNoteDesc:
       'The vault is encrypted with ChaCha20-Poly1305 before embedding. Without the steganography password, the vault cannot be extracted.',
+    daysAvg: 'дней ср.',
+    olderThan1Year: '> 1 года',
+    changedLast30Days: 'изменено 30д',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -969,6 +986,9 @@ export const ru = {
     suggestion3: 'Cloud storage (encrypted)',
     suggestion4: 'Hardware security key',
     suggestion5: 'Printed QR code in a safe deposit box',
+    daysAvg: 'дней ср.',
+    olderThan1Year: '> 1 года',
+    changedLast30Days: 'изменено 30д',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -997,6 +1017,9 @@ export const ru = {
     whyKyber: 'Why Kyber-768?',
     whyKyberDesc:
       'CRYSTALS-Kyber was selected by NIST as the post-quantum key encapsulation standard (FIPS 203). It provides 128-bit post-quantum security.',
+    daysAvg: 'дней ср.',
+    olderThan1Year: '> 1 года',
+    changedLast30Days: 'изменено 30д',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1037,6 +1060,9 @@ export const ru = {
     commentDeleted: 'Comment deleted',
     activityLog: 'Team Activity',
     noActivity: 'No recent activity',
+    daysAvg: 'дней ср.',
+    olderThan1Year: '> 1 года',
+    changedLast30Days: 'изменено 30д',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1064,6 +1090,9 @@ export const ru = {
     averageAge: 'Average password age: {{days}} days',
     oldestPassword: 'Oldest password: {{days}} days',
     totalCopies: '{{count}} total copies',
+    daysAvg: 'дней ср.',
+    olderThan1Year: '> 1 года',
+    changedLast30Days: 'изменено 30д',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1088,6 +1117,9 @@ export const ru = {
     commandMode_key: ': — Command mode',
     help: '? — Help',
     quit: 'q — Quit',
+    daysAvg: 'дней ср.',
+    olderThan1Year: '> 1 года',
+    changedLast30Days: 'изменено 30д',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1111,6 +1143,9 @@ export const ru = {
     example2: 'find weak passwords in Banking',
     example3: 'entries with OTP created last month',
     example4: 'passwords not used in 6 months',
+    daysAvg: 'дней ср.',
+    olderThan1Year: '> 1 года',
+    changedLast30Days: 'изменено 30д',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1144,6 +1179,9 @@ export const ru = {
       security: 'Security',
       other: 'Other',
     },
+    daysAvg: 'дней ср.',
+    olderThan1Year: '> 1 года',
+    changedLast30Days: 'изменено 30д',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1165,6 +1203,9 @@ export const ru = {
       email: 'Email/Work: every 180 days',
       social: 'Social/Shopping: every 365 days',
     },
+    daysAvg: 'дней ср.',
+    olderThan1Year: '> 1 года',
+    changedLast30Days: 'изменено 30д',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1181,6 +1222,9 @@ export const ru = {
     setHint: 'Set hint',
     showHint: 'Show hint',
     wrongPassword: 'Wrong password (ZKPV pre-check failed)',
+    daysAvg: 'дней ср.',
+    olderThan1Year: '> 1 года',
+    changedLast30Days: 'изменено 30д',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1215,6 +1259,9 @@ export const ru = {
     codeRepeatedChars: 'Repeated characters',
     codeLowEntropy: 'Low entropy',
     codeStrong: 'Password is strong',
+    daysAvg: 'дней ср.',
+    olderThan1Year: '> 1 года',
+    changedLast30Days: 'изменено 30д',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1231,6 +1278,9 @@ export const ru = {
     vaultCount: 'Открыто {{count}} хранилище',
     vaultCount_plural: 'Открыто {{count}} хранилищ',
     dragToReorder: 'Перетащите для изменения порядка',
+    daysAvg: 'дней ср.',
+    olderThan1Year: '> 1 года',
+    changedLast30Days: 'изменено 30д',
     uniqueFeature: 'Эксклюзивная функция KeePassEx',
   },
 
@@ -1254,6 +1304,9 @@ export const ru = {
     notFound: 'Запись по ссылке не найдена',
     syntax: 'Синтаксис: {REF:P@I:UUID-записи}',
     example: 'Пример: совместное использование пароля между записями без дублирования',
+    daysAvg: 'дней ср.',
+    olderThan1Year: '> 1 года',
+    changedLast30Days: 'изменено 30д',
     uniqueFeature: 'Функция, совместимая с KeePass',
   },
 
@@ -1270,6 +1323,9 @@ export const ru = {
     alreadyHasIcon: 'У записи уже есть пользовательский значок',
     source: 'Источник: {{source}}',
     clearIcon: 'Удалить пользовательский значок',
+    daysAvg: 'дней ср.',
+    olderThan1Year: '> 1 года',
+    changedLast30Days: 'изменено 30д',
     uniqueFeature: 'Автоматическая загрузка значков',
   },
 
@@ -1292,6 +1348,9 @@ export const ru = {
     copied: 'Скопировано!',
     lockVault: 'Заблокировать хранилище',
     shortcut: 'Сочетание клавиш: ⌘⇧K',
+    daysAvg: 'дней ср.',
+    olderThan1Year: '> 1 года',
+    changedLast30Days: 'изменено 30д',
     uniqueFeature: 'Эксклюзивная функция KeePassEx — ни у одного конкурента нет',
   },
 
@@ -1328,6 +1387,9 @@ export const ru = {
     selfHostedDesc: 'Ваши данные хранятся на вашем сервере. Без сторонних облаков.',
     zeroKnowledge: 'Нулевое знание',
     zeroKnowledgeDesc: 'Сервер не может читать ваше хранилище. Всё шифрование на стороне клиента.',
+    daysAvg: 'дней ср.',
+    olderThan1Year: '> 1 года',
+    changedLast30Days: 'изменено 30д',
     uniqueFeature: 'Exclusive KeePassEx feature — no competitor offers self-hosted sync',
   },
 } as const;

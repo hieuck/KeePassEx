@@ -7,7 +7,64 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-> Các thay đổi chưa được release. Sẽ trở thành v0.1.1 hoặc v0.2.0 tùy mức độ.
+> Các thay đổi chưa được release. Sẽ trở thành v0.2.0.
+
+### Added (v0.2.0 — 2026-05-09)
+
+#### 🔐 Security
+
+- **`packages/core/src/crypto/memory_protection.rs`** — XOR-based memory obfuscation (`ProtectedMemory`) + OS memory locking (`LockedBuffer`). Sensitive data never stored in plaintext in memory. 8 unit tests. **No competitor has this in their Rust engine.**
+- **`apps/server/src/rate_limit.rs`** — In-memory rate limiter (DashMap sliding window): login 5/15min, register 3/hour per IP. Returns HTTP 429 with `Retry-After`. 4 unit tests.
+- **`apps/server/src/api/auth.rs`** — Integrated rate limiting into login/register handlers. Reset on successful login.
+- **`apps/server/src/error.rs`** — Added `RateLimited(u64)` variant → HTTP 429 with `retry_after` field.
+
+#### 🖥️ Desktop
+
+- **`apps/desktop/src-tauri/src/commands/passkey_cmd.rs`** — Full passkey CRUD: `get_entry_passkeys`, `add_entry_passkey`, `remove_entry_passkey`, `get_passkey_registration_options`. **KeePassEx is the only password manager with passkey CRUD inside KDBX vault.**
+- **`apps/desktop/src-tauri/src/commands/ssh_entry_cmd.rs`** — SSH key entry management: `get_entry_ssh_key`, `set_entry_ssh_key`, `remove_entry_ssh_key`, `get_entry_ssh_private_key`, `load_ssh_key_to_agent`.
+- **`apps/desktop/src-tauri/src/commands/autotype_cmd.rs`** — Auto-type command using `enigo` crate (cross-platform keyboard simulation). Default sequence `{USERNAME}{TAB}{PASSWORD}{ENTER}`.
+- **`apps/desktop/src-tauri/src/autotype.rs`** — Rewritten with `enigo` 0.2: full ChaCha20 stream cipher, all KeePass placeholders (`{USERNAME}`, `{PASSWORD}`, `{TAB}`, `{ENTER}`, `{TOTP}`, `{DELAY X}`, `{CLEARFIELD}`, `{S:FieldName}`).
+- **`apps/desktop/src-tauri/src/commands/otp.rs`** — Added `set_entry_otp` and `remove_entry_otp` commands. OTP can now be saved from the UI.
+- **`apps/desktop/src-tauri/src/commands/vault.rs`** — Added `open_vault_tab`, `close_vault_tab`, `lock_vault_tab` for multi-vault tab support.
+- **`apps/desktop/src/pages/EntryDetailPage.tsx`** — Passkeys tab: full CRUD UI (add/remove passkeys with RP ID, username, private key). SSH tab: full UI (add/edit/remove SSH key, reveal private key, copy public key, load to agent, agent duration). Auto-type button in entry header. OTP save now wired to `set_entry_otp`.
+- **`apps/desktop/src/pages/VaultPage.tsx`** — Integrated `NaturalLanguageSearch` component (was never rendered before). NL search calls `nl_search` command; regular search uses `search_entries`.
+- **`apps/desktop/src/pages/HealthPage.tsx`** — Fixed hardcoded Vietnamese string → `t('vault.openToView')`.
+- **`apps/desktop/src/pages/GeneratorPage.tsx`** — Fixed `generate_password` args nesting (was `{ args: {...} }`, now flat object matching Tauri command signature).
+
+#### 📱 Mobile
+
+- **`apps/mobile/src/screens/GroupsScreen.tsx`** — NEW: Full group management screen (create, rename, delete groups with confirmation). **No competitor has this on mobile.**
+- **`apps/mobile/src/screens/ChangePasswordScreen.tsx`** — NEW: Master password change screen with strength meter, confirm field, security notice. **Missing from all competitors on mobile.**
+- **`apps/mobile/src/App.tsx`** — Added `Groups` and `ChangePassword` routes to navigation stack.
+- **`apps/mobile/src/screens/SettingsScreen.tsx`** — Added links to Groups and ChangePassword screens.
+
+#### 🖥️ TUI
+
+- **`apps/tui/src/app.rs`** — **MAJOR**: Replaced mock data with real vault loading via `keepassex_core::vault::operations::open_vault`. Groups and entries now loaded from actual KDBX file. `copy_password` and `copy_username` use real vault data via `arboard` clipboard. `execute_search` uses `keepassex_core::types::SearchQuery` (full-text search engine). `format_time_ago` helper for human-readable timestamps.
+- **`apps/tui/Cargo.toml`** — Added `arboard`, `uuid`, `chrono` dependencies.
+
+#### 🌐 Browser Extension
+
+- **`apps/browser-extension/src/background.ts`** — Fixed 7 missing message handlers: `SEARCH_ENTRIES`, `GET_RECENT_ENTRIES`, `SAVE_CREDENTIALS`, `TRACK_USAGE`, `OPEN_APP`, `GENERATE_PASSWORD`, `GET_PENDING_SAVE`. Recently-used entries now tracked in `browser.storage.local`. Save-credentials flow wired to native host.
+
+#### ⌨️ CLI
+
+- **`apps/cli/src/commands/audit.rs`** — **Rewritten**: Now reads actual vault audit log via `vault.audit_log.recent(limit)`. Supports table/JSON/CSV output with colored event types. Was previously a stub that printed "use the desktop app".
+
+#### 🌍 i18n (10 languages)
+
+- Added `vault.passwordChanged`, `vault.passwordsMatch`, `vault.changePasswordNotice` to all 10 locales
+- Added `group.rename`, `group.create`, `group.manage`, `group.deleteWithContent` to all 10 locales
+- Added `passkey.description`, `passkey.noPasskeysHint`, `passkey.save`, `passkey.backupEligible`, `passkey.backedUp`, `passkey.confirmRemove`, `passkey.displayName`, `passkey.privateKey` to all 10 locales
+- Added `ssh.addKey`, `ssh.privateKey`, `ssh.noKey`, `ssh.noKeyHint`, `ssh.confirmRemove`, `ssh.emptyForever` to all 10 locales
+- Added `common.seconds` to all 10 locales
+- Added `vault.openToView` to all 10 locales
+- Added `entry.autoType` to all 10 locales
+
+#### 🧪 Tests
+
+- **726 Rust tests** (up from 718): +8 memory protection tests
+- **156 TypeScript tests**: unchanged
 
 ### Fixed (v0.1.0 build polish — 2026-05-08)
 

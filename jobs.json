@@ -1,0 +1,1790 @@
+{
+  "total_count": 16,
+  "jobs": [
+    {
+      "id": 74954792939,
+      "run_id": 25537028107,
+      "workflow_name": "Release",
+      "head_branch": "v0.1.0",
+      "run_url": "https://api.github.com/repos/hieuck/KeePassEx/actions/runs/25537028107",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOSVxsqc8AAAARc6df6w",
+      "head_sha": "49856e354aae740cda18171f515703f779ff81bf",
+      "url": "https://api.github.com/repos/hieuck/KeePassEx/actions/jobs/74954792939",
+      "html_url": "https://github.com/hieuck/KeePassEx/actions/runs/25537028107/job/74954792939",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-05-08T04:37:13Z",
+      "started_at": "2026-05-08T04:37:15Z",
+      "completed_at": "2026-05-08T04:37:22Z",
+      "name": "Create Release",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-05-08T04:37:16Z",
+          "completed_at": "2026-05-08T04:37:17Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-05-08T04:37:17Z",
+          "completed_at": "2026-05-08T04:37:18Z"
+        },
+        {
+          "name": "Get version from tag",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-05-08T04:37:18Z",
+          "completed_at": "2026-05-08T04:37:18Z"
+        },
+        {
+          "name": "Extract changelog for this version",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-05-08T04:37:18Z",
+          "completed_at": "2026-05-08T04:37:18Z"
+        },
+        {
+          "name": "Create GitHub Release",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-05-08T04:37:18Z",
+          "completed_at": "2026-05-08T04:37:19Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-05-08T04:37:19Z",
+          "completed_at": "2026-05-08T04:37:19Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-05-08T04:37:19Z",
+          "completed_at": "2026-05-08T04:37:19Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/hieuck/KeePassEx/check-runs/74954792939",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000004383,
+      "runner_name": "GitHub Actions 1000004383",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 74954805905,
+      "run_id": 25537028107,
+      "workflow_name": "Release",
+      "head_branch": "v0.1.0",
+      "run_url": "https://api.github.com/repos/hieuck/KeePassEx/actions/runs/25537028107",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOSVxsqc8AAAARc6eSkQ",
+      "head_sha": "49856e354aae740cda18171f515703f779ff81bf",
+      "url": "https://api.github.com/repos/hieuck/KeePassEx/actions/jobs/74954805905",
+      "html_url": "https://github.com/hieuck/KeePassEx/actions/runs/25537028107/job/74954805905",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-05-08T04:37:22Z",
+      "started_at": "2026-05-08T04:37:25Z",
+      "completed_at": "2026-05-08T04:38:41Z",
+      "name": "Desktop — Linux x64 (deb + AppImage)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-05-08T04:37:25Z",
+          "completed_at": "2026-05-08T04:37:28Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-05-08T04:37:28Z",
+          "completed_at": "2026-05-08T04:37:29Z"
+        },
+        {
+          "name": "Install system dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-05-08T04:37:29Z",
+          "completed_at": "2026-05-08T04:38:07Z"
+        },
+        {
+          "name": "Install Rust stable",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-05-08T04:38:07Z",
+          "completed_at": "2026-05-08T04:38:16Z"
+        },
+        {
+          "name": "Cache Rust",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-05-08T04:38:16Z",
+          "completed_at": "2026-05-08T04:38:17Z"
+        },
+        {
+          "name": "Setup pnpm",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-05-08T04:38:17Z",
+          "completed_at": "2026-05-08T04:38:18Z"
+        },
+        {
+          "name": "Setup Node.js",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-05-08T04:38:18Z",
+          "completed_at": "2026-05-08T04:38:26Z"
+        },
+        {
+          "name": "Install dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-05-08T04:38:26Z",
+          "completed_at": "2026-05-08T04:38:30Z"
+        },
+        {
+          "name": "Build desktop (Linux)",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 9,
+          "started_at": "2026-05-08T04:38:30Z",
+          "completed_at": "2026-05-08T04:38:38Z"
+        },
+        {
+          "name": "Upload Linux packages",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 10,
+          "started_at": "2026-05-08T04:38:38Z",
+          "completed_at": "2026-05-08T04:38:38Z"
+        },
+        {
+          "name": "Post Setup Node.js",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17,
+          "started_at": "2026-05-08T04:38:38Z",
+          "completed_at": "2026-05-08T04:38:38Z"
+        },
+        {
+          "name": "Post Setup pnpm",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-05-08T04:38:38Z",
+          "completed_at": "2026-05-08T04:38:38Z"
+        },
+        {
+          "name": "Post Cache Rust",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 19,
+          "started_at": "2026-05-08T04:38:38Z",
+          "completed_at": "2026-05-08T04:38:38Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-05-08T04:38:38Z",
+          "completed_at": "2026-05-08T04:38:38Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-05-08T04:38:38Z",
+          "completed_at": "2026-05-08T04:38:38Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/hieuck/KeePassEx/check-runs/74954805905",
+      "labels": [
+        "ubuntu-22.04"
+      ],
+      "runner_id": 1000004384,
+      "runner_name": "GitHub Actions 1000004384",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 74954805906,
+      "run_id": 25537028107,
+      "workflow_name": "Release",
+      "head_branch": "v0.1.0",
+      "run_url": "https://api.github.com/repos/hieuck/KeePassEx/actions/runs/25537028107",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOSVxsqc8AAAARc6eSkg",
+      "head_sha": "49856e354aae740cda18171f515703f779ff81bf",
+      "url": "https://api.github.com/repos/hieuck/KeePassEx/actions/jobs/74954805906",
+      "html_url": "https://github.com/hieuck/KeePassEx/actions/runs/25537028107/job/74954805906",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-05-08T04:37:22Z",
+      "started_at": "2026-05-08T04:37:30Z",
+      "completed_at": "2026-05-08T04:38:17Z",
+      "name": "Server — Docker Image (linux/amd64 + linux/arm64)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-05-08T04:37:31Z",
+          "completed_at": "2026-05-08T04:37:33Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-05-08T04:37:33Z",
+          "completed_at": "2026-05-08T04:37:34Z"
+        },
+        {
+          "name": "Set up QEMU (for ARM64 emulation)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-05-08T04:37:34Z",
+          "completed_at": "2026-05-08T04:37:40Z"
+        },
+        {
+          "name": "Set up Docker Buildx",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-05-08T04:37:40Z",
+          "completed_at": "2026-05-08T04:37:43Z"
+        },
+        {
+          "name": "Log in to GitHub Container Registry",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-05-08T04:37:43Z",
+          "completed_at": "2026-05-08T04:37:44Z"
+        },
+        {
+          "name": "Build and push Docker image",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 6,
+          "started_at": "2026-05-08T04:37:44Z",
+          "completed_at": "2026-05-08T04:38:13Z"
+        },
+        {
+          "name": "Post Build and push Docker image",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-05-08T04:38:13Z",
+          "completed_at": "2026-05-08T04:38:14Z"
+        },
+        {
+          "name": "Post Log in to GitHub Container Registry",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-05-08T04:38:14Z",
+          "completed_at": "2026-05-08T04:38:14Z"
+        },
+        {
+          "name": "Post Set up Docker Buildx",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-05-08T04:38:14Z",
+          "completed_at": "2026-05-08T04:38:15Z"
+        },
+        {
+          "name": "Post Set up QEMU (for ARM64 emulation)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-05-08T04:38:15Z",
+          "completed_at": "2026-05-08T04:38:16Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-05-08T04:38:16Z",
+          "completed_at": "2026-05-08T04:38:16Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-05-08T04:38:16Z",
+          "completed_at": "2026-05-08T04:38:16Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/hieuck/KeePassEx/check-runs/74954805906",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000004389,
+      "runner_name": "GitHub Actions 1000004389",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 74954805907,
+      "run_id": 25537028107,
+      "workflow_name": "Release",
+      "head_branch": "v0.1.0",
+      "run_url": "https://api.github.com/repos/hieuck/KeePassEx/actions/runs/25537028107",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOSVxsqc8AAAARc6eSkw",
+      "head_sha": "49856e354aae740cda18171f515703f779ff81bf",
+      "url": "https://api.github.com/repos/hieuck/KeePassEx/actions/jobs/74954805907",
+      "html_url": "https://github.com/hieuck/KeePassEx/actions/runs/25537028107/job/74954805907",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-05-08T04:37:22Z",
+      "started_at": "2026-05-08T04:37:24Z",
+      "completed_at": "2026-05-08T04:38:36Z",
+      "name": "Desktop — Windows x64",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-05-08T04:37:25Z",
+          "completed_at": "2026-05-08T04:37:26Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-05-08T04:37:26Z",
+          "completed_at": "2026-05-08T04:37:31Z"
+        },
+        {
+          "name": "Install Rust stable",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-05-08T04:37:31Z",
+          "completed_at": "2026-05-08T04:37:37Z"
+        },
+        {
+          "name": "Cache Rust",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-05-08T04:37:37Z",
+          "completed_at": "2026-05-08T04:37:40Z"
+        },
+        {
+          "name": "Setup pnpm",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-05-08T04:37:40Z",
+          "completed_at": "2026-05-08T04:37:43Z"
+        },
+        {
+          "name": "Setup Node.js",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-05-08T04:37:43Z",
+          "completed_at": "2026-05-08T04:37:57Z"
+        },
+        {
+          "name": "Install dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-05-08T04:37:57Z",
+          "completed_at": "2026-05-08T04:38:23Z"
+        },
+        {
+          "name": "Build desktop (Windows)",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 8,
+          "started_at": "2026-05-08T04:38:23Z",
+          "completed_at": "2026-05-08T04:38:33Z"
+        },
+        {
+          "name": "Find and upload Windows installers",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-05-08T04:38:33Z",
+          "completed_at": "2026-05-08T04:38:33Z"
+        },
+        {
+          "name": "Post Setup Node.js",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-05-08T04:38:33Z",
+          "completed_at": "2026-05-08T04:38:33Z"
+        },
+        {
+          "name": "Post Setup pnpm",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-05-08T04:38:33Z",
+          "completed_at": "2026-05-08T04:38:34Z"
+        },
+        {
+          "name": "Post Cache Rust",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17,
+          "started_at": "2026-05-08T04:38:34Z",
+          "completed_at": "2026-05-08T04:38:34Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-05-08T04:38:34Z",
+          "completed_at": "2026-05-08T04:38:36Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-05-08T04:38:36Z",
+          "completed_at": "2026-05-08T04:38:36Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/hieuck/KeePassEx/check-runs/74954805907",
+      "labels": [
+        "windows-latest"
+      ],
+      "runner_id": 1000004393,
+      "runner_name": "GitHub Actions 1000004393",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 74954805918,
+      "run_id": 25537028107,
+      "workflow_name": "Release",
+      "head_branch": "v0.1.0",
+      "run_url": "https://api.github.com/repos/hieuck/KeePassEx/actions/runs/25537028107",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOSVxsqc8AAAARc6eSng",
+      "head_sha": "49856e354aae740cda18171f515703f779ff81bf",
+      "url": "https://api.github.com/repos/hieuck/KeePassEx/actions/jobs/74954805918",
+      "html_url": "https://github.com/hieuck/KeePassEx/actions/runs/25537028107/job/74954805918",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-05-08T04:37:22Z",
+      "started_at": "2026-05-08T04:37:25Z",
+      "completed_at": "2026-05-08T04:38:24Z",
+      "name": "Server — macOS ARM64",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-05-08T04:37:26Z",
+          "completed_at": "2026-05-08T04:37:27Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-05-08T04:37:27Z",
+          "completed_at": "2026-05-08T04:37:29Z"
+        },
+        {
+          "name": "Install Rust stable",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-05-08T04:37:29Z",
+          "completed_at": "2026-05-08T04:37:30Z"
+        },
+        {
+          "name": "Cache Rust",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-05-08T04:37:30Z",
+          "completed_at": "2026-05-08T04:37:42Z"
+        },
+        {
+          "name": "Build Server",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-05-08T04:37:42Z",
+          "completed_at": "2026-05-08T04:38:20Z"
+        },
+        {
+          "name": "Upload Server binary (Linux/macOS)",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 6,
+          "started_at": "2026-05-08T04:38:20Z",
+          "completed_at": "2026-05-08T04:38:21Z"
+        },
+        {
+          "name": "Upload Server binary (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 7,
+          "started_at": "2026-05-08T04:38:21Z",
+          "completed_at": "2026-05-08T04:38:21Z"
+        },
+        {
+          "name": "Post Cache Rust",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 13,
+          "started_at": "2026-05-08T04:38:21Z",
+          "completed_at": "2026-05-08T04:38:21Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-05-08T04:38:21Z",
+          "completed_at": "2026-05-08T04:38:21Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-05-08T04:38:21Z",
+          "completed_at": "2026-05-08T04:38:22Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/hieuck/KeePassEx/check-runs/74954805918",
+      "labels": [
+        "macos-latest"
+      ],
+      "runner_id": 1000004385,
+      "runner_name": "GitHub Actions 1000004385",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 74954805921,
+      "run_id": 25537028107,
+      "workflow_name": "Release",
+      "head_branch": "v0.1.0",
+      "run_url": "https://api.github.com/repos/hieuck/KeePassEx/actions/runs/25537028107",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOSVxsqc8AAAARc6eSoQ",
+      "head_sha": "49856e354aae740cda18171f515703f779ff81bf",
+      "url": "https://api.github.com/repos/hieuck/KeePassEx/actions/jobs/74954805921",
+      "html_url": "https://github.com/hieuck/KeePassEx/actions/runs/25537028107/job/74954805921",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-05-08T04:37:22Z",
+      "started_at": "2026-05-08T04:37:26Z",
+      "completed_at": "2026-05-08T04:38:38Z",
+      "name": "Desktop — macOS Universal (Intel + Apple Silicon)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-05-08T04:37:26Z",
+          "completed_at": "2026-05-08T04:37:29Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-05-08T04:37:29Z",
+          "completed_at": "2026-05-08T04:37:31Z"
+        },
+        {
+          "name": "Install Rust stable + Apple targets",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-05-08T04:37:31Z",
+          "completed_at": "2026-05-08T04:37:36Z"
+        },
+        {
+          "name": "Cache Rust",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-05-08T04:37:36Z",
+          "completed_at": "2026-05-08T04:37:37Z"
+        },
+        {
+          "name": "Setup pnpm",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-05-08T04:37:37Z",
+          "completed_at": "2026-05-08T04:37:39Z"
+        },
+        {
+          "name": "Setup Node.js",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-05-08T04:37:39Z",
+          "completed_at": "2026-05-08T04:37:41Z"
+        },
+        {
+          "name": "Install dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-05-08T04:37:41Z",
+          "completed_at": "2026-05-08T04:38:16Z"
+        },
+        {
+          "name": "Build desktop (macOS Universal)",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 8,
+          "started_at": "2026-05-08T04:38:16Z",
+          "completed_at": "2026-05-08T04:38:31Z"
+        },
+        {
+          "name": "Upload macOS DMG",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-05-08T04:38:31Z",
+          "completed_at": "2026-05-08T04:38:31Z"
+        },
+        {
+          "name": "Post Setup Node.js",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-05-08T04:38:31Z",
+          "completed_at": "2026-05-08T04:38:31Z"
+        },
+        {
+          "name": "Post Setup pnpm",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-05-08T04:38:31Z",
+          "completed_at": "2026-05-08T04:38:32Z"
+        },
+        {
+          "name": "Post Cache Rust",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17,
+          "started_at": "2026-05-08T04:38:32Z",
+          "completed_at": "2026-05-08T04:38:32Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-05-08T04:38:32Z",
+          "completed_at": "2026-05-08T04:38:34Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-05-08T04:38:34Z",
+          "completed_at": "2026-05-08T04:38:36Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/hieuck/KeePassEx/check-runs/74954805921",
+      "labels": [
+        "macos-latest"
+      ],
+      "runner_id": 1000004387,
+      "runner_name": "GitHub Actions 1000004387",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 74954805922,
+      "run_id": 25537028107,
+      "workflow_name": "Release",
+      "head_branch": "v0.1.0",
+      "run_url": "https://api.github.com/repos/hieuck/KeePassEx/actions/runs/25537028107",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOSVxsqc8AAAARc6eSog",
+      "head_sha": "49856e354aae740cda18171f515703f779ff81bf",
+      "url": "https://api.github.com/repos/hieuck/KeePassEx/actions/jobs/74954805922",
+      "html_url": "https://github.com/hieuck/KeePassEx/actions/runs/25537028107/job/74954805922",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-05-08T04:37:22Z",
+      "started_at": "2026-05-08T04:37:25Z",
+      "completed_at": "2026-05-08T04:39:54Z",
+      "name": "Server — Windows x86_64",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-05-08T04:37:26Z",
+          "completed_at": "2026-05-08T04:37:27Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-05-08T04:37:27Z",
+          "completed_at": "2026-05-08T04:37:34Z"
+        },
+        {
+          "name": "Install Rust stable",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-05-08T04:37:34Z",
+          "completed_at": "2026-05-08T04:37:40Z"
+        },
+        {
+          "name": "Cache Rust",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-05-08T04:37:40Z",
+          "completed_at": "2026-05-08T04:38:07Z"
+        },
+        {
+          "name": "Build Server",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-05-08T04:38:07Z",
+          "completed_at": "2026-05-08T04:39:48Z"
+        },
+        {
+          "name": "Upload Server binary (Linux/macOS)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 6,
+          "started_at": "2026-05-08T04:39:48Z",
+          "completed_at": "2026-05-08T04:39:48Z"
+        },
+        {
+          "name": "Upload Server binary (Windows)",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 7,
+          "started_at": "2026-05-08T04:39:48Z",
+          "completed_at": "2026-05-08T04:39:50Z"
+        },
+        {
+          "name": "Post Cache Rust",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 13,
+          "started_at": "2026-05-08T04:39:50Z",
+          "completed_at": "2026-05-08T04:39:50Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-05-08T04:39:50Z",
+          "completed_at": "2026-05-08T04:39:52Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-05-08T04:39:52Z",
+          "completed_at": "2026-05-08T04:39:52Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/hieuck/KeePassEx/check-runs/74954805922",
+      "labels": [
+        "windows-latest"
+      ],
+      "runner_id": 1000004392,
+      "runner_name": "GitHub Actions 1000004392",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 74954805925,
+      "run_id": 25537028107,
+      "workflow_name": "Release",
+      "head_branch": "v0.1.0",
+      "run_url": "https://api.github.com/repos/hieuck/KeePassEx/actions/runs/25537028107",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOSVxsqc8AAAARc6eSpQ",
+      "head_sha": "49856e354aae740cda18171f515703f779ff81bf",
+      "url": "https://api.github.com/repos/hieuck/KeePassEx/actions/jobs/74954805925",
+      "html_url": "https://github.com/hieuck/KeePassEx/actions/runs/25537028107/job/74954805925",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-05-08T04:37:22Z",
+      "started_at": "2026-05-08T04:37:24Z",
+      "completed_at": "2026-05-08T04:38:14Z",
+      "name": "Server — Linux x86_64",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-05-08T04:37:25Z",
+          "completed_at": "2026-05-08T04:37:26Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-05-08T04:37:26Z",
+          "completed_at": "2026-05-08T04:37:27Z"
+        },
+        {
+          "name": "Install Rust stable",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-05-08T04:37:27Z",
+          "completed_at": "2026-05-08T04:37:36Z"
+        },
+        {
+          "name": "Cache Rust",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-05-08T04:37:36Z",
+          "completed_at": "2026-05-08T04:37:42Z"
+        },
+        {
+          "name": "Build Server",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-05-08T04:37:42Z",
+          "completed_at": "2026-05-08T04:38:12Z"
+        },
+        {
+          "name": "Upload Server binary (Linux/macOS)",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 6,
+          "started_at": "2026-05-08T04:38:12Z",
+          "completed_at": "2026-05-08T04:38:12Z"
+        },
+        {
+          "name": "Upload Server binary (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 7,
+          "started_at": "2026-05-08T04:38:12Z",
+          "completed_at": "2026-05-08T04:38:12Z"
+        },
+        {
+          "name": "Post Cache Rust",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 13,
+          "started_at": "2026-05-08T04:38:12Z",
+          "completed_at": "2026-05-08T04:38:12Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-05-08T04:38:12Z",
+          "completed_at": "2026-05-08T04:38:12Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-05-08T04:38:12Z",
+          "completed_at": "2026-05-08T04:38:12Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/hieuck/KeePassEx/check-runs/74954805925",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000004388,
+      "runner_name": "GitHub Actions 1000004388",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 74954805927,
+      "run_id": 25537028107,
+      "workflow_name": "Release",
+      "head_branch": "v0.1.0",
+      "run_url": "https://api.github.com/repos/hieuck/KeePassEx/actions/runs/25537028107",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOSVxsqc8AAAARc6eSpw",
+      "head_sha": "49856e354aae740cda18171f515703f779ff81bf",
+      "url": "https://api.github.com/repos/hieuck/KeePassEx/actions/jobs/74954805927",
+      "html_url": "https://github.com/hieuck/KeePassEx/actions/runs/25537028107/job/74954805927",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-05-08T04:37:22Z",
+      "started_at": "2026-05-08T04:37:24Z",
+      "completed_at": "2026-05-08T04:37:49Z",
+      "name": "Browser Extension (Chrome + Firefox)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-05-08T04:37:25Z",
+          "completed_at": "2026-05-08T04:37:26Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-05-08T04:37:26Z",
+          "completed_at": "2026-05-08T04:37:27Z"
+        },
+        {
+          "name": "Setup pnpm",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-05-08T04:37:27Z",
+          "completed_at": "2026-05-08T04:37:29Z"
+        },
+        {
+          "name": "Setup Node.js",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-05-08T04:37:29Z",
+          "completed_at": "2026-05-08T04:37:30Z"
+        },
+        {
+          "name": "Install dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-05-08T04:37:30Z",
+          "completed_at": "2026-05-08T04:37:38Z"
+        },
+        {
+          "name": "Build Chrome extension (MV3)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-05-08T04:37:38Z",
+          "completed_at": "2026-05-08T04:37:40Z"
+        },
+        {
+          "name": "Build Firefox extension (MV2)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-05-08T04:37:40Z",
+          "completed_at": "2026-05-08T04:37:41Z"
+        },
+        {
+          "name": "Package extensions",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-05-08T04:37:41Z",
+          "completed_at": "2026-05-08T04:37:41Z"
+        },
+        {
+          "name": "Upload Chrome extension",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-05-08T04:37:41Z",
+          "completed_at": "2026-05-08T04:37:42Z"
+        },
+        {
+          "name": "Upload Firefox extension",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-05-08T04:37:42Z",
+          "completed_at": "2026-05-08T04:37:42Z"
+        },
+        {
+          "name": "Post Setup Node.js",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-05-08T04:37:42Z",
+          "completed_at": "2026-05-08T04:37:47Z"
+        },
+        {
+          "name": "Post Setup pnpm",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-05-08T04:37:47Z",
+          "completed_at": "2026-05-08T04:37:47Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-05-08T04:37:47Z",
+          "completed_at": "2026-05-08T04:37:47Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-05-08T04:37:47Z",
+          "completed_at": "2026-05-08T04:37:47Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/hieuck/KeePassEx/check-runs/74954805927",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000004390,
+      "runner_name": "GitHub Actions 1000004390",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 74954805937,
+      "run_id": 25537028107,
+      "workflow_name": "Release",
+      "head_branch": "v0.1.0",
+      "run_url": "https://api.github.com/repos/hieuck/KeePassEx/actions/runs/25537028107",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOSVxsqc8AAAARc6eSsQ",
+      "head_sha": "49856e354aae740cda18171f515703f779ff81bf",
+      "url": "https://api.github.com/repos/hieuck/KeePassEx/actions/jobs/74954805937",
+      "html_url": "https://github.com/hieuck/KeePassEx/actions/runs/25537028107/job/74954805937",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-05-08T04:37:22Z",
+      "started_at": "2026-05-08T04:37:24Z",
+      "completed_at": "2026-05-08T04:41:35Z",
+      "name": "CLI — Windows x86_64",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-05-08T04:37:25Z",
+          "completed_at": "2026-05-08T04:37:26Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-05-08T04:37:26Z",
+          "completed_at": "2026-05-08T04:37:31Z"
+        },
+        {
+          "name": "Install Rust stable",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-05-08T04:37:31Z",
+          "completed_at": "2026-05-08T04:37:36Z"
+        },
+        {
+          "name": "Install cross-compilation tools (Linux ARM64)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 4,
+          "started_at": "2026-05-08T04:37:36Z",
+          "completed_at": "2026-05-08T04:37:36Z"
+        },
+        {
+          "name": "Cache Rust",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-05-08T04:37:36Z",
+          "completed_at": "2026-05-08T04:37:55Z"
+        },
+        {
+          "name": "Build CLI",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-05-08T04:37:55Z",
+          "completed_at": "2026-05-08T04:39:29Z"
+        },
+        {
+          "name": "Strip binary (Linux/macOS)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 7,
+          "started_at": "2026-05-08T04:39:29Z",
+          "completed_at": "2026-05-08T04:39:29Z"
+        },
+        {
+          "name": "Upload CLI binary (Linux/macOS)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 8,
+          "started_at": "2026-05-08T04:39:29Z",
+          "completed_at": "2026-05-08T04:39:29Z"
+        },
+        {
+          "name": "Upload CLI binary (Windows)",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 9,
+          "started_at": "2026-05-08T04:39:29Z",
+          "completed_at": "2026-05-08T04:41:31Z"
+        },
+        {
+          "name": "Post Cache Rust",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17,
+          "started_at": "2026-05-08T04:41:31Z",
+          "completed_at": "2026-05-08T04:41:31Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-05-08T04:41:31Z",
+          "completed_at": "2026-05-08T04:41:33Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-05-08T04:41:33Z",
+          "completed_at": "2026-05-08T04:41:33Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/hieuck/KeePassEx/check-runs/74954805937",
+      "labels": [
+        "windows-latest"
+      ],
+      "runner_id": 1000004391,
+      "runner_name": "GitHub Actions 1000004391",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 74954805940,
+      "run_id": 25537028107,
+      "workflow_name": "Release",
+      "head_branch": "v0.1.0",
+      "run_url": "https://api.github.com/repos/hieuck/KeePassEx/actions/runs/25537028107",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOSVxsqc8AAAARc6eStA",
+      "head_sha": "49856e354aae740cda18171f515703f779ff81bf",
+      "url": "https://api.github.com/repos/hieuck/KeePassEx/actions/jobs/74954805940",
+      "html_url": "https://github.com/hieuck/KeePassEx/actions/runs/25537028107/job/74954805940",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-05-08T04:37:22Z",
+      "started_at": "2026-05-08T04:37:25Z",
+      "completed_at": "2026-05-08T04:38:27Z",
+      "name": "CLI — macOS x86_64",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-05-08T04:37:25Z",
+          "completed_at": "2026-05-08T04:37:28Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-05-08T04:37:28Z",
+          "completed_at": "2026-05-08T04:37:30Z"
+        },
+        {
+          "name": "Install Rust stable",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-05-08T04:37:30Z",
+          "completed_at": "2026-05-08T04:37:34Z"
+        },
+        {
+          "name": "Install cross-compilation tools (Linux ARM64)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 4,
+          "started_at": "2026-05-08T04:37:34Z",
+          "completed_at": "2026-05-08T04:37:34Z"
+        },
+        {
+          "name": "Cache Rust",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-05-08T04:37:34Z",
+          "completed_at": "2026-05-08T04:37:42Z"
+        },
+        {
+          "name": "Build CLI",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-05-08T04:37:42Z",
+          "completed_at": "2026-05-08T04:38:22Z"
+        },
+        {
+          "name": "Strip binary (Linux/macOS)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-05-08T04:38:22Z",
+          "completed_at": "2026-05-08T04:38:23Z"
+        },
+        {
+          "name": "Upload CLI binary (Linux/macOS)",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 8,
+          "started_at": "2026-05-08T04:38:23Z",
+          "completed_at": "2026-05-08T04:38:24Z"
+        },
+        {
+          "name": "Upload CLI binary (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-05-08T04:38:24Z",
+          "completed_at": "2026-05-08T04:38:24Z"
+        },
+        {
+          "name": "Post Cache Rust",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17,
+          "started_at": "2026-05-08T04:38:24Z",
+          "completed_at": "2026-05-08T04:38:24Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-05-08T04:38:24Z",
+          "completed_at": "2026-05-08T04:38:25Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-05-08T04:38:25Z",
+          "completed_at": "2026-05-08T04:38:26Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/hieuck/KeePassEx/check-runs/74954805940",
+      "labels": [
+        "macos-latest"
+      ],
+      "runner_id": 1000004386,
+      "runner_name": "GitHub Actions 1000004386",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 74954805943,
+      "run_id": 25537028107,
+      "workflow_name": "Release",
+      "head_branch": "v0.1.0",
+      "run_url": "https://api.github.com/repos/hieuck/KeePassEx/actions/runs/25537028107",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOSVxsqc8AAAARc6eStw",
+      "head_sha": "49856e354aae740cda18171f515703f779ff81bf",
+      "url": "https://api.github.com/repos/hieuck/KeePassEx/actions/jobs/74954805943",
+      "html_url": "https://github.com/hieuck/KeePassEx/actions/runs/25537028107/job/74954805943",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-05-08T04:37:22Z",
+      "started_at": "2026-05-08T04:37:24Z",
+      "completed_at": "2026-05-08T04:38:38Z",
+      "name": "CLI — Linux ARM64",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-05-08T04:37:25Z",
+          "completed_at": "2026-05-08T04:37:26Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-05-08T04:37:26Z",
+          "completed_at": "2026-05-08T04:37:27Z"
+        },
+        {
+          "name": "Install Rust stable",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-05-08T04:37:27Z",
+          "completed_at": "2026-05-08T04:37:40Z"
+        },
+        {
+          "name": "Install cross-compilation tools (Linux ARM64)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-05-08T04:37:40Z",
+          "completed_at": "2026-05-08T04:38:02Z"
+        },
+        {
+          "name": "Cache Rust",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-05-08T04:38:02Z",
+          "completed_at": "2026-05-08T04:38:06Z"
+        },
+        {
+          "name": "Build CLI",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-05-08T04:38:06Z",
+          "completed_at": "2026-05-08T04:38:36Z"
+        },
+        {
+          "name": "Strip binary (Linux/macOS)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-05-08T04:38:36Z",
+          "completed_at": "2026-05-08T04:38:36Z"
+        },
+        {
+          "name": "Upload CLI binary (Linux/macOS)",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 8,
+          "started_at": "2026-05-08T04:38:36Z",
+          "completed_at": "2026-05-08T04:38:36Z"
+        },
+        {
+          "name": "Upload CLI binary (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-05-08T04:38:36Z",
+          "completed_at": "2026-05-08T04:38:36Z"
+        },
+        {
+          "name": "Post Cache Rust",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17,
+          "started_at": "2026-05-08T04:38:36Z",
+          "completed_at": "2026-05-08T04:38:36Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-05-08T04:38:36Z",
+          "completed_at": "2026-05-08T04:38:36Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-05-08T04:38:36Z",
+          "completed_at": "2026-05-08T04:38:36Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/hieuck/KeePassEx/check-runs/74954805943",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000004395,
+      "runner_name": "GitHub Actions 1000004395",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 74954805945,
+      "run_id": 25537028107,
+      "workflow_name": "Release",
+      "head_branch": "v0.1.0",
+      "run_url": "https://api.github.com/repos/hieuck/KeePassEx/actions/runs/25537028107",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOSVxsqc8AAAARc6eSuQ",
+      "head_sha": "49856e354aae740cda18171f515703f779ff81bf",
+      "url": "https://api.github.com/repos/hieuck/KeePassEx/actions/jobs/74954805945",
+      "html_url": "https://github.com/hieuck/KeePassEx/actions/runs/25537028107/job/74954805945",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-05-08T04:37:22Z",
+      "started_at": "2026-05-08T04:37:25Z",
+      "completed_at": "2026-05-08T04:38:13Z",
+      "name": "CLI — macOS ARM64",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-05-08T04:37:25Z",
+          "completed_at": "2026-05-08T04:37:27Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-05-08T04:37:27Z",
+          "completed_at": "2026-05-08T04:37:29Z"
+        },
+        {
+          "name": "Install Rust stable",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-05-08T04:37:29Z",
+          "completed_at": "2026-05-08T04:37:30Z"
+        },
+        {
+          "name": "Install cross-compilation tools (Linux ARM64)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 4,
+          "started_at": "2026-05-08T04:37:30Z",
+          "completed_at": "2026-05-08T04:37:30Z"
+        },
+        {
+          "name": "Cache Rust",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-05-08T04:37:30Z",
+          "completed_at": "2026-05-08T04:37:39Z"
+        },
+        {
+          "name": "Build CLI",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-05-08T04:37:39Z",
+          "completed_at": "2026-05-08T04:38:09Z"
+        },
+        {
+          "name": "Strip binary (Linux/macOS)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-05-08T04:38:09Z",
+          "completed_at": "2026-05-08T04:38:09Z"
+        },
+        {
+          "name": "Upload CLI binary (Linux/macOS)",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 8,
+          "started_at": "2026-05-08T04:38:09Z",
+          "completed_at": "2026-05-08T04:38:10Z"
+        },
+        {
+          "name": "Upload CLI binary (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-05-08T04:38:10Z",
+          "completed_at": "2026-05-08T04:38:10Z"
+        },
+        {
+          "name": "Post Cache Rust",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17,
+          "started_at": "2026-05-08T04:38:10Z",
+          "completed_at": "2026-05-08T04:38:10Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-05-08T04:38:10Z",
+          "completed_at": "2026-05-08T04:38:10Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-05-08T04:38:10Z",
+          "completed_at": "2026-05-08T04:38:11Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/hieuck/KeePassEx/check-runs/74954805945",
+      "labels": [
+        "macos-latest"
+      ],
+      "runner_id": 1000004396,
+      "runner_name": "GitHub Actions 1000004396",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 74954805946,
+      "run_id": 25537028107,
+      "workflow_name": "Release",
+      "head_branch": "v0.1.0",
+      "run_url": "https://api.github.com/repos/hieuck/KeePassEx/actions/runs/25537028107",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOSVxsqc8AAAARc6eSug",
+      "head_sha": "49856e354aae740cda18171f515703f779ff81bf",
+      "url": "https://api.github.com/repos/hieuck/KeePassEx/actions/jobs/74954805946",
+      "html_url": "https://github.com/hieuck/KeePassEx/actions/runs/25537028107/job/74954805946",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-05-08T04:37:22Z",
+      "started_at": "2026-05-08T04:37:32Z",
+      "completed_at": "2026-05-08T04:38:19Z",
+      "name": "CLI — Linux x86_64",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-05-08T04:37:33Z",
+          "completed_at": "2026-05-08T04:37:34Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-05-08T04:37:34Z",
+          "completed_at": "2026-05-08T04:37:34Z"
+        },
+        {
+          "name": "Install Rust stable",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-05-08T04:37:34Z",
+          "completed_at": "2026-05-08T04:37:46Z"
+        },
+        {
+          "name": "Install cross-compilation tools (Linux ARM64)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 4,
+          "started_at": "2026-05-08T04:37:46Z",
+          "completed_at": "2026-05-08T04:37:46Z"
+        },
+        {
+          "name": "Cache Rust",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-05-08T04:37:46Z",
+          "completed_at": "2026-05-08T04:37:49Z"
+        },
+        {
+          "name": "Build CLI",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-05-08T04:37:49Z",
+          "completed_at": "2026-05-08T04:38:16Z"
+        },
+        {
+          "name": "Strip binary (Linux/macOS)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-05-08T04:38:16Z",
+          "completed_at": "2026-05-08T04:38:16Z"
+        },
+        {
+          "name": "Upload CLI binary (Linux/macOS)",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 8,
+          "started_at": "2026-05-08T04:38:16Z",
+          "completed_at": "2026-05-08T04:38:17Z"
+        },
+        {
+          "name": "Upload CLI binary (Windows)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-05-08T04:38:17Z",
+          "completed_at": "2026-05-08T04:38:17Z"
+        },
+        {
+          "name": "Post Cache Rust",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17,
+          "started_at": "2026-05-08T04:38:17Z",
+          "completed_at": "2026-05-08T04:38:17Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-05-08T04:38:17Z",
+          "completed_at": "2026-05-08T04:38:17Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-05-08T04:38:17Z",
+          "completed_at": "2026-05-08T04:38:17Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/hieuck/KeePassEx/check-runs/74954805946",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000004394,
+      "runner_name": "GitHub Actions 1000004394",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 74954918531,
+      "run_id": 25537028107,
+      "workflow_name": "Release",
+      "head_branch": "v0.1.0",
+      "run_url": "https://api.github.com/repos/hieuck/KeePassEx/actions/runs/25537028107",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOSVxsqc8AAAARc6lKgw",
+      "head_sha": "49856e354aae740cda18171f515703f779ff81bf",
+      "url": "https://api.github.com/repos/hieuck/KeePassEx/actions/jobs/74954918531",
+      "html_url": "https://github.com/hieuck/KeePassEx/actions/runs/25537028107/job/74954918531",
+      "status": "completed",
+      "conclusion": "skipped",
+      "created_at": "2026-05-08T04:38:41Z",
+      "started_at": "2026-05-08T04:38:41Z",
+      "completed_at": "2026-05-08T04:38:41Z",
+      "name": "Generate Tauri Update Manifest",
+      "steps": [
+
+      ],
+      "check_run_url": "https://api.github.com/repos/hieuck/KeePassEx/check-runs/74954918531",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": null,
+      "runner_name": null,
+      "runner_group_id": null,
+      "runner_group_name": null
+    },
+    {
+      "id": 74955161496,
+      "run_id": 25537028107,
+      "workflow_name": "Release",
+      "head_branch": "v0.1.0",
+      "run_url": "https://api.github.com/repos/hieuck/KeePassEx/actions/runs/25537028107",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOSVxsqc8AAAARc6z_mA",
+      "head_sha": "49856e354aae740cda18171f515703f779ff81bf",
+      "url": "https://api.github.com/repos/hieuck/KeePassEx/actions/jobs/74955161496",
+      "html_url": "https://github.com/hieuck/KeePassEx/actions/runs/25537028107/job/74955161496",
+      "status": "in_progress",
+      "conclusion": null,
+      "created_at": "2026-05-08T04:41:35Z",
+      "started_at": "2026-05-08T04:41:37Z",
+      "completed_at": null,
+      "name": "Release Summary",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "in_progress",
+          "conclusion": null,
+          "number": 1,
+          "started_at": "2026-05-08T04:41:38Z",
+          "completed_at": null
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/hieuck/KeePassEx/check-runs/74955161496",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000004397,
+      "runner_name": "GitHub Actions 1000004397",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    }
+  ]
+}

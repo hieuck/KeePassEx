@@ -1,9 +1,12 @@
 /**
  * Emergency Access page — desktop
+ * KeePassEx exclusive: no competitor has emergency access built into KDBX vault.
  */
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { invoke } from '@tauri-apps/api/core';
 import { useTranslation } from 'react-i18next';
+import { useVaultStore } from '../store/vault';
 
 interface EmergencyGrant {
   id: string;
@@ -14,9 +17,9 @@ interface EmergencyGrant {
   status:
     | 'invited'
     | 'confirmed'
-    | 'recovery_initiated'
-    | 'recovery_approved'
-    | 'recovery_granted'
+    | 'recoveryinitiated'
+    | 'recoveryapproved'
+    | 'recoverygranted'
     | 'revoked';
   daysRemaining?: number;
   createdAt: string;
@@ -25,15 +28,25 @@ interface EmergencyGrant {
 const STATUS_COLORS: Record<string, string> = {
   invited: '#D97706',
   confirmed: '#16A34A',
-  recovery_initiated: '#DC2626',
-  recovery_approved: '#D97706',
-  recovery_granted: '#DC2626',
+  recoveryinitiated: '#DC2626',
+  recoveryapproved: '#D97706',
+  recoverygranted: '#DC2626',
   revoked: '#9CA3AF',
+};
+
+const STATUS_KEYS: Record<string, string> = {
+  invited: 'emergencyAccess.statusInvited',
+  confirmed: 'emergencyAccess.statusConfirmed',
+  recoveryinitiated: 'emergencyAccess.statusRequestPending',
+  recoveryapproved: 'emergencyAccess.statusWaitingPeriod',
+  recoverygranted: 'emergencyAccess.statusAccessGranted',
+  revoked: 'emergencyAccess.statusRevoked',
 };
 
 export function EmergencyAccessPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const { isOpen, isLocked } = useVaultStore();
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [form, setForm] = useState({
@@ -43,13 +56,23 @@ export function EmergencyAccessPage() {
     waitDays: 7,
   });
 
-  const { data: grants = [] } = useQuery<EmergencyGrant[]>({
+  const { data: grants = [], isLoading } = useQuery<EmergencyGrant[]>({
     queryKey: ['emergency-access'],
-    queryFn: () => Promise.resolve([]),
+    queryFn: () => invoke<EmergencyGrant[]>('get_emergency_grants'),
+    enabled: isOpen && !isLocked,
+    staleTime: 30_000,
   });
 
   const addMutation = useMutation({
-    mutationFn: () => Promise.resolve(),
+    mutationFn: () =>
+      invoke('add_emergency_grant', {
+        args: {
+          name: form.name,
+          email: form.email,
+          access_level: form.accessLevel,
+          wait_days: form.waitDays,
+        },
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['emergency-access'] });
       setShowAddForm(false);
@@ -58,23 +81,28 @@ export function EmergencyAccessPage() {
   });
 
   const revokeMutation = useMutation({
-    mutationFn: (_id: string) => Promise.resolve(),
+    mutationFn: (id: string) => invoke('revoke_emergency_grant', { grantId: id }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['emergency-access'] }),
   });
 
   const approveMutation = useMutation({
-    mutationFn: (_id: string) => Promise.resolve(),
+    mutationFn: (id: string) => invoke('approve_emergency_request', { grantId: id }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['emergency-access'] }),
   });
 
-  const STATUS_KEYS: Record<string, string> = {
-    invited: 'emergencyAccess.statusInvited',
-    confirmed: 'emergencyAccess.statusConfirmed',
-    recovery_initiated: 'emergencyAccess.statusRequestPending',
-    recovery_approved: 'emergencyAccess.statusWaitingPeriod',
-    recovery_granted: 'emergencyAccess.statusAccessGranted',
-    revoked: 'emergencyAccess.statusRevoked',
-  };
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => invoke('delete_emergency_grant', { grantId: id }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['emergency-access'] }),
+  });
+
+  if (!isOpen) {
+    return (
+      <div className="page-locked">
+        <span>🔐</span>
+        <p>{t('vault.openToView')}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="ea-page">
@@ -89,6 +117,7 @@ export function EmergencyAccessPage() {
       </div>
 
       <div className="ea-content">
+        {/* How it works */}
         <div className="ea-info-card">
           <h3>{t('emergencyAccess.howItWorks')}</h3>
           <ol className="ea-steps">
@@ -100,6 +129,7 @@ export function EmergencyAccessPage() {
           </ol>
         </div>
 
+        {/* Add form */}
         {showAddForm && (
           <div className="ea-form-card">
             <h3>{t('emergencyAccess.addContact')}</h3>
@@ -156,11 +186,11 @@ export function EmergencyAccessPage() {
                   value={form.waitDays}
                   onChange={e => setForm(f => ({ ...f, waitDays: Number(e.target.value) }))}
                 >
-                  <option value={1}>1 day</option>
-                  <option value={3}>3 days</option>
-                  <option value={7}>7 days</option>
-                  <option value={14}>14 days</option>
-                  <option value={30}>30 days</option>
+                  {[1, 3, 7, 14, 30].map(d => (
+                    <option key={d} value={d}>
+                      {d} {d === 1 ? t('common.info') : t('common.info')}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="ea-form-actions">
@@ -169,7 +199,7 @@ export function EmergencyAccessPage() {
                   onClick={() => addMutation.mutate()}
                   disabled={!form.name.trim() || !form.email.trim() || addMutation.isPending}
                 >
-                  {t('emergencyAccess.sendInvitation')}
+                  {addMutation.isPending ? '⏳' : t('emergencyAccess.sendInvitation')}
                 </button>
                 <button className="btn btn-secondary" onClick={() => setShowAddForm(false)}>
                   {t('common.cancel')}
@@ -179,7 +209,10 @@ export function EmergencyAccessPage() {
           </div>
         )}
 
-        {grants.length === 0 && !showAddForm ? (
+        {/* Grants list */}
+        {isLoading ? (
+          <div className="ea-loading">⏳ {t('common.loading')}</div>
+        ) : grants.length === 0 && !showAddForm ? (
           <div className="empty-state">
             <span className="empty-state-icon">🆘</span>
             <p className="empty-state-title">{t('emergencyAccess.noContacts')}</p>
@@ -211,38 +244,48 @@ export function EmergencyAccessPage() {
                     </strong>
                   </span>
                   <span>
-                    {t('emergencyAccess.waitPeriod')}: <strong>{grant.waitTimeDays} days</strong>
+                    {t('emergencyAccess.waitPeriod')}: <strong>{grant.waitTimeDays}d</strong>
                   </span>
-                  {grant.daysRemaining !== undefined && (
+                  {grant.daysRemaining !== undefined && grant.daysRemaining > 0 && (
                     <span style={{ color: '#D97706' }}>
                       ⏳ {t('emergencyAccess.daysRemaining', { days: grant.daysRemaining })}
                     </span>
                   )}
                 </div>
                 <div className="ea-grant-actions">
-                  {grant.status === 'recovery_initiated' && (
+                  {grant.status === 'recoveryinitiated' && (
                     <button
                       className="btn btn-success"
                       onClick={() => approveMutation.mutate(grant.id)}
-                      style={{ fontSize: 12 }}
+                      disabled={approveMutation.isPending}
                     >
                       ✓ {t('emergencyAccess.approve')}
                     </button>
                   )}
                   {grant.status !== 'revoked' && (
                     <button
-                      className="btn btn-danger"
+                      className="btn btn-secondary"
                       onClick={() => {
                         if (
                           confirm(t('emergencyAccess.confirmRevoke', { name: grant.granteeName }))
                         )
                           revokeMutation.mutate(grant.id);
                       }}
-                      style={{ fontSize: 12 }}
+                      disabled={revokeMutation.isPending}
                     >
                       {t('emergencyAccess.revoke')}
                     </button>
                   )}
+                  <button
+                    className="btn-icon"
+                    onClick={() => {
+                      if (confirm(t('common.confirm'))) deleteMutation.mutate(grant.id);
+                    }}
+                    aria-label={t('common.delete')}
+                    title={t('common.delete')}
+                  >
+                    🗑
+                  </button>
                 </div>
               </div>
             ))}
@@ -251,11 +294,14 @@ export function EmergencyAccessPage() {
       </div>
 
       <style>{`
+        .page-locked { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:16px; color:var(--color-text-secondary); }
+        .page-locked span { font-size:48px; }
         .ea-page { display:flex; flex-direction:column; height:100%; overflow:hidden; }
         .ea-header { display:flex; align-items:flex-start; justify-content:space-between; padding:var(--space-md) var(--space-xl); border-bottom:1px solid var(--color-border); flex-shrink:0; gap:var(--space-lg); }
         .ea-header h2 { font-size:16px; font-weight:600; }
         .ea-subtitle { font-size:13px; color:var(--color-text-secondary); margin-top:2px; }
         .ea-content { flex:1; overflow-y:auto; padding:var(--space-xl); display:flex; flex-direction:column; gap:var(--space-xl); max-width:640px; }
+        .ea-loading { font-size:13px; color:var(--color-text-secondary); }
         .ea-info-card { background:var(--color-bg-secondary); border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:var(--space-lg); }
         .ea-info-card h3 { font-size:14px; font-weight:600; margin-bottom:var(--space-sm); }
         .ea-steps { padding-left:var(--space-xl); display:flex; flex-direction:column; gap:var(--space-xs); font-size:13px; color:var(--color-text-secondary); }
@@ -273,9 +319,16 @@ export function EmergencyAccessPage() {
         .ea-grant-name { font-size:15px; font-weight:600; }
         .ea-grant-email { font-size:13px; color:var(--color-text-secondary); }
         .ea-grant-status { font-size:12px; font-weight:600; flex-shrink:0; }
-        .ea-grant-meta { display:flex; gap:var(--space-lg); font-size:12px; color:var(--color-text-secondary); }
-        .ea-grant-actions { display:flex; gap:var(--space-sm); }
-        .btn-success { background:var(--color-success); color:white; border:none; padding:var(--space-xs) var(--space-md); border-radius:var(--radius-sm); cursor:pointer; font-size:13px; font-weight:500; }
+        .ea-grant-meta { display:flex; gap:var(--space-lg); font-size:12px; color:var(--color-text-secondary); flex-wrap:wrap; }
+        .ea-grant-actions { display:flex; gap:var(--space-sm); align-items:center; }
+        .btn-success { background:#16A34A; color:white; border:none; padding:var(--space-xs) var(--space-md); border-radius:var(--radius-sm); cursor:pointer; font-size:12px; font-weight:500; }
+        .btn-success:hover { background:#15803d; }
+        .btn-icon { background:none; border:none; cursor:pointer; font-size:16px; color:var(--color-text-secondary); padding:4px 6px; border-radius:var(--radius-sm); }
+        .btn-icon:hover { background:var(--color-bg-tertiary); }
+        .empty-state { display:flex; flex-direction:column; align-items:center; gap:var(--space-md); padding:var(--space-2xl); color:var(--color-text-secondary); text-align:center; }
+        .empty-state-icon { font-size:48px; }
+        .empty-state-title { font-size:16px; font-weight:600; color:var(--color-text); }
+        .empty-state-desc { font-size:13px; }
       `}</style>
     </div>
   );

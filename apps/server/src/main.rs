@@ -26,6 +26,7 @@ mod auth;
 mod config;
 mod db;
 mod error;
+mod rate_limit;
 mod ws;
 
 use anyhow::Result;
@@ -129,7 +130,11 @@ async fn main() -> Result<()> {
 }
 
 fn build_router(config: Arc<ServerConfig>, db: Arc<Database>) -> Router {
-    let state = AppState { config, db };
+    let state = AppState {
+        config,
+        db,
+        rate_limiters: Arc::new(rate_limit::RateLimiters::new()),
+    };
 
     Router::new()
         // ─── Auth ─────────────────────────────────────────────────────────────
@@ -157,10 +162,37 @@ fn build_router(config: Arc<ServerConfig>, db: Arc<Database>) -> Router {
         .route("/api/v1/admin/stats", get(api::admin::server_stats))
         // ─── Middleware ───────────────────────────────────────────────────────
         .layer(
+            // CORS: restrict to KeePassEx desktop app origins only.
+            // In production, set KPX_ALLOWED_ORIGINS env var to your domain.
+            // Default: allow localhost for development + KeePassEx desktop app.
             CorsLayer::new()
-                .allow_origin(Any)
-                .allow_methods(Any)
-                .allow_headers(Any),
+                .allow_origin([
+                    "http://localhost:1420"
+                        .parse::<axum::http::HeaderValue>()
+                        .unwrap(),
+                    "http://localhost:3000"
+                        .parse::<axum::http::HeaderValue>()
+                        .unwrap(),
+                    "tauri://localhost"
+                        .parse::<axum::http::HeaderValue>()
+                        .unwrap(),
+                    "https://tauri.localhost"
+                        .parse::<axum::http::HeaderValue>()
+                        .unwrap(),
+                ])
+                .allow_methods([
+                    axum::http::Method::GET,
+                    axum::http::Method::POST,
+                    axum::http::Method::PUT,
+                    axum::http::Method::DELETE,
+                    axum::http::Method::OPTIONS,
+                ])
+                .allow_headers([
+                    axum::http::header::AUTHORIZATION,
+                    axum::http::header::CONTENT_TYPE,
+                    axum::http::header::ACCEPT,
+                ])
+                .allow_credentials(false),
         )
         .layer(CompressionLayer::new())
         .layer(TraceLayer::new_for_http())
@@ -172,6 +204,7 @@ fn build_router(config: Arc<ServerConfig>, db: Arc<Database>) -> Router {
 pub struct AppState {
     pub config: Arc<ServerConfig>,
     pub db: Arc<Database>,
+    pub rate_limiters: Arc<rate_limit::RateLimiters>,
 }
 
 fn generate_random_secret() -> String {

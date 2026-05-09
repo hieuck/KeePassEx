@@ -48,11 +48,12 @@ fn test_composite_key_different_passwords() {
 #[test]
 fn test_argon2_kdf() {
     let params = KdfParams::Argon2(ArgonParams {
+        variant: crate::crypto::kdf::Argon2Variant::Argon2id,
         salt: vec![0u8; 32],
         iterations: 1,
         memory_kb: 1024, // 1 MB for fast test
         parallelism: 1,
-        version: 19,
+        version: 0x13,
         secret_key: None,
         associated_data: None,
     });
@@ -66,11 +67,12 @@ fn test_argon2_kdf() {
 #[test]
 fn test_argon2_kdf_deterministic() {
     let params = KdfParams::Argon2(ArgonParams {
+        variant: crate::crypto::kdf::Argon2Variant::Argon2id,
         salt: vec![42u8; 32],
         iterations: 1,
         memory_kb: 1024,
         parallelism: 1,
-        version: 19,
+        version: 0x13,
         secret_key: None,
         associated_data: None,
     });
@@ -181,9 +183,21 @@ fn test_chacha20_tamper_detection() {
     let plaintext = b"Sensitive data";
     let mut ciphertext = cipher.encrypt(plaintext).unwrap();
 
-    // Tamper with ciphertext
+    // ChaCha20 is a stream cipher — no authentication tag.
+    // Tamper detection is handled by the HMAC block stream layer (HmacBlockStream),
+    // not by the cipher itself. Tampering produces garbled plaintext, not an error.
+    // This is correct per KeePassXC design: integrity = HMAC, confidentiality = ChaCha20.
     ciphertext[0] ^= 0xFF;
 
     let result = cipher.decrypt(&ciphertext);
-    assert!(result.is_err());
+    // Stream cipher: decrypt succeeds but produces wrong plaintext
+    assert!(
+        result.is_ok(),
+        "ChaCha20 stream cipher always decrypts (no auth tag)"
+    );
+    let decrypted = result.unwrap();
+    assert_ne!(
+        decrypted, plaintext,
+        "Tampered ciphertext should produce wrong plaintext"
+    );
 }

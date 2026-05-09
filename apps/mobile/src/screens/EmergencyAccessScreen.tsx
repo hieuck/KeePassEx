@@ -32,12 +32,12 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  invited: 'Invited',
-  confirmed: 'Confirmed',
-  recovery_initiated: 'Request pending',
-  recovery_approved: 'Waiting period',
-  recovery_granted: 'Access granted',
-  revoked: 'Revoked',
+  invited: 'emergencyAccess.statusInvited',
+  confirmed: 'emergencyAccess.statusConfirmed',
+  recovery_initiated: 'emergencyAccess.statusRequestPending',
+  recovery_approved: 'emergencyAccess.statusWaitingPeriod',
+  recovery_granted: 'emergencyAccess.statusAccessGranted',
+  revoked: 'emergencyAccess.statusRevoked',
 };
 
 export function EmergencyAccessScreen() {
@@ -56,21 +56,30 @@ export function EmergencyAccessScreen() {
 
   const { data: grants = [] } = useQuery<EmergencyAccess[]>({
     queryKey: ['emergency-access'],
-    queryFn: () => Promise.resolve([]),
+    queryFn: () => KeePassExCore.getEmergencyGrants(),
   });
 
   const addMutation = useMutation({
-    mutationFn: () => Promise.resolve(),
+    mutationFn: () =>
+      KeePassExCore.addEmergencyGrant({
+        name: form.name,
+        email: form.email,
+        accessLevel: form.accessLevel,
+        waitDays: form.waitDays,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['emergency-access'] });
       setShowForm(false);
       setForm({ name: '', email: '', accessLevel: 'view', waitDays: 7 });
       Alert.alert('✅', t('emergencyAccess.sendInvitation'));
     },
+    onError: (e: any) => {
+      Alert.alert(t('common.error'), e?.message ?? t('errors.generic'));
+    },
   });
 
   const revokeMutation = useMutation({
-    mutationFn: (id: string) => Promise.resolve(),
+    mutationFn: (id: string) => KeePassExCore.revokeEmergencyGrant(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['emergency-access'] }),
   });
 

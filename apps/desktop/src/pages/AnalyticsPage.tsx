@@ -265,20 +265,17 @@ export function AnalyticsPage() {
                   <span className="age-stat-value">
                     {Math.round(analytics.password_age.average_days)}
                   </span>
-                  <span className="age-stat-label">
-                    {t('analytics.averageAge', { days: '' }).replace('{{days}}', '').trim() ||
-                      'days avg'}
-                  </span>
+                  <span className="age-stat-label">{t('analytics.daysAvg')}</span>
                 </div>
                 <div className="age-stat">
                   <span className="age-stat-value">{analytics.password_age.older_than_1_year}</span>
-                  <span className="age-stat-label">&gt; 1 year</span>
+                  <span className="age-stat-label">{t('analytics.olderThan1Year')}</span>
                 </div>
                 <div className="age-stat">
                   <span className="age-stat-value">
                     {analytics.password_age.changed_last_30_days}
                   </span>
-                  <span className="age-stat-label">changed 30d</span>
+                  <span className="age-stat-label">{t('analytics.changedLast30Days')}</span>
                 </div>
               </div>
             </section>

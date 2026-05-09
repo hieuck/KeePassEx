@@ -55,3 +55,4 @@ lcov.info
 *.keyx
 *.key
 secrets/
+/docs/research

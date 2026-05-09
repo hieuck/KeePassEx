@@ -124,7 +124,7 @@ export function AuditLogPage() {
         }}
       >
         <span style={{ fontSize: 48 }}>🔐</span>
-        <p>Mở kho mật khẩu để xem trang này</p>
+        {t('vault.openToView')}
       </div>
     );
   }

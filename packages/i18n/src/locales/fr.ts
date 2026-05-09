@@ -91,6 +91,10 @@ export const fr = {
     changePassword: 'Changer le mot de passe maître',
     currentPassword: 'Mot de passe actuel',
     newPassword: 'Nouveau mot de passe',
+    passwordChanged: 'Mot de passe maître changé avec succès',
+    passwordsMatch: 'Les mots de passe correspondent',
+    changePasswordNotice: 'Changer le mot de passe maître rechiffrera le coffre. Mémorisez votre nouveau mot de passe.',
+    openToView: 'Ouvrez un coffre pour voir cette page',
   },
 
   // ─── Entry ─────────────────────────────────────────────────────────────────
@@ -142,6 +146,7 @@ export const fr = {
     sortByModified: 'Dernière modification',
     sortByCreated: 'Créé',
     confirmDelete: 'Supprimer "{{title}}" ?',
+    deleteWithContent: 'Ce groupe contient {{entries}} entrées et {{groups}} sous-groupes.',
     confirmDeleteDesc: 'Cette entrée sera déplacée vers la corbeille.',
     confirmDeletePermanent: 'Supprimer définitivement "{{title}}" ?',
     confirmDeletePermanentDesc: 'Cette action est irréversible.',
@@ -158,6 +163,7 @@ export const fr = {
     icon: 'Icône',
     allEntries: 'Toutes les entrées',
     confirmDelete: 'Supprimer le groupe "{{name}}" ?',
+    deleteWithContent: 'Ce groupe contient {{entries}} entrées et {{groups}} sous-groupes.',
     confirmDeleteDesc: 'Toutes les entrées et sous-groupes seront déplacés vers la corbeille.',
   },
 
@@ -709,6 +715,7 @@ export const fr = {
     tagSelected: 'Tag selected',
     exportSelected: 'Export selected',
     confirmDelete: 'Delete {{count}} entries?',
+    deleteWithContent: 'Ce groupe contient {{entries}} entrées et {{groups}} sous-groupes.',
     confirmDeleteDesc: 'These entries will be moved to the recycle bin.',
   },
 
@@ -815,7 +822,11 @@ export const fr = {
       forbidUsername: 'Cannot contain username',
       forbidTitle: 'Cannot contain entry title',
       forbidSequential: 'No {{n}}+ sequential characters',
-      forbidRepeated: 'No {{n}}+ repeated characters',
+      testPassword: 'Tester un mot de passe',
+    testPasswordDesc: 'Tester un mot de passe contre toutes les politiques activées',
+    testPasswordPlaceholder: 'Entrez un mot de passe à tester...',
+    enableAtLeastOne: 'Activez au moins une politique pour tester.',
+    forbidRepeated: 'No {{n}}+ repeated characters',
     },
   },
 
@@ -847,6 +858,9 @@ export const fr = {
     backupSuccess: 'Backup created successfully',
     backupFailed: 'Backup failed: {{error}}',
     restoreSuccess: 'Vault restored from backup',
+    daysAvg: 'jours moy.',
+    olderThan1Year: '> 1 an',
+    changedLast30Days: 'changé 30j',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -925,6 +939,9 @@ export const fr = {
     securityNote: 'Security note',
     securityNoteDesc:
       'The vault is encrypted with ChaCha20-Poly1305 before embedding. Without the steganography password, the vault cannot be extracted.',
+    daysAvg: 'jours moy.',
+    olderThan1Year: '> 1 an',
+    changedLast30Days: 'changé 30j',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -969,6 +986,9 @@ export const fr = {
     suggestion3: 'Cloud storage (encrypted)',
     suggestion4: 'Hardware security key',
     suggestion5: 'Printed QR code in a safe deposit box',
+    daysAvg: 'jours moy.',
+    olderThan1Year: '> 1 an',
+    changedLast30Days: 'changé 30j',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -997,6 +1017,9 @@ export const fr = {
     whyKyber: 'Why Kyber-768?',
     whyKyberDesc:
       'CRYSTALS-Kyber was selected by NIST as the post-quantum key encapsulation standard (FIPS 203). It provides 128-bit post-quantum security.',
+    daysAvg: 'jours moy.',
+    olderThan1Year: '> 1 an',
+    changedLast30Days: 'changé 30j',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1037,6 +1060,9 @@ export const fr = {
     commentDeleted: 'Comment deleted',
     activityLog: 'Team Activity',
     noActivity: 'No recent activity',
+    daysAvg: 'jours moy.',
+    olderThan1Year: '> 1 an',
+    changedLast30Days: 'changé 30j',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1064,6 +1090,9 @@ export const fr = {
     averageAge: 'Average password age: {{days}} days',
     oldestPassword: 'Oldest password: {{days}} days',
     totalCopies: '{{count}} total copies',
+    daysAvg: 'jours moy.',
+    olderThan1Year: '> 1 an',
+    changedLast30Days: 'changé 30j',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1088,6 +1117,9 @@ export const fr = {
     commandMode_key: ': — Command mode',
     help: '? — Help',
     quit: 'q — Quit',
+    daysAvg: 'jours moy.',
+    olderThan1Year: '> 1 an',
+    changedLast30Days: 'changé 30j',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1111,6 +1143,9 @@ export const fr = {
     example2: 'find weak passwords in Banking',
     example3: 'entries with OTP created last month',
     example4: 'passwords not used in 6 months',
+    daysAvg: 'jours moy.',
+    olderThan1Year: '> 1 an',
+    changedLast30Days: 'changé 30j',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1144,6 +1179,9 @@ export const fr = {
       security: 'Security',
       other: 'Other',
     },
+    daysAvg: 'jours moy.',
+    olderThan1Year: '> 1 an',
+    changedLast30Days: 'changé 30j',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1165,6 +1203,9 @@ export const fr = {
       email: 'Email/Work: every 180 days',
       social: 'Social/Shopping: every 365 days',
     },
+    daysAvg: 'jours moy.',
+    olderThan1Year: '> 1 an',
+    changedLast30Days: 'changé 30j',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1181,6 +1222,9 @@ export const fr = {
     setHint: 'Set hint',
     showHint: 'Show hint',
     wrongPassword: 'Wrong password (ZKPV pre-check failed)',
+    daysAvg: 'jours moy.',
+    olderThan1Year: '> 1 an',
+    changedLast30Days: 'changé 30j',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1215,6 +1259,9 @@ export const fr = {
     codeRepeatedChars: 'Repeated characters',
     codeLowEntropy: 'Low entropy',
     codeStrong: 'Password is strong',
+    daysAvg: 'jours moy.',
+    olderThan1Year: '> 1 an',
+    changedLast30Days: 'changé 30j',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1231,6 +1278,9 @@ export const fr = {
     vaultCount: '{{count}} coffre ouvert',
     vaultCount_plural: '{{count}} coffres ouverts',
     dragToReorder: 'Glisser pour réorganiser',
+    daysAvg: 'jours moy.',
+    olderThan1Year: '> 1 an',
+    changedLast30Days: 'changé 30j',
     uniqueFeature: 'Fonctionnalité exclusive KeePassEx',
   },
 
@@ -1254,6 +1304,9 @@ export const fr = {
     notFound: 'Entrée référencée introuvable',
     syntax: 'Syntaxe : {REF:P@I:uuid-entrée}',
     example: 'Exemple : partager un mot de passe entre entrées sans duplication',
+    daysAvg: 'jours moy.',
+    olderThan1Year: '> 1 an',
+    changedLast30Days: 'changé 30j',
     uniqueFeature: 'Fonctionnalité compatible KeePass',
   },
 
@@ -1270,6 +1323,9 @@ export const fr = {
     alreadyHasIcon: 'Entry already has a custom icon',
     source: 'Source : {{source}}',
     clearIcon: 'Remove custom icon',
+    daysAvg: 'jours moy.',
+    olderThan1Year: '> 1 an',
+    changedLast30Days: 'changé 30j',
     uniqueFeature: 'Automatic icon fetching',
   },
 
@@ -1292,6 +1348,9 @@ export const fr = {
     copied: 'Copié !',
     lockVault: 'Verrouiller le coffre',
     shortcut: 'Raccourci : ⌘⇧K',
+    daysAvg: 'jours moy.',
+    olderThan1Year: '> 1 an',
+    changedLast30Days: 'changé 30j',
     uniqueFeature: 'Exclusive KeePassEx feature — no competitor has this',
   },
 
@@ -1328,6 +1387,9 @@ export const fr = {
     selfHostedDesc: 'Vos données restent sur votre serveur. Pas de cloud tiers.',
     zeroKnowledge: 'Zéro connaissance',
     zeroKnowledgeDesc: 'The server cannot read your vault. All encryption is client-side.',
+    daysAvg: 'jours moy.',
+    olderThan1Year: '> 1 an',
+    changedLast30Days: 'changé 30j',
     uniqueFeature: 'Exclusive KeePassEx feature — no competitor offers self-hosted sync',
   },
 } as const;

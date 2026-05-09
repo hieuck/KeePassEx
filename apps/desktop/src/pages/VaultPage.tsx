@@ -11,6 +11,7 @@ import { useVaultStore, type EntryDto } from '../store/vault';
 import { useSettingsStore } from '../store/settings';
 import { EntryRow } from '../components/EntryRow';
 import { BulkActionBar } from '../components/BulkActionBar';
+import { NaturalLanguageSearch } from '../components/NaturalLanguageSearch';
 import { OtpDisplay } from '@keepassex/ui';
 
 type SortField = 'title' | 'username' | 'modified' | 'created';
@@ -18,7 +19,7 @@ type SortDir = 'asc' | 'desc';
 type FilterType = 'all' | 'favorites' | 'otp' | 'expiring' | 'noPassword';
 
 export function VaultPage() {
-  const { selectedGroupUuid, searchQuery } = useVaultStore();
+  const { selectedGroupUuid, searchQuery, setSearchQuery } = useVaultStore();
   const { settings } = useSettingsStore();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -39,6 +40,8 @@ export function VaultPage() {
     remainingSeconds: number;
     period: number;
   } | null>(null);
+  const [nlResults, setNlResults] = useState<EntryDto[] | null>(null);
+  const [isNlActive, setIsNlActive] = useState(false);
 
   // Fetch entries
   const { data: entries = [], isLoading } = useQuery({
@@ -50,6 +53,25 @@ export function VaultPage() {
       return invoke<EntryDto[]>('get_entries', { groupUuid: selectedGroupUuid ?? null });
     },
   });
+
+  // NL search handler
+  const handleNlSearch = useCallback(
+    async (query: string, isNl: boolean) => {
+      setSearchQuery(query);
+      setIsNlActive(isNl && query.trim().length > 0);
+      if (isNl && query.trim()) {
+        try {
+          const results = await invoke<EntryDto[]>('nl_search', { query });
+          setNlResults(results);
+        } catch {
+          setNlResults(null);
+        }
+      } else {
+        setNlResults(null);
+      }
+    },
+    [setSearchQuery]
+  );
 
   // Fetch preview entry detail
   const { data: previewEntry } = useQuery({
@@ -109,8 +131,11 @@ export function VaultPage() {
     setShowPreviewPassword(true);
   };
 
+  // Apply NL results or regular entries
+  const baseEntries = isNlActive && nlResults !== null ? nlResults : entries;
+
   // Apply filter
-  const filteredEntries = entries.filter(e => {
+  const filteredEntries = baseEntries.filter(e => {
     switch (activeFilter) {
       case 'favorites':
         return (e as EntryDto & { isFavorite?: boolean }).isFavorite;
@@ -236,9 +261,14 @@ export function VaultPage() {
 
       {/* Toolbar */}
       <div className="vault-toolbar">
-        <h2 className="vault-toolbar-title">
-          {searchQuery ? `${t('common.search')}: "${searchQuery}"` : t('group.allEntries')}
-        </h2>
+        <div className="vault-toolbar-search">
+          <NaturalLanguageSearch onSearch={handleNlSearch} className="vault-nl-search" />
+          {isNlActive && (
+            <span className="nl-active-badge" title="Natural language search active">
+              🧠 NL
+            </span>
+          )}
+        </div>
         <div className="vault-toolbar-actions">
           {/* Filter chips */}
           <div className="filter-chips" role="group" aria-label={t('entry.sortBy')}>
@@ -549,6 +579,9 @@ export function VaultPage() {
           padding: var(--space-sm) var(--space-xl); gap: var(--space-sm);
           border-bottom: 1px solid var(--color-border); flex-shrink: 0;
         }
+        .vault-toolbar-search { display: flex; align-items: center; gap: var(--space-sm); flex: 1; min-width: 200px; max-width: 400px; }
+        .vault-nl-search { flex: 1; }
+        .nl-active-badge { font-size: 11px; font-weight: 700; color: var(--color-primary); background: rgba(37,99,235,0.1); padding: 2px 6px; border-radius: var(--radius-full); white-space: nowrap; }
         .vault-toolbar-title { font-size: 15px; font-weight: 600; }
         .vault-toolbar-actions { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
         .filter-chips { display: flex; gap: 2px; }

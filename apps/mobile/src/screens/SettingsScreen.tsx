@@ -276,6 +276,8 @@ export function SettingsScreen() {
         <SectionHeader title={t('settings.advanced')} theme={theme} />
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           {[
+            { icon: '📁', key: 'group.manage', screen: 'Groups' as const },
+            { icon: '🔑', key: 'vault.changePassword', screen: 'ChangePassword' as const },
             { icon: '🔄', key: 'sync.title', screen: 'Sync' as const },
             { icon: '📥', key: 'importExport.import', screen: 'ImportExport' as const },
             { icon: '🛡️', key: 'breach.title', screen: 'Breach' as const },

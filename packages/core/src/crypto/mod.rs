@@ -12,6 +12,7 @@ pub mod cipher;
 pub mod hmac;
 pub mod kdf;
 pub mod keys;
+pub mod memory_protection;
 pub mod pqc;
 pub mod protected_stream;
 pub mod shamir;
@@ -19,6 +20,7 @@ pub mod shamir;
 pub use cipher::{Cipher, CipherAlgorithm};
 pub use kdf::{AesKdfParams, ArgonParams, Kdf, KdfParams};
 pub use keys::{CompositeKey, KeyFile, MasterKey};
+pub use memory_protection::{LockedBuffer, ProtectedMemory};
 pub use pqc::{
     decapsulate, derive_pqc_keypair, encapsulate, PqcAlgorithm, PqcEncapsulation, PqcKeyPair,
 };

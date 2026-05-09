@@ -3,7 +3,7 @@
 use crate::crypto::{
     cipher::{Cipher, CipherAlgorithm},
     hmac::{compute_block_hmac, compute_header_hmac},
-    kdf::{derive_master_key, ArgonParams, KdfParams},
+    kdf::{derive_master_key, Argon2Variant, ArgonParams, KdfParams},
     keys::MasterKey,
 };
 use crate::error::{KeePassExError, Result};
@@ -27,15 +27,16 @@ impl KdbxWriter {
         rand::thread_rng().fill_bytes(&mut encryption_iv);
         rand::thread_rng().fill_bytes(&mut inner_stream_key);
 
-        // KDF params
+        // KDF params — use Argon2id (KeePassXC default)
         let mut salt = vec![0u8; 32];
         rand::thread_rng().fill_bytes(&mut salt);
         let kdf_params = KdfParams::Argon2(ArgonParams {
+            variant: Argon2Variant::Argon2id,
             salt,
             iterations: 2,
             memory_kb: 65536,
             parallelism: 2,
-            version: 19,
+            version: 0x13,
             secret_key: None,
             associated_data: None,
         });
@@ -188,12 +189,20 @@ fn build_kdf_variant_map(params: &KdfParams) -> Result<Vec<u8>> {
 
     match params {
         KdfParams::Argon2(p) => {
-            // UUID
-            let argon2_uuid = [
-                0xEF, 0x63, 0x6D, 0xDF, 0x8C, 0x29, 0x44, 0x4B, 0x91, 0xF7, 0xA9, 0xA4, 0x03, 0xE3,
-                0x0A, 0x0C,
-            ];
-            write_variant_entry(&mut map, 0x42, b"$UUID", &argon2_uuid);
+            // KeePassXC UUIDs:
+            // Argon2d  UUID: ef636ddf-8c29-444b-91f7-a9a403e30a0c
+            // Argon2id UUID: 9e298b19-56db-4773-b23d-fc3ec6f0a1e6
+            let uuid = match p.variant {
+                Argon2Variant::Argon2d => [
+                    0xEF, 0x63, 0x6D, 0xDF, 0x8C, 0x29, 0x44, 0x4B, 0x91, 0xF7, 0xA9, 0xA4, 0x03,
+                    0xE3, 0x0A, 0x0C,
+                ],
+                Argon2Variant::Argon2id => [
+                    0x9E, 0x29, 0x8B, 0x19, 0x56, 0xDB, 0x47, 0x73, 0xB2, 0x3D, 0xFC, 0x3E, 0xC6,
+                    0xF0, 0xA1, 0xE6,
+                ],
+            };
+            write_variant_entry(&mut map, 0x42, b"$UUID", &uuid);
             write_variant_entry(&mut map, 0x42, b"S", &p.salt);
             write_variant_entry(&mut map, 0x05, b"I", &(p.iterations as u64).to_le_bytes());
             write_variant_entry(

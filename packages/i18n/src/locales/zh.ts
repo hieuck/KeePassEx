@@ -91,6 +91,10 @@ export const zh = {
     changePassword: '更改主密码',
     currentPassword: '当前密码',
     newPassword: '新密码',
+    passwordChanged: '主密码已成功更改',
+    passwordsMatch: '密码匹配',
+    changePasswordNotice: '更改主密码将重新加密保险库。请记住新密码——无法恢复。',
+    openToView: '打开保险库以查看此页面',
   },
 
   // ─── Entry ─────────────────────────────────────────────────────────────────
@@ -142,6 +146,7 @@ export const zh = {
     sortByModified: '最后修改',
     sortByCreated: '创建时间',
     confirmDelete: '删除"{{title}}"？',
+    deleteWithContent: '此组包含 {{entries}} 个条目和 {{groups}} 个子组，将移至回收站。',
     confirmDeleteDesc: '此条目将被移至回收站。',
     confirmDeletePermanent: '永久删除"{{title}}"？',
     confirmDeletePermanentDesc: '此操作无法撤销。',
@@ -158,6 +163,7 @@ export const zh = {
     icon: '图标',
     allEntries: '所有条目',
     confirmDelete: '删除组"{{name}}"？',
+    deleteWithContent: '此组包含 {{entries}} 个条目和 {{groups}} 个子组，将移至回收站。',
     confirmDeleteDesc: '所有条目和子组将被移至回收站。',
   },
 
@@ -709,6 +715,7 @@ export const zh = {
     tagSelected: 'Tag selected',
     exportSelected: 'Export selected',
     confirmDelete: 'Delete {{count}} entries?',
+    deleteWithContent: '此组包含 {{entries}} 个条目和 {{groups}} 个子组，将移至回收站。',
     confirmDeleteDesc: 'These entries will be moved to the recycle bin.',
   },
 
@@ -815,7 +822,11 @@ export const zh = {
       forbidUsername: 'Cannot contain username',
       forbidTitle: 'Cannot contain entry title',
       forbidSequential: 'No {{n}}+ sequential characters',
-      forbidRepeated: 'No {{n}}+ repeated characters',
+      testPassword: '测试密码',
+    testPasswordDesc: '根据所有启用的策略测试密码',
+    testPasswordPlaceholder: '输入要测试的密码...',
+    enableAtLeastOne: '至少启用一个策略才能测试。',
+    forbidRepeated: 'No {{n}}+ repeated characters',
     },
   },
 
@@ -847,6 +858,9 @@ export const zh = {
     backupSuccess: 'Backup created successfully',
     backupFailed: 'Backup failed: {{error}}',
     restoreSuccess: 'Vault restored from backup',
+    daysAvg: '天平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30天内更改',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -925,6 +939,9 @@ export const zh = {
     securityNote: 'Security note',
     securityNoteDesc:
       'The vault is encrypted with ChaCha20-Poly1305 before embedding. Without the steganography password, the vault cannot be extracted.',
+    daysAvg: '天平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30天内更改',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -969,6 +986,9 @@ export const zh = {
     suggestion3: 'Cloud storage (encrypted)',
     suggestion4: 'Hardware security key',
     suggestion5: 'Printed QR code in a safe deposit box',
+    daysAvg: '天平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30天内更改',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -997,6 +1017,9 @@ export const zh = {
     whyKyber: 'Why Kyber-768?',
     whyKyberDesc:
       'CRYSTALS-Kyber was selected by NIST as the post-quantum key encapsulation standard (FIPS 203). It provides 128-bit post-quantum security.',
+    daysAvg: '天平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30天内更改',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1037,6 +1060,9 @@ export const zh = {
     commentDeleted: 'Comment deleted',
     activityLog: 'Team Activity',
     noActivity: 'No recent activity',
+    daysAvg: '天平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30天内更改',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1064,6 +1090,9 @@ export const zh = {
     averageAge: 'Average password age: {{days}} days',
     oldestPassword: 'Oldest password: {{days}} days',
     totalCopies: '{{count}} total copies',
+    daysAvg: '天平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30天内更改',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1088,6 +1117,9 @@ export const zh = {
     commandMode_key: ': — Command mode',
     help: '? — Help',
     quit: 'q — Quit',
+    daysAvg: '天平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30天内更改',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1111,6 +1143,9 @@ export const zh = {
     example2: 'find weak passwords in Banking',
     example3: 'entries with OTP created last month',
     example4: 'passwords not used in 6 months',
+    daysAvg: '天平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30天内更改',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1144,6 +1179,9 @@ export const zh = {
       security: 'Security',
       other: 'Other',
     },
+    daysAvg: '天平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30天内更改',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1165,6 +1203,9 @@ export const zh = {
       email: 'Email/Work: every 180 days',
       social: 'Social/Shopping: every 365 days',
     },
+    daysAvg: '天平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30天内更改',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1181,6 +1222,9 @@ export const zh = {
     setHint: 'Set hint',
     showHint: 'Show hint',
     wrongPassword: 'Wrong password (ZKPV pre-check failed)',
+    daysAvg: '天平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30天内更改',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1215,6 +1259,9 @@ export const zh = {
     codeRepeatedChars: 'Repeated characters',
     codeLowEntropy: 'Low entropy',
     codeStrong: 'Password is strong',
+    daysAvg: '天平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30天内更改',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1231,6 +1278,9 @@ export const zh = {
     vaultCount: '已打开 {{count}} 个密码库',
     vaultCount_plural: '已打开 {{count}} 个密码库',
     dragToReorder: '拖动以重新排序',
+    daysAvg: '天平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30天内更改',
     uniqueFeature: 'KeePassEx独有功能',
   },
 
@@ -1254,6 +1304,9 @@ export const zh = {
     notFound: '未找到引用的条目',
     syntax: '语法：{REF:P@I:条目UUID}',
     example: '示例：在条目之间共享密码而无需重复',
+    daysAvg: '天平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30天内更改',
     uniqueFeature: 'KeePass兼容功能',
   },
 
@@ -1270,6 +1323,9 @@ export const zh = {
     alreadyHasIcon: '条目已有自定义图标',
     source: '来源：{{source}}',
     clearIcon: '移除自定义图标',
+    daysAvg: '天平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30天内更改',
     uniqueFeature: '自动图标获取',
   },
 
@@ -1292,6 +1348,9 @@ export const zh = {
     copied: '已复制！',
     lockVault: '锁定密码库',
     shortcut: '快捷键：⌘⇧K',
+    daysAvg: '天平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30天内更改',
     uniqueFeature: 'KeePassEx 独有功能 — 无竞争对手拥有',
   },
 
@@ -1328,6 +1387,9 @@ export const zh = {
     selfHostedDesc: '您的数据保存在您的服务器上。没有第三方云。',
     zeroKnowledge: '零知识',
     zeroKnowledgeDesc: '服务器无法读取您的密码库。所有加密在客户端进行。',
+    daysAvg: '天平均',
+    olderThan1Year: '> 1年',
+    changedLast30Days: '30天内更改',
     uniqueFeature: 'KeePassEx 独有功能 — 无竞争对手提供自托管同步',
   },
 } as const;
