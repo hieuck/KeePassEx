@@ -1237,6 +1237,9 @@ export const en = {
     recommendedMax: 'Recommended max: {{days}} days',
     daysUntilOverdue: '{{days}} days until overdue',
     rotateNow: 'Rotate Now',
+    allGood: 'All passwords are fresh',
+    allGoodDesc: 'No rotation needed. All passwords are within their recommended schedule.',
+    noFilterResults: 'No entries match this filter.',
     schedules: {
       banking: 'Banking: every 90 days',
       email: 'Email/Work: every 180 days',

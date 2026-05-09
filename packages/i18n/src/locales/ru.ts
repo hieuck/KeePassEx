@@ -1236,6 +1236,9 @@ export const ru = {
     agedays: '{{days}} days old',
     recommendedMax: 'Recommended max: {{days}} days',
     daysUntilOverdue: '{{days}} days until overdue',
+    allGood: 'Все пароли актуальны',
+    allGoodDesc: 'Ротация не нужна. Все пароли в рамках рекомендуемого расписания.',
+    noFilterResults: 'Нет записей, соответствующих этому фильтру.',
     rotateNow: 'Rotate Now',
     schedules: {
       banking: 'Banking: every 90 days',

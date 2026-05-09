@@ -1235,6 +1235,9 @@ export const vi = {
     agedays: '{{days}} ngày tuổi',
     recommendedMax: 'Tối đa khuyến nghị: {{days}} ngày',
     daysUntilOverdue: 'Còn {{days}} ngày đến hạn',
+    allGood: 'Tất cả mật khẩu còn mới',
+    allGoodDesc: 'Không cần xoay vòng. Tất cả mật khẩu trong lịch trình khuyến nghị.',
+    noFilterResults: 'Không có mục nào khớp bộ lọc này.',
     rotateNow: 'Đổi ngay',
     schedules: {
       banking: 'Ngân hàng: mỗi 90 ngày',

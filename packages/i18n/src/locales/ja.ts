@@ -1236,6 +1236,9 @@ export const ja = {
     agedays: '{{days}} days old',
     recommendedMax: 'Recommended max: {{days}} days',
     daysUntilOverdue: '{{days}} days until overdue',
+    allGood: 'すべてのパスワードは新鮮です',
+    allGoodDesc: 'ローテーション不要。すべてのパスワードは推奨スケジュール内です。',
+    noFilterResults: 'このフィルターに一致するエントリはありません。',
     rotateNow: 'Rotate Now',
     schedules: {
       banking: 'Banking: every 90 days',

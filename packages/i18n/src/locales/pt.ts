@@ -1236,6 +1236,9 @@ export const pt = {
     agedays: '{{days}} days old',
     recommendedMax: 'Recommended max: {{days}} days',
     daysUntilOverdue: '{{days}} days until overdue',
+    allGood: 'Todas as senhas estão atualizadas',
+    allGoodDesc: 'Nenhuma rotação necessária. Todas as senhas estão dentro do cronograma recomendado.',
+    noFilterResults: 'Nenhuma entrada corresponde a este filtro.',
     rotateNow: 'Rotate Now',
     schedules: {
       banking: 'Banking: every 90 days',

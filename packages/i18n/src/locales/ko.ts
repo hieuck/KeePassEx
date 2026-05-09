@@ -1236,6 +1236,9 @@ export const ko = {
     agedays: '{{days}} days old',
     recommendedMax: 'Recommended max: {{days}} days',
     daysUntilOverdue: '{{days}} days until overdue',
+    allGood: '모든 비밀번호가 최신입니다',
+    allGoodDesc: '교체 불필요. 모든 비밀번호가 권장 일정 내에 있습니다.',
+    noFilterResults: '이 필터와 일치하는 항목이 없습니다.',
     rotateNow: 'Rotate Now',
     schedules: {
       banking: 'Banking: every 90 days',

@@ -1236,6 +1236,9 @@ export const zh = {
     agedays: '{{days}} days old',
     recommendedMax: 'Recommended max: {{days}} days',
     daysUntilOverdue: '{{days}} days until overdue',
+    allGood: '所有密码都是新的',
+    allGoodDesc: '无需轮换。所有密码都在推荐的时间表内。',
+    noFilterResults: '没有条目匹配此过滤器。',
     rotateNow: 'Rotate Now',
     schedules: {
       banking: 'Banking: every 90 days',

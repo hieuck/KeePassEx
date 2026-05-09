@@ -278,6 +278,7 @@ export function SettingsScreen() {
           {[
             { icon: '📁', key: 'group.manage', screen: 'Groups' as const },
             { icon: '🔑', key: 'vault.changePassword', screen: 'ChangePassword' as const },
+            { icon: '🔄', key: 'rotation.title', screen: 'Rotation' as const },
             { icon: '🔄', key: 'sync.title', screen: 'Sync' as const },
             { icon: '📥', key: 'importExport.import', screen: 'ImportExport' as const },
             { icon: '🛡️', key: 'breach.title', screen: 'Breach' as const },
