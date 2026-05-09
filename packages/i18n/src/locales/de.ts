@@ -881,6 +881,8 @@ export const de = {
     daysAvg: 'Tage Ø',
     olderThan1Year: '> 1 Jahr',
     changedLast30Days: 'geändert 30T',
+    context: 'Kontext',
+    onDevice: 'Alle Vorschläge werden auf dem Gerät generiert — keine Daten werden an Server gesendet.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -962,6 +964,8 @@ export const de = {
     daysAvg: 'Tage Ø',
     olderThan1Year: '> 1 Jahr',
     changedLast30Days: 'geändert 30T',
+    context: 'Kontext',
+    onDevice: 'Alle Vorschläge werden auf dem Gerät generiert — keine Daten werden an Server gesendet.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1009,6 +1013,8 @@ export const de = {
     daysAvg: 'Tage Ø',
     olderThan1Year: '> 1 Jahr',
     changedLast30Days: 'geändert 30T',
+    context: 'Kontext',
+    onDevice: 'Alle Vorschläge werden auf dem Gerät generiert — keine Daten werden an Server gesendet.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1040,6 +1046,8 @@ export const de = {
     daysAvg: 'Tage Ø',
     olderThan1Year: '> 1 Jahr',
     changedLast30Days: 'geändert 30T',
+    context: 'Kontext',
+    onDevice: 'Alle Vorschläge werden auf dem Gerät generiert — keine Daten werden an Server gesendet.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1100,6 +1108,8 @@ export const de = {
     daysAvg: 'Tage Ø',
     olderThan1Year: '> 1 Jahr',
     changedLast30Days: 'geändert 30T',
+    context: 'Kontext',
+    onDevice: 'Alle Vorschläge werden auf dem Gerät generiert — keine Daten werden an Server gesendet.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1130,6 +1140,8 @@ export const de = {
     daysAvg: 'Tage Ø',
     olderThan1Year: '> 1 Jahr',
     changedLast30Days: 'geändert 30T',
+    context: 'Kontext',
+    onDevice: 'Alle Vorschläge werden auf dem Gerät generiert — keine Daten werden an Server gesendet.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1196,6 +1208,8 @@ export const de = {
     daysAvg: 'Tage Ø',
     olderThan1Year: '> 1 Jahr',
     changedLast30Days: 'geändert 30T',
+    context: 'Kontext',
+    onDevice: 'Alle Vorschläge werden auf dem Gerät generiert — keine Daten werden an Server gesendet.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1222,6 +1236,8 @@ export const de = {
     daysAvg: 'Tage Ø',
     olderThan1Year: '> 1 Jahr',
     changedLast30Days: 'geändert 30T',
+    context: 'Kontext',
+    onDevice: 'Alle Vorschläge werden auf dem Gerät generiert — keine Daten werden an Server gesendet.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1258,6 +1274,8 @@ export const de = {
     daysAvg: 'Tage Ø',
     olderThan1Year: '> 1 Jahr',
     changedLast30Days: 'geändert 30T',
+    context: 'Kontext',
+    onDevice: 'Alle Vorschläge werden auf dem Gerät generiert — keine Daten werden an Server gesendet.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1285,6 +1303,8 @@ export const de = {
     daysAvg: 'Tage Ø',
     olderThan1Year: '> 1 Jahr',
     changedLast30Days: 'geändert 30T',
+    context: 'Kontext',
+    onDevice: 'Alle Vorschläge werden auf dem Gerät generiert — keine Daten werden an Server gesendet.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1304,6 +1324,8 @@ export const de = {
     daysAvg: 'Tage Ø',
     olderThan1Year: '> 1 Jahr',
     changedLast30Days: 'geändert 30T',
+    context: 'Kontext',
+    onDevice: 'Alle Vorschläge werden auf dem Gerät generiert — keine Daten werden an Server gesendet.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1341,6 +1363,8 @@ export const de = {
     daysAvg: 'Tage Ø',
     olderThan1Year: '> 1 Jahr',
     changedLast30Days: 'geändert 30T',
+    context: 'Kontext',
+    onDevice: 'Alle Vorschläge werden auf dem Gerät generiert — keine Daten werden an Server gesendet.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1360,6 +1384,8 @@ export const de = {
     daysAvg: 'Tage Ø',
     olderThan1Year: '> 1 Jahr',
     changedLast30Days: 'geändert 30T',
+    context: 'Kontext',
+    onDevice: 'Alle Vorschläge werden auf dem Gerät generiert — keine Daten werden an Server gesendet.',
     uniqueFeature: 'Exklusives KeePassEx-Feature',
   },
 
@@ -1386,6 +1412,8 @@ export const de = {
     daysAvg: 'Tage Ø',
     olderThan1Year: '> 1 Jahr',
     changedLast30Days: 'geändert 30T',
+    context: 'Kontext',
+    onDevice: 'Alle Vorschläge werden auf dem Gerät generiert — keine Daten werden an Server gesendet.',
     uniqueFeature: 'KeePass-kompatibles Feature',
   },
 
@@ -1405,6 +1433,8 @@ export const de = {
     daysAvg: 'Tage Ø',
     olderThan1Year: '> 1 Jahr',
     changedLast30Days: 'geändert 30T',
+    context: 'Kontext',
+    onDevice: 'Alle Vorschläge werden auf dem Gerät generiert — keine Daten werden an Server gesendet.',
     uniqueFeature: 'Automatischer Symbol-Abruf',
   },
 
@@ -1430,6 +1460,8 @@ export const de = {
     daysAvg: 'Tage Ø',
     olderThan1Year: '> 1 Jahr',
     changedLast30Days: 'geändert 30T',
+    context: 'Kontext',
+    onDevice: 'Alle Vorschläge werden auf dem Gerät generiert — keine Daten werden an Server gesendet.',
     uniqueFeature: 'Exklusives KeePassEx-Feature — kein Konkurrent hat dies',
   },
 
@@ -1469,6 +1501,8 @@ export const de = {
     daysAvg: 'Tage Ø',
     olderThan1Year: '> 1 Jahr',
     changedLast30Days: 'geändert 30T',
+    context: 'Kontext',
+    onDevice: 'Alle Vorschläge werden auf dem Gerät generiert — keine Daten werden an Server gesendet.',
     uniqueFeature: 'Exclusive KeePassEx feature — no competitor offers self-hosted sync',
   },
 } as const;

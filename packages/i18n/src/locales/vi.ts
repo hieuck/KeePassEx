@@ -881,6 +881,8 @@ export const vi = {
     daysAvg: 'ngày trung bình',
     olderThan1Year: '> 1 năm',
     changedLast30Days: 'đổi 30 ngày',
+    context: 'Ngữ cảnh',
+    onDevice: 'Tất cả gợi ý được tạo trên thiết bị — không gửi dữ liệu đến máy chủ nào.',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -961,6 +963,8 @@ export const vi = {
     daysAvg: 'ngày trung bình',
     olderThan1Year: '> 1 năm',
     changedLast30Days: 'đổi 30 ngày',
+    context: 'Ngữ cảnh',
+    onDevice: 'Tất cả gợi ý được tạo trên thiết bị — không gửi dữ liệu đến máy chủ nào.',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1008,6 +1012,8 @@ export const vi = {
     daysAvg: 'ngày trung bình',
     olderThan1Year: '> 1 năm',
     changedLast30Days: 'đổi 30 ngày',
+    context: 'Ngữ cảnh',
+    onDevice: 'Tất cả gợi ý được tạo trên thiết bị — không gửi dữ liệu đến máy chủ nào.',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1039,6 +1045,8 @@ export const vi = {
     daysAvg: 'ngày trung bình',
     olderThan1Year: '> 1 năm',
     changedLast30Days: 'đổi 30 ngày',
+    context: 'Ngữ cảnh',
+    onDevice: 'Tất cả gợi ý được tạo trên thiết bị — không gửi dữ liệu đến máy chủ nào.',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1099,6 +1107,8 @@ export const vi = {
     daysAvg: 'ngày trung bình',
     olderThan1Year: '> 1 năm',
     changedLast30Days: 'đổi 30 ngày',
+    context: 'Ngữ cảnh',
+    onDevice: 'Tất cả gợi ý được tạo trên thiết bị — không gửi dữ liệu đến máy chủ nào.',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1129,6 +1139,8 @@ export const vi = {
     daysAvg: 'ngày trung bình',
     olderThan1Year: '> 1 năm',
     changedLast30Days: 'đổi 30 ngày',
+    context: 'Ngữ cảnh',
+    onDevice: 'Tất cả gợi ý được tạo trên thiết bị — không gửi dữ liệu đến máy chủ nào.',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1195,6 +1207,8 @@ export const vi = {
     daysAvg: 'ngày trung bình',
     olderThan1Year: '> 1 năm',
     changedLast30Days: 'đổi 30 ngày',
+    context: 'Ngữ cảnh',
+    onDevice: 'Tất cả gợi ý được tạo trên thiết bị — không gửi dữ liệu đến máy chủ nào.',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1221,6 +1235,8 @@ export const vi = {
     daysAvg: 'ngày trung bình',
     olderThan1Year: '> 1 năm',
     changedLast30Days: 'đổi 30 ngày',
+    context: 'Ngữ cảnh',
+    onDevice: 'Tất cả gợi ý được tạo trên thiết bị — không gửi dữ liệu đến máy chủ nào.',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1257,6 +1273,8 @@ export const vi = {
     daysAvg: 'ngày trung bình',
     olderThan1Year: '> 1 năm',
     changedLast30Days: 'đổi 30 ngày',
+    context: 'Ngữ cảnh',
+    onDevice: 'Tất cả gợi ý được tạo trên thiết bị — không gửi dữ liệu đến máy chủ nào.',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1284,6 +1302,8 @@ export const vi = {
     daysAvg: 'ngày trung bình',
     olderThan1Year: '> 1 năm',
     changedLast30Days: 'đổi 30 ngày',
+    context: 'Ngữ cảnh',
+    onDevice: 'Tất cả gợi ý được tạo trên thiết bị — không gửi dữ liệu đến máy chủ nào.',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1303,6 +1323,8 @@ export const vi = {
     daysAvg: 'ngày trung bình',
     olderThan1Year: '> 1 năm',
     changedLast30Days: 'đổi 30 ngày',
+    context: 'Ngữ cảnh',
+    onDevice: 'Tất cả gợi ý được tạo trên thiết bị — không gửi dữ liệu đến máy chủ nào.',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1340,6 +1362,8 @@ export const vi = {
     daysAvg: 'ngày trung bình',
     olderThan1Year: '> 1 năm',
     changedLast30Days: 'đổi 30 ngày',
+    context: 'Ngữ cảnh',
+    onDevice: 'Tất cả gợi ý được tạo trên thiết bị — không gửi dữ liệu đến máy chủ nào.',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1359,6 +1383,8 @@ export const vi = {
     daysAvg: 'ngày trung bình',
     olderThan1Year: '> 1 năm',
     changedLast30Days: 'đổi 30 ngày',
+    context: 'Ngữ cảnh',
+    onDevice: 'Tất cả gợi ý được tạo trên thiết bị — không gửi dữ liệu đến máy chủ nào.',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx',
   },
 
@@ -1385,6 +1411,8 @@ export const vi = {
     daysAvg: 'ngày trung bình',
     olderThan1Year: '> 1 năm',
     changedLast30Days: 'đổi 30 ngày',
+    context: 'Ngữ cảnh',
+    onDevice: 'Tất cả gợi ý được tạo trên thiết bị — không gửi dữ liệu đến máy chủ nào.',
     uniqueFeature: 'Tính năng tương thích KeePass',
   },
 
@@ -1404,6 +1432,8 @@ export const vi = {
     daysAvg: 'ngày trung bình',
     olderThan1Year: '> 1 năm',
     changedLast30Days: 'đổi 30 ngày',
+    context: 'Ngữ cảnh',
+    onDevice: 'Tất cả gợi ý được tạo trên thiết bị — không gửi dữ liệu đến máy chủ nào.',
     uniqueFeature: 'Tự động tải biểu tượng',
   },
 
@@ -1429,6 +1459,8 @@ export const vi = {
     daysAvg: 'ngày trung bình',
     olderThan1Year: '> 1 năm',
     changedLast30Days: 'đổi 30 ngày',
+    context: 'Ngữ cảnh',
+    onDevice: 'Tất cả gợi ý được tạo trên thiết bị — không gửi dữ liệu đến máy chủ nào.',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx — không đối thủ nào có',
   },
 
@@ -1468,6 +1500,8 @@ export const vi = {
     daysAvg: 'ngày trung bình',
     olderThan1Year: '> 1 năm',
     changedLast30Days: 'đổi 30 ngày',
+    context: 'Ngữ cảnh',
+    onDevice: 'Tất cả gợi ý được tạo trên thiết bị — không gửi dữ liệu đến máy chủ nào.',
     uniqueFeature: 'Tính năng độc quyền của KeePassEx — không đối thủ nào có đồng bộ tự lưu trữ',
   },
 } as const;

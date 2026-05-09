@@ -38,6 +38,7 @@ import { SecureNoteScreen } from './screens/SecureNoteScreen';
 import { RotationScreen } from './screens/RotationScreen';
 import { SecuritySettingsScreen } from './screens/SecuritySettingsScreen';
 import { AttachmentViewerScreen } from './screens/AttachmentViewerScreen';
+import { PasswordAdvisorScreen } from './screens/PasswordAdvisorScreen';
 
 export type RootStackParamList = {
   Welcome: undefined;
@@ -61,6 +62,7 @@ export type RootStackParamList = {
   Rotation: undefined;
   SecuritySettings: undefined;
   AttachmentViewer: { entryUuid: string; entryTitle: string };
+  PasswordAdvisor: undefined;
 };
 
 export type TabParamList = {
@@ -280,6 +282,11 @@ export function App() {
                     name="AttachmentViewer"
                     component={AttachmentViewerScreen}
                     options={{ presentation: 'card' }}
+                  />
+                  <Stack.Screen
+                    name="PasswordAdvisor"
+                    component={PasswordAdvisorScreen}
+                    options={{ presentation: 'modal' }}
                   />
                 </>
               )}

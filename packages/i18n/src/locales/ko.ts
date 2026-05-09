@@ -881,6 +881,8 @@ export const ko = {
     daysAvg: '일 평균',
     olderThan1Year: '> 1년',
     changedLast30Days: '30일 내 변경',
+    context: '컨텍스트',
+    onDevice: '모든 제안은 기기에서 생성됩니다 — 서버로 데이터가 전송되지 않습니다.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -962,6 +964,8 @@ export const ko = {
     daysAvg: '일 평균',
     olderThan1Year: '> 1년',
     changedLast30Days: '30일 내 변경',
+    context: '컨텍스트',
+    onDevice: '모든 제안은 기기에서 생성됩니다 — 서버로 데이터가 전송되지 않습니다.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1009,6 +1013,8 @@ export const ko = {
     daysAvg: '일 평균',
     olderThan1Year: '> 1년',
     changedLast30Days: '30일 내 변경',
+    context: '컨텍스트',
+    onDevice: '모든 제안은 기기에서 생성됩니다 — 서버로 데이터가 전송되지 않습니다.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1040,6 +1046,8 @@ export const ko = {
     daysAvg: '일 평균',
     olderThan1Year: '> 1년',
     changedLast30Days: '30일 내 변경',
+    context: '컨텍스트',
+    onDevice: '모든 제안은 기기에서 생성됩니다 — 서버로 데이터가 전송되지 않습니다.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1100,6 +1108,8 @@ export const ko = {
     daysAvg: '일 평균',
     olderThan1Year: '> 1년',
     changedLast30Days: '30일 내 변경',
+    context: '컨텍스트',
+    onDevice: '모든 제안은 기기에서 생성됩니다 — 서버로 데이터가 전송되지 않습니다.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1130,6 +1140,8 @@ export const ko = {
     daysAvg: '일 평균',
     olderThan1Year: '> 1년',
     changedLast30Days: '30일 내 변경',
+    context: '컨텍스트',
+    onDevice: '모든 제안은 기기에서 생성됩니다 — 서버로 데이터가 전송되지 않습니다.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1196,6 +1208,8 @@ export const ko = {
     daysAvg: '일 평균',
     olderThan1Year: '> 1년',
     changedLast30Days: '30일 내 변경',
+    context: '컨텍스트',
+    onDevice: '모든 제안은 기기에서 생성됩니다 — 서버로 데이터가 전송되지 않습니다.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1222,6 +1236,8 @@ export const ko = {
     daysAvg: '일 평균',
     olderThan1Year: '> 1년',
     changedLast30Days: '30일 내 변경',
+    context: '컨텍스트',
+    onDevice: '모든 제안은 기기에서 생성됩니다 — 서버로 데이터가 전송되지 않습니다.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1258,6 +1274,8 @@ export const ko = {
     daysAvg: '일 평균',
     olderThan1Year: '> 1년',
     changedLast30Days: '30일 내 변경',
+    context: '컨텍스트',
+    onDevice: '모든 제안은 기기에서 생성됩니다 — 서버로 데이터가 전송되지 않습니다.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1285,6 +1303,8 @@ export const ko = {
     daysAvg: '일 평균',
     olderThan1Year: '> 1년',
     changedLast30Days: '30일 내 변경',
+    context: '컨텍스트',
+    onDevice: '모든 제안은 기기에서 생성됩니다 — 서버로 데이터가 전송되지 않습니다.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1304,6 +1324,8 @@ export const ko = {
     daysAvg: '일 평균',
     olderThan1Year: '> 1년',
     changedLast30Days: '30일 내 변경',
+    context: '컨텍스트',
+    onDevice: '모든 제안은 기기에서 생성됩니다 — 서버로 데이터가 전송되지 않습니다.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1341,6 +1363,8 @@ export const ko = {
     daysAvg: '일 평균',
     olderThan1Year: '> 1년',
     changedLast30Days: '30일 내 변경',
+    context: '컨텍스트',
+    onDevice: '모든 제안은 기기에서 생성됩니다 — 서버로 데이터가 전송되지 않습니다.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1360,6 +1384,8 @@ export const ko = {
     daysAvg: '일 평균',
     olderThan1Year: '> 1년',
     changedLast30Days: '30일 내 변경',
+    context: '컨텍스트',
+    onDevice: '모든 제안은 기기에서 생성됩니다 — 서버로 데이터가 전송되지 않습니다.',
     uniqueFeature: 'KeePassEx 고유 기능',
   },
 
@@ -1386,6 +1412,8 @@ export const ko = {
     daysAvg: '일 평균',
     olderThan1Year: '> 1년',
     changedLast30Days: '30일 내 변경',
+    context: '컨텍스트',
+    onDevice: '모든 제안은 기기에서 생성됩니다 — 서버로 데이터가 전송되지 않습니다.',
     uniqueFeature: 'KeePass 호환 기능',
   },
 
@@ -1405,6 +1433,8 @@ export const ko = {
     daysAvg: '일 평균',
     olderThan1Year: '> 1년',
     changedLast30Days: '30일 내 변경',
+    context: '컨텍스트',
+    onDevice: '모든 제안은 기기에서 생성됩니다 — 서버로 데이터가 전송되지 않습니다.',
     uniqueFeature: '자동 아이콘 가져오기',
   },
 
@@ -1430,6 +1460,8 @@ export const ko = {
     daysAvg: '일 평균',
     olderThan1Year: '> 1년',
     changedLast30Days: '30일 내 변경',
+    context: '컨텍스트',
+    onDevice: '모든 제안은 기기에서 생성됩니다 — 서버로 데이터가 전송되지 않습니다.',
     uniqueFeature: 'KeePassEx 고유 기능 — 경쟁사에는 없음',
   },
 
@@ -1469,6 +1501,8 @@ export const ko = {
     daysAvg: '일 평균',
     olderThan1Year: '> 1년',
     changedLast30Days: '30일 내 변경',
+    context: '컨텍스트',
+    onDevice: '모든 제안은 기기에서 생성됩니다 — 서버로 데이터가 전송되지 않습니다.',
     uniqueFeature: 'KeePassEx 고유 기능 — 자체 호스팅 동기화를 제공하는 경쟁사 없음',
   },
 } as const;

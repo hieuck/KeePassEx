@@ -881,6 +881,8 @@ export const ja = {
     daysAvg: '日平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30日以内に変更',
+    context: 'コンテキスト',
+    onDevice: 'すべての提案はデバイス上で生成されます—サーバーにデータは送信されません。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -962,6 +964,8 @@ export const ja = {
     daysAvg: '日平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30日以内に変更',
+    context: 'コンテキスト',
+    onDevice: 'すべての提案はデバイス上で生成されます—サーバーにデータは送信されません。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1009,6 +1013,8 @@ export const ja = {
     daysAvg: '日平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30日以内に変更',
+    context: 'コンテキスト',
+    onDevice: 'すべての提案はデバイス上で生成されます—サーバーにデータは送信されません。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1040,6 +1046,8 @@ export const ja = {
     daysAvg: '日平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30日以内に変更',
+    context: 'コンテキスト',
+    onDevice: 'すべての提案はデバイス上で生成されます—サーバーにデータは送信されません。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1100,6 +1108,8 @@ export const ja = {
     daysAvg: '日平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30日以内に変更',
+    context: 'コンテキスト',
+    onDevice: 'すべての提案はデバイス上で生成されます—サーバーにデータは送信されません。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1130,6 +1140,8 @@ export const ja = {
     daysAvg: '日平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30日以内に変更',
+    context: 'コンテキスト',
+    onDevice: 'すべての提案はデバイス上で生成されます—サーバーにデータは送信されません。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1196,6 +1208,8 @@ export const ja = {
     daysAvg: '日平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30日以内に変更',
+    context: 'コンテキスト',
+    onDevice: 'すべての提案はデバイス上で生成されます—サーバーにデータは送信されません。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1222,6 +1236,8 @@ export const ja = {
     daysAvg: '日平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30日以内に変更',
+    context: 'コンテキスト',
+    onDevice: 'すべての提案はデバイス上で生成されます—サーバーにデータは送信されません。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1258,6 +1274,8 @@ export const ja = {
     daysAvg: '日平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30日以内に変更',
+    context: 'コンテキスト',
+    onDevice: 'すべての提案はデバイス上で生成されます—サーバーにデータは送信されません。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1285,6 +1303,8 @@ export const ja = {
     daysAvg: '日平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30日以内に変更',
+    context: 'コンテキスト',
+    onDevice: 'すべての提案はデバイス上で生成されます—サーバーにデータは送信されません。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1304,6 +1324,8 @@ export const ja = {
     daysAvg: '日平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30日以内に変更',
+    context: 'コンテキスト',
+    onDevice: 'すべての提案はデバイス上で生成されます—サーバーにデータは送信されません。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1341,6 +1363,8 @@ export const ja = {
     daysAvg: '日平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30日以内に変更',
+    context: 'コンテキスト',
+    onDevice: 'すべての提案はデバイス上で生成されます—サーバーにデータは送信されません。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1360,6 +1384,8 @@ export const ja = {
     daysAvg: '日平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30日以内に変更',
+    context: 'コンテキスト',
+    onDevice: 'すべての提案はデバイス上で生成されます—サーバーにデータは送信されません。',
     uniqueFeature: 'KeePassEx独自機能',
   },
 
@@ -1386,6 +1412,8 @@ export const ja = {
     daysAvg: '日平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30日以内に変更',
+    context: 'コンテキスト',
+    onDevice: 'すべての提案はデバイス上で生成されます—サーバーにデータは送信されません。',
     uniqueFeature: 'KeePass互換機能',
   },
 
@@ -1405,6 +1433,8 @@ export const ja = {
     daysAvg: '日平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30日以内に変更',
+    context: 'コンテキスト',
+    onDevice: 'すべての提案はデバイス上で生成されます—サーバーにデータは送信されません。',
     uniqueFeature: '自動アイコン取得',
   },
 
@@ -1430,6 +1460,8 @@ export const ja = {
     daysAvg: '日平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30日以内に変更',
+    context: 'コンテキスト',
+    onDevice: 'すべての提案はデバイス上で生成されます—サーバーにデータは送信されません。',
     uniqueFeature: 'KeePassEx独自機能 — 競合他社にはない',
   },
 
@@ -1469,6 +1501,8 @@ export const ja = {
     daysAvg: '日平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30日以内に変更',
+    context: 'コンテキスト',
+    onDevice: 'すべての提案はデバイス上で生成されます—サーバーにデータは送信されません。',
     uniqueFeature: 'KeePassEx独自機能 — セルフホスト同期を提供する競合他社はない',
   },
 } as const;

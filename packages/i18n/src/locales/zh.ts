@@ -881,6 +881,8 @@ export const zh = {
     daysAvg: '天平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30天内更改',
+    context: '上下文',
+    onDevice: '所有建议均在设备上生成——不向任何服务器发送数据。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -962,6 +964,8 @@ export const zh = {
     daysAvg: '天平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30天内更改',
+    context: '上下文',
+    onDevice: '所有建议均在设备上生成——不向任何服务器发送数据。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1009,6 +1013,8 @@ export const zh = {
     daysAvg: '天平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30天内更改',
+    context: '上下文',
+    onDevice: '所有建议均在设备上生成——不向任何服务器发送数据。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1040,6 +1046,8 @@ export const zh = {
     daysAvg: '天平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30天内更改',
+    context: '上下文',
+    onDevice: '所有建议均在设备上生成——不向任何服务器发送数据。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1100,6 +1108,8 @@ export const zh = {
     daysAvg: '天平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30天内更改',
+    context: '上下文',
+    onDevice: '所有建议均在设备上生成——不向任何服务器发送数据。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1130,6 +1140,8 @@ export const zh = {
     daysAvg: '天平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30天内更改',
+    context: '上下文',
+    onDevice: '所有建议均在设备上生成——不向任何服务器发送数据。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1196,6 +1208,8 @@ export const zh = {
     daysAvg: '天平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30天内更改',
+    context: '上下文',
+    onDevice: '所有建议均在设备上生成——不向任何服务器发送数据。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1222,6 +1236,8 @@ export const zh = {
     daysAvg: '天平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30天内更改',
+    context: '上下文',
+    onDevice: '所有建议均在设备上生成——不向任何服务器发送数据。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1258,6 +1274,8 @@ export const zh = {
     daysAvg: '天平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30天内更改',
+    context: '上下文',
+    onDevice: '所有建议均在设备上生成——不向任何服务器发送数据。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1285,6 +1303,8 @@ export const zh = {
     daysAvg: '天平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30天内更改',
+    context: '上下文',
+    onDevice: '所有建议均在设备上生成——不向任何服务器发送数据。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1304,6 +1324,8 @@ export const zh = {
     daysAvg: '天平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30天内更改',
+    context: '上下文',
+    onDevice: '所有建议均在设备上生成——不向任何服务器发送数据。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1341,6 +1363,8 @@ export const zh = {
     daysAvg: '天平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30天内更改',
+    context: '上下文',
+    onDevice: '所有建议均在设备上生成——不向任何服务器发送数据。',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1360,6 +1384,8 @@ export const zh = {
     daysAvg: '天平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30天内更改',
+    context: '上下文',
+    onDevice: '所有建议均在设备上生成——不向任何服务器发送数据。',
     uniqueFeature: 'KeePassEx独有功能',
   },
 
@@ -1386,6 +1412,8 @@ export const zh = {
     daysAvg: '天平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30天内更改',
+    context: '上下文',
+    onDevice: '所有建议均在设备上生成——不向任何服务器发送数据。',
     uniqueFeature: 'KeePass兼容功能',
   },
 
@@ -1405,6 +1433,8 @@ export const zh = {
     daysAvg: '天平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30天内更改',
+    context: '上下文',
+    onDevice: '所有建议均在设备上生成——不向任何服务器发送数据。',
     uniqueFeature: '自动图标获取',
   },
 
@@ -1430,6 +1460,8 @@ export const zh = {
     daysAvg: '天平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30天内更改',
+    context: '上下文',
+    onDevice: '所有建议均在设备上生成——不向任何服务器发送数据。',
     uniqueFeature: 'KeePassEx 独有功能 — 无竞争对手拥有',
   },
 
@@ -1469,6 +1501,8 @@ export const zh = {
     daysAvg: '天平均',
     olderThan1Year: '> 1年',
     changedLast30Days: '30天内更改',
+    context: '上下文',
+    onDevice: '所有建议均在设备上生成——不向任何服务器发送数据。',
     uniqueFeature: 'KeePassEx 独有功能 — 无竞争对手提供自托管同步',
   },
 } as const;

@@ -6,6 +6,7 @@ pub mod compare;
 pub mod delete;
 pub mod edit;
 pub mod export;
+pub mod find;
 pub mod generate;
 pub mod get;
 pub mod group;

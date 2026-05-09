@@ -1332,6 +1332,9 @@ export const en = {
     codeLowEntropy: 'Low entropy',
     codeStrong: 'Password is strong',
     uniqueFeature: 'Exclusive KeePassEx feature',
+    context: 'Context',
+    suggestions: 'AI Suggestions',
+    onDevice: 'All suggestions generated on-device — no data sent to any server.',
   },
 
   // ─── Multi-Vault Tabs ──────────────────────────────────────────────────────

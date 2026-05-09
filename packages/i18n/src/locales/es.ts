@@ -881,6 +881,8 @@ export const es = {
     daysAvg: 'días prom.',
     olderThan1Year: '> 1 año',
     changedLast30Days: 'cambiado 30d',
+    context: 'Contexto',
+    onDevice: 'Todas las sugerencias se generan en el dispositivo — no se envían datos a ningún servidor.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -962,6 +964,8 @@ export const es = {
     daysAvg: 'días prom.',
     olderThan1Year: '> 1 año',
     changedLast30Days: 'cambiado 30d',
+    context: 'Contexto',
+    onDevice: 'Todas las sugerencias se generan en el dispositivo — no se envían datos a ningún servidor.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1009,6 +1013,8 @@ export const es = {
     daysAvg: 'días prom.',
     olderThan1Year: '> 1 año',
     changedLast30Days: 'cambiado 30d',
+    context: 'Contexto',
+    onDevice: 'Todas las sugerencias se generan en el dispositivo — no se envían datos a ningún servidor.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1040,6 +1046,8 @@ export const es = {
     daysAvg: 'días prom.',
     olderThan1Year: '> 1 año',
     changedLast30Days: 'cambiado 30d',
+    context: 'Contexto',
+    onDevice: 'Todas las sugerencias se generan en el dispositivo — no se envían datos a ningún servidor.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1100,6 +1108,8 @@ export const es = {
     daysAvg: 'días prom.',
     olderThan1Year: '> 1 año',
     changedLast30Days: 'cambiado 30d',
+    context: 'Contexto',
+    onDevice: 'Todas las sugerencias se generan en el dispositivo — no se envían datos a ningún servidor.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1130,6 +1140,8 @@ export const es = {
     daysAvg: 'días prom.',
     olderThan1Year: '> 1 año',
     changedLast30Days: 'cambiado 30d',
+    context: 'Contexto',
+    onDevice: 'Todas las sugerencias se generan en el dispositivo — no se envían datos a ningún servidor.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1196,6 +1208,8 @@ export const es = {
     daysAvg: 'días prom.',
     olderThan1Year: '> 1 año',
     changedLast30Days: 'cambiado 30d',
+    context: 'Contexto',
+    onDevice: 'Todas las sugerencias se generan en el dispositivo — no se envían datos a ningún servidor.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1222,6 +1236,8 @@ export const es = {
     daysAvg: 'días prom.',
     olderThan1Year: '> 1 año',
     changedLast30Days: 'cambiado 30d',
+    context: 'Contexto',
+    onDevice: 'Todas las sugerencias se generan en el dispositivo — no se envían datos a ningún servidor.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1258,6 +1274,8 @@ export const es = {
     daysAvg: 'días prom.',
     olderThan1Year: '> 1 año',
     changedLast30Days: 'cambiado 30d',
+    context: 'Contexto',
+    onDevice: 'Todas las sugerencias se generan en el dispositivo — no se envían datos a ningún servidor.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1285,6 +1303,8 @@ export const es = {
     daysAvg: 'días prom.',
     olderThan1Year: '> 1 año',
     changedLast30Days: 'cambiado 30d',
+    context: 'Contexto',
+    onDevice: 'Todas las sugerencias se generan en el dispositivo — no se envían datos a ningún servidor.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1304,6 +1324,8 @@ export const es = {
     daysAvg: 'días prom.',
     olderThan1Year: '> 1 año',
     changedLast30Days: 'cambiado 30d',
+    context: 'Contexto',
+    onDevice: 'Todas las sugerencias se generan en el dispositivo — no se envían datos a ningún servidor.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1341,6 +1363,8 @@ export const es = {
     daysAvg: 'días prom.',
     olderThan1Year: '> 1 año',
     changedLast30Days: 'cambiado 30d',
+    context: 'Contexto',
+    onDevice: 'Todas las sugerencias se generan en el dispositivo — no se envían datos a ningún servidor.',
     uniqueFeature: 'Exclusive KeePassEx feature',
   },
 
@@ -1360,6 +1384,8 @@ export const es = {
     daysAvg: 'días prom.',
     olderThan1Year: '> 1 año',
     changedLast30Days: 'cambiado 30d',
+    context: 'Contexto',
+    onDevice: 'Todas las sugerencias se generan en el dispositivo — no se envían datos a ningún servidor.',
     uniqueFeature: 'Función exclusiva de KeePassEx',
   },
 
@@ -1386,6 +1412,8 @@ export const es = {
     daysAvg: 'días prom.',
     olderThan1Year: '> 1 año',
     changedLast30Days: 'cambiado 30d',
+    context: 'Contexto',
+    onDevice: 'Todas las sugerencias se generan en el dispositivo — no se envían datos a ningún servidor.',
     uniqueFeature: 'Función compatible con KeePass',
   },
 
@@ -1405,6 +1433,8 @@ export const es = {
     daysAvg: 'días prom.',
     olderThan1Year: '> 1 año',
     changedLast30Days: 'cambiado 30d',
+    context: 'Contexto',
+    onDevice: 'Todas las sugerencias se generan en el dispositivo — no se envían datos a ningún servidor.',
     uniqueFeature: 'Obtención automática de iconos',
   },
 
@@ -1430,6 +1460,8 @@ export const es = {
     daysAvg: 'días prom.',
     olderThan1Year: '> 1 año',
     changedLast30Days: 'cambiado 30d',
+    context: 'Contexto',
+    onDevice: 'Todas las sugerencias se generan en el dispositivo — no se envían datos a ningún servidor.',
     uniqueFeature: 'Función exclusiva de KeePassEx — ningún competidor la tiene',
   },
 
@@ -1469,6 +1501,8 @@ export const es = {
     daysAvg: 'días prom.',
     olderThan1Year: '> 1 año',
     changedLast30Days: 'cambiado 30d',
+    context: 'Contexto',
+    onDevice: 'Todas las sugerencias se generan en el dispositivo — no se envían datos a ningún servidor.',
     uniqueFeature: 'Exclusive KeePassEx feature — no competitor offers self-hosted sync',
   },
 } as const;

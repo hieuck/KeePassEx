@@ -333,6 +333,34 @@ enum Commands {
         password2: Option<String>,
     },
 
+    /// Advanced entry search (more powerful than list --search)
+    #[command(alias = "locate")]
+    Find {
+        /// Search query (optional — use flags to filter without text)
+        query: Option<String>,
+        /// Search only in specific field: title, username, url, notes, tags
+        #[arg(short, long)]
+        field: Option<String>,
+        /// Filter by group name
+        #[arg(long)]
+        group: Option<String>,
+        /// Show only expired entries
+        #[arg(long)]
+        expired: bool,
+        /// Show only entries with OTP
+        #[arg(long = "has-otp")]
+        has_otp: bool,
+        /// Show only entries with passkey
+        #[arg(long = "has-passkey")]
+        has_passkey: bool,
+        /// Show only entries with SSH key
+        #[arg(long = "has-ssh")]
+        has_ssh: bool,
+        /// Filter by tag
+        #[arg(long)]
+        tag: Option<String>,
+    },
+
     /// Change entry password
     #[command(alias = "pw")]
     Passwd {
@@ -627,6 +655,28 @@ async fn main() -> anyhow::Result<()> {
         Commands::Rotation { urgency } => {
             commands::rotation::run(&vault, urgency.as_deref(), &cli.format)
         }
+
+        Commands::Find {
+            query,
+            field,
+            group,
+            expired,
+            has_otp,
+            has_passkey,
+            has_ssh,
+            tag,
+        } => commands::find::run(
+            &vault,
+            query.as_deref(),
+            field.as_deref(),
+            group.as_deref(),
+            expired,
+            has_otp,
+            has_passkey,
+            has_ssh,
+            tag.as_deref(),
+            &cli.format,
+        ),
 
         Commands::Clip { uuid, field, clear } => commands::clip::run(&vault, &uuid, &field, clear),
 
