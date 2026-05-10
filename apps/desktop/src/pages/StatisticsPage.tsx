@@ -1,5 +1,6 @@
 /**
- * Vault Statistics page — detailed metrics about the vault
+ * Vault Statistics page — detailed metrics with strength histogram
+ * KeePassEx exclusive: visual strength distribution chart
  */
 
 import { useNavigate } from 'react-router-dom';
